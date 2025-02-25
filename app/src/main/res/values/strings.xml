@@ -1,0 +1,46 @@
+<resources>
+    <string name="app_name">Trackify</string>
+    <string name="title_subscriptions">Подписки</string>
+    <string name="title_payments">Платежи</string>
+    <string name="title_statistics">Статистика</string>
+    <string name="title_settings">Настройки</string>
+
+    <!-- Общие строки -->
+    <string name="save">Сохранить</string>
+    <string name="cancel">Отмена</string>
+    <string name="delete">Удалить</string>
+
+    <!-- Строки для подписок -->
+    <string name="add_subscription">Добавить подписку</string>
+    <string name="edit_subscription">Редактировать подписку</string>
+    <string name="subscription_name">Название</string>
+    <string name="subscription_price">Цена</string>
+    <string name="subscription_description">Описание</string>
+    <string name="subscription_category">Категория</string>
+    <string name="subscription_billing_frequency">Частота оплаты</string>
+    <string name="subscription_monthly">Ежемесячно</string>
+    <string name="subscription_yearly">Ежегодно</string>
+    <string name="subscription_start_date">Дата начала</string>
+    <string name="subscription_end_date">Дата окончания</string>
+    <string name="subscription_active">Активна</string>
+
+    <!-- Строки для платежей -->
+    <string name="add_payment">Добавить платеж</string>
+    <string name="edit_payment">Редактировать платеж</string>
+    <string name="payment_amount">Сумма</string>
+    <string name="payment_date">Дата</string>
+    <string name="payment_subscription">Подписка</string>
+    <string name="payment_notes">Примечания</string>
+
+    <!-- Строки для категорий -->
+    <string name="add_category">Добавить категорию</string>
+    <string name="edit_category">Редактировать категорию</string>
+    <string name="category_name">Название категории</string>
+    <string name="category_color">Цвет</string>
+
+    <!-- Строки для статистики -->
+    <string name="monthly_spending">Ежемесячные расходы</string>
+    <string name="yearly_spending">Ежегодные расходы</string>
+    <string name="spending_by_category">Расходы по категориям</string>
+    <string name="spending_over_time">Динамика расходов</string>
+</resources>
