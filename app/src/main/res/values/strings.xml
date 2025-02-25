@@ -43,4 +43,12 @@
     <string name="yearly_spending">Ежегодные расходы</string>
     <string name="spending_by_category">Расходы по категориям</string>
     <string name="spending_over_time">Динамика расходов</string>
+
+    <!-- Строки для настроек -->
+    <string name="theme_settings">Настройки темы</string>
+    <string name="system_theme">Системная тема</string>
+    <string name="light_theme">Светлая тема</string>
+    <string name="dark_theme">Темная тема</string>
+    <string name="dynamic_colors_enabled">Динамические цвета включены</string>
+    <string name="dynamic_colors_unavailable">Динамические цвета недоступны (требуется Android 12+)</string>
 </resources>

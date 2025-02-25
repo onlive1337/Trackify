@@ -32,7 +32,6 @@ class SubscriptionListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Настройка кнопки добавления подписки
         binding.fabAddSubscription.setOnClickListener {
             findNavController().navigate(R.id.action_navigation_subscriptions_to_addSubscriptionFragment)
         }
@@ -43,7 +42,6 @@ class SubscriptionListFragment : Fragment() {
 
     private fun setupRecyclerView() {
         subscriptionAdapter = SubscriptionAdapter { subscription ->
-            // Обработка нажатия на подписку - переход к деталям
             val action = SubscriptionListFragmentDirections.actionNavigationSubscriptionsToSubscriptionDetailFragment(
                 subscription.subscriptionId
             )
@@ -53,16 +51,26 @@ class SubscriptionListFragment : Fragment() {
         binding.recyclerViewSubscriptions.apply {
             adapter = subscriptionAdapter
             layoutManager = LinearLayoutManager(requireContext())
+
+            clipToPadding = false
+            val bottomPadding = getNavigationBarHeight()
+            setPadding(paddingLeft, paddingTop, paddingRight, bottomPadding)
+        }
+    }
+
+    private fun getNavigationBarHeight(): Int {
+        val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
+        return if (resourceId > 0) {
+            resources.getDimensionPixelSize(resourceId)
+        } else {
+            0
         }
     }
 
     private fun observeSubscriptions() {
-        // Подписка на изменения данных
         subscriptionViewModel.allActiveSubscriptions.observe(viewLifecycleOwner) { subscriptions ->
-            // Обновление UI при изменении данных
             subscriptionAdapter.submitList(subscriptions)
 
-            // Показываем сообщение, если список пуст
             if (subscriptions.isEmpty()) {
                 binding.textViewEmpty.visibility = View.VISIBLE
                 binding.recyclerViewSubscriptions.visibility = View.GONE

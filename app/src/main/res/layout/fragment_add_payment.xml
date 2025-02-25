@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.example.trackify.utils.HelperScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fillViewport="true"
     tools:context=".ui.payment.AddPaymentFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -97,4 +98,4 @@
             app:layout_constraintTop_toBottomOf="@+id/textInputLayoutNotes" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-</ScrollView>
+</com.example.trackify.utils.HelperScrollView>
