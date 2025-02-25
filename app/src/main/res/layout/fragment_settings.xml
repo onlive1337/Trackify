@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.example.trackify.utils.HelperScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.onlive.trackify.utils.HelperScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -237,4 +237,4 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
-</com.example.trackify.utils.HelperScrollView>
+</com.onlive.trackify.utils.HelperScrollView>

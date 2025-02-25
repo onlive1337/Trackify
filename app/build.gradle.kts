@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.trackify"
+    namespace = "com.onlive.trackify"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.trackify"
+        applicationId = "com.onlive.trackify"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
