@@ -2,6 +2,7 @@ package com.onlive.trackify.data.database
 
 import androidx.room.TypeConverter
 import com.onlive.trackify.data.model.BillingFrequency
+import com.onlive.trackify.data.model.PaymentStatus
 import java.util.Date
 
 class Converters {
@@ -23,5 +24,19 @@ class Converters {
     @TypeConverter
     fun toBillingFrequency(value: String): BillingFrequency {
         return BillingFrequency.valueOf(value)
+    }
+
+    @TypeConverter
+    fun fromPaymentStatus(status: PaymentStatus): String {
+        return status.name
+    }
+
+    @TypeConverter
+    fun toPaymentStatus(value: String): PaymentStatus {
+        return try {
+            PaymentStatus.valueOf(value)
+        } catch (e: IllegalArgumentException) {
+            PaymentStatus.MANUAL
+        }
     }
 }

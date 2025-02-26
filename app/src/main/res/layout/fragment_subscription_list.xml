@@ -7,6 +7,18 @@
     android:fitsSystemWindows="true"
     tools:context=".ui.subscription.SubscriptionListFragment">
 
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/searchViewSubscriptions"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:background="@drawable/search_background"
+        app:iconifiedByDefault="false"
+        app:queryHint="Поиск подписок"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewSubscriptions"
         android:layout_width="0dp"
@@ -16,7 +28,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/searchViewSubscriptions"
         tools:listitem="@layout/item_subscription" />
 
     <TextView

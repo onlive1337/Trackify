@@ -75,6 +75,36 @@
     </fragment>
 
     <fragment
+        android:id="@+id/pendingPaymentsFragment"
+        android:name="com.onlive.trackify.ui.payment.PendingPaymentsFragment"
+        android:label="Ожидающие платежи"
+        tools:layout="@layout/fragment_pending_payments" />
+
+    <action
+        android:id="@+id/action_navigation_payments_to_pendingPaymentsFragment"
+        app:destination="@id/pendingPaymentsFragment" />
+
+    <fragment
+        android:id="@+id/upcomingPaymentsFragment"
+        android:name="com.onlive.trackify.ui.overview.UpcomingPaymentsFragment"
+        android:label="Предстоящие платежи"
+        tools:layout="@layout/fragment_upcoming_payments" />
+
+    <fragment
+        android:id="@+id/dataManagementFragment"
+        android:name="com.onlive.trackify.ui.settings.DataManagementFragment"
+        android:label="Управление данными"
+        tools:layout="@layout/fragment_data_management" />
+
+    <action
+        android:id="@+id/action_global_to_upcomingPaymentsFragment"
+        app:destination="@id/upcomingPaymentsFragment" />
+
+    <action
+        android:id="@+id/action_navigation_settings_to_dataManagementFragment"
+        app:destination="@id/dataManagementFragment" />
+
+    <fragment
         android:id="@+id/categoryListFragment"
         android:name="com.onlive.trackify.ui.category.CategoryListFragment"
         android:label="Категории"

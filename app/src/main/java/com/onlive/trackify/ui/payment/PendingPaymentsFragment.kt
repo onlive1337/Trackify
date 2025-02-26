@@ -1,102 +1,82 @@
 package com.onlive.trackify.ui.payment
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.onlive.trackify.R
-import com.onlive.trackify.databinding.FragmentPaymentListBinding
+import com.onlive.trackify.data.model.Payment
+import com.onlive.trackify.databinding.FragmentPendingPaymentsBinding
 import com.onlive.trackify.viewmodel.PaymentViewModel
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
 
-class PaymentListFragment : Fragment() {
+class PendingPaymentsFragment : Fragment() {
 
-    private var _binding: FragmentPaymentListBinding? = null
+    private var _binding: FragmentPendingPaymentsBinding? = null
     private val binding get() = _binding!!
 
     private val paymentViewModel: PaymentViewModel by viewModels()
     private val subscriptionViewModel: SubscriptionViewModel by viewModels()
-    private lateinit var paymentAdapter: PaymentAdapter
+    private lateinit var pendingPaymentAdapter: PendingPaymentAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentPaymentListBinding.inflate(inflater, container, false)
+        _binding = FragmentPendingPaymentsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.fabAddPayment.setOnClickListener {
-            findNavController().navigate(R.id.action_navigation_payments_to_addPaymentFragment)
-        }
-
-        binding.cardPendingPayments.setOnClickListener {
-            findNavController().navigate(R.id.action_navigation_payments_to_pendingPaymentsFragment)
-        }
-
         setupRecyclerView()
         observeData()
     }
 
     private fun setupRecyclerView() {
-        paymentAdapter = PaymentAdapter()
+        pendingPaymentAdapter = PendingPaymentAdapter(
+            onConfirmClick = { paymentWithName ->
+                paymentViewModel.confirmPayment(paymentWithName.payment)
+                Toast.makeText(requireContext(), "Платеж подтвержден", Toast.LENGTH_SHORT).show()
+            },
+            onDeleteClick = { paymentWithName ->
+                showDeleteConfirmationDialog(paymentWithName)
+            }
+        )
 
-        binding.recyclerViewPayments.apply {
-            adapter = paymentAdapter
+        binding.recyclerViewPendingPayments.apply {
+            adapter = pendingPaymentAdapter
             layoutManager = LinearLayoutManager(requireContext())
-
-            clipToPadding = false
-            val bottomPadding = getNavigationBarHeight()
-            setPadding(paddingLeft, paddingTop, paddingRight, bottomPadding)
-        }
-    }
-
-    private fun getNavigationBarHeight(): Int {
-        val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
-        return if (resourceId > 0) {
-            resources.getDimensionPixelSize(resourceId)
-        } else {
-            0
         }
     }
 
     private fun observeData() {
-        subscriptionViewModel.allActiveSubscriptions.observe(viewLifecycleOwner) { subs ->
+        subscriptionViewModel.allActiveSubscriptions.observe(viewLifecycleOwner) { subscriptions ->
             updatePaymentsList()
         }
 
-        paymentViewModel.allPayments.observe(viewLifecycleOwner) { payments ->
+        paymentViewModel.pendingPayments.observe(viewLifecycleOwner) { payments ->
             updatePaymentsList()
 
             if (payments.isEmpty()) {
                 binding.textViewEmpty.visibility = View.VISIBLE
-                binding.recyclerViewPayments.visibility = View.GONE
+                binding.recyclerViewPendingPayments.visibility = View.GONE
             } else {
                 binding.textViewEmpty.visibility = View.GONE
-                binding.recyclerViewPayments.visibility = View.VISIBLE
-            }
-        }
-
-        paymentViewModel.pendingPaymentsCount.observe(viewLifecycleOwner) { count ->
-            if (count > 0) {
-                binding.cardPendingPayments.visibility = View.VISIBLE
-                binding.textViewPendingCount.text = count.toString()
-            } else {
-                binding.cardPendingPayments.visibility = View.GONE
+                binding.recyclerViewPendingPayments.visibility = View.VISIBLE
             }
         }
     }
 
     private fun updatePaymentsList() {
-        val payments = paymentViewModel.allPayments.value ?: return
+        val payments = paymentViewModel.pendingPayments.value ?: return
         val subscriptions = subscriptionViewModel.allActiveSubscriptions.value ?: return
         if (subscriptions.isEmpty()) return
 
@@ -108,7 +88,19 @@ class PaymentListFragment : Fragment() {
             )
         }
 
-        paymentAdapter.submitList(paymentsWithNames)
+        pendingPaymentAdapter.submitList(paymentsWithNames)
+    }
+
+    private fun showDeleteConfirmationDialog(paymentWithName: PaymentWithSubscriptionName) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Удаление платежа")
+            .setMessage("Вы уверены, что хотите удалить этот платеж?")
+            .setPositiveButton("Удалить") { _, _ ->
+                paymentViewModel.delete(paymentWithName.payment)
+                Toast.makeText(requireContext(), "Платеж удален", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
     }
 
     override fun onDestroyView() {

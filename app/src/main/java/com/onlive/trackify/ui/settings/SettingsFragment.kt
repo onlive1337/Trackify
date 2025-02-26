@@ -75,6 +75,10 @@ class SettingsFragment : Fragment() {
         binding.buttonManageCategories.setOnClickListener {
             findNavController().navigate(R.id.action_navigation_settings_to_categoryListFragment)
         }
+
+        binding.buttonDataManagement.setOnClickListener {
+            findNavController().navigate(R.id.action_navigation_settings_to_dataManagementFragment)
+        }
     }
 
     private fun setupThemeOptions() {

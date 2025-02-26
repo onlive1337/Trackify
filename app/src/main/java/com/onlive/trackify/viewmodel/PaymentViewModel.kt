@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
 import com.onlive.trackify.data.database.AppDatabase
 import com.onlive.trackify.data.model.Payment
+import com.onlive.trackify.data.model.PaymentStatus
 import com.onlive.trackify.data.repository.PaymentRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -14,11 +15,17 @@ class PaymentViewModel(application: Application) : AndroidViewModel(application)
 
     private val repository: PaymentRepository
     val allPayments: LiveData<List<Payment>>
+    val pendingPayments: LiveData<List<Payment>>
+    val pendingPaymentsCount: LiveData<Int>
+    val recentPendingPayments: LiveData<List<Payment>>
 
     init {
         val paymentDao = AppDatabase.getDatabase(application).paymentDao()
         repository = PaymentRepository(paymentDao)
         allPayments = repository.allPayments
+        pendingPayments = repository.getPendingPayments()
+        pendingPaymentsCount = repository.getPendingPaymentsCount()
+        recentPendingPayments = repository.getRecentPendingPayments()
     }
 
     fun insert(payment: Payment) = viewModelScope.launch(Dispatchers.IO) {
@@ -43,5 +50,13 @@ class PaymentViewModel(application: Application) : AndroidViewModel(application)
 
     fun getTotalAmountForMonth(year: Int, month: Int): LiveData<Double> {
         return repository.getTotalAmountForMonth(year, month)
+    }
+
+    fun confirmPayment(payment: Payment) = viewModelScope.launch(Dispatchers.IO) {
+        repository.confirmPayment(payment)
+    }
+
+    fun confirmPayment(paymentId: Long) = viewModelScope.launch(Dispatchers.IO) {
+        repository.confirmPayment(paymentId)
     }
 }
