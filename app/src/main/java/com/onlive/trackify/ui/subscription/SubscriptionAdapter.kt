@@ -1,40 +1,78 @@
 package com.onlive.trackify.ui.subscription
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.onlive.trackify.data.model.BillingFrequency
 import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.databinding.ItemSubscriptionBinding
+import com.onlive.trackify.databinding.ItemSubscriptionGridBinding
+import com.onlive.trackify.utils.AnimationUtils
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-class SubscriptionAdapter(private val onSubscriptionClick: (Subscription) -> Unit) :
-    ListAdapter<Subscription, SubscriptionAdapter.SubscriptionViewHolder>(SubscriptionDiffCallback()) {
+class SubscriptionAdapter(
+    private val onSubscriptionClick: (Subscription) -> Unit,
+    private var isGridMode: Boolean = false
+) : ListAdapter<Subscription, RecyclerView.ViewHolder>(SubscriptionDiffCallback()) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SubscriptionViewHolder {
-        val binding = ItemSubscriptionBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
-        return SubscriptionViewHolder(binding)
+    companion object {
+        private const val VIEW_TYPE_LIST = 1
+        private const val VIEW_TYPE_GRID = 2
     }
 
-    override fun onBindViewHolder(holder: SubscriptionViewHolder, position: Int) {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when (viewType) {
+            VIEW_TYPE_GRID -> {
+                val binding = ItemSubscriptionGridBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+                GridSubscriptionViewHolder(binding)
+            }
+            else -> {
+                val binding = ItemSubscriptionBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+                ListSubscriptionViewHolder(binding)
+            }
+        }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val currentItem = getItem(position)
-        holder.bind(currentItem)
+        when (holder) {
+            is ListSubscriptionViewHolder -> holder.bind(currentItem)
+            is GridSubscriptionViewHolder -> holder.bind(currentItem)
+        }
     }
 
-    inner class SubscriptionViewHolder(private val binding: ItemSubscriptionBinding) :
+    override fun getItemViewType(position: Int): Int {
+        return if (isGridMode) VIEW_TYPE_GRID else VIEW_TYPE_LIST
+    }
+
+    fun setLayoutMode(isGrid: Boolean) {
+        if (this.isGridMode != isGrid) {
+            this.isGridMode = isGrid
+            notifyItemRangeChanged(0, itemCount)
+        }
+    }
+
+    inner class ListSubscriptionViewHolder(private val binding: ItemSubscriptionBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
         init {
             binding.root.setOnClickListener {
+                AnimationUtils.pulseAnimation(it)
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
                     onSubscriptionClick(getItem(position))
@@ -45,17 +83,14 @@ class SubscriptionAdapter(private val onSubscriptionClick: (Subscription) -> Uni
         fun bind(subscription: Subscription) {
             binding.textViewSubscriptionName.text = subscription.name
 
-            // Форматирование цены в зависимости от частоты оплаты
             val priceString = when (subscription.billingFrequency) {
                 BillingFrequency.MONTHLY -> "₽${subscription.price}/мес"
                 BillingFrequency.YEARLY -> "₽${subscription.price}/год"
             }
             binding.textViewSubscriptionPrice.text = priceString
 
-            // Отображение категории (будет заполнено позже из базы данных)
-            binding.textViewSubscriptionCategory.text = "Категория" // Временный текст
+            binding.textViewSubscriptionCategory.text = "Категория"
 
-            // Отображение даты следующего платежа
             val nextPayment = calculateNextPaymentDate(
                 subscription.startDate,
                 subscription.billingFrequency
@@ -63,26 +98,57 @@ class SubscriptionAdapter(private val onSubscriptionClick: (Subscription) -> Uni
             val dateFormat = SimpleDateFormat("dd MMMM yyyy", Locale("ru"))
             binding.textViewNextPayment.text = "Следующий платеж: ${dateFormat.format(nextPayment)}"
         }
+    }
 
-        private fun calculateNextPaymentDate(startDate: Date, frequency: BillingFrequency): Date {
-            val calendar = Calendar.getInstance()
-            calendar.time = startDate
+    inner class GridSubscriptionViewHolder(private val binding: ItemSubscriptionGridBinding) :
+        RecyclerView.ViewHolder(binding.root) {
 
-            val today = Calendar.getInstance()
-
-            // Вычисляем следующую дату платежа
-            while (calendar.before(today)) {
-                when (frequency) {
-                    BillingFrequency.MONTHLY -> calendar.add(Calendar.MONTH, 1)
-                    BillingFrequency.YEARLY -> calendar.add(Calendar.YEAR, 1)
+        init {
+            binding.root.setOnClickListener {
+                AnimationUtils.pulseAnimation(it)
+                val position = adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    onSubscriptionClick(getItem(position))
                 }
             }
+        }
 
-            return calendar.time
+        fun bind(subscription: Subscription) {
+            binding.textViewSubscriptionName.text = subscription.name
+
+            val priceString = when (subscription.billingFrequency) {
+                BillingFrequency.MONTHLY -> "₽${subscription.price}/мес"
+                BillingFrequency.YEARLY -> "₽${subscription.price}/год"
+            }
+            binding.textViewSubscriptionPrice.text = priceString
+
+            binding.textViewSubscriptionCategory.text = "Категория"
+
+            val nextPayment = calculateNextPaymentDate(
+                subscription.startDate,
+                subscription.billingFrequency
+            )
+            val dateFormat = SimpleDateFormat("dd MMMM yyyy", Locale("ru"))
+            binding.textViewNextPayment.text = "Следующий платеж: ${dateFormat.format(nextPayment)}"
         }
     }
 
-    // DiffUtil для эффективного обновления RecyclerView
+    private fun calculateNextPaymentDate(startDate: Date, frequency: BillingFrequency): Date {
+        val calendar = Calendar.getInstance()
+        calendar.time = startDate
+
+        val today = Calendar.getInstance()
+
+        while (calendar.before(today)) {
+            when (frequency) {
+                BillingFrequency.MONTHLY -> calendar.add(Calendar.MONTH, 1)
+                BillingFrequency.YEARLY -> calendar.add(Calendar.YEAR, 1)
+            }
+        }
+
+        return calendar.time
+    }
+
     class SubscriptionDiffCallback : DiffUtil.ItemCallback<Subscription>() {
         override fun areItemsTheSame(oldItem: Subscription, newItem: Subscription): Boolean {
             return oldItem.subscriptionId == newItem.subscriptionId

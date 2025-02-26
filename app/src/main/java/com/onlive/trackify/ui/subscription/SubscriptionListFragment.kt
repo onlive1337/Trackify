@@ -13,10 +13,13 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.databinding.FragmentSubscriptionListBinding
+import com.onlive.trackify.utils.AnimationUtils
+import com.onlive.trackify.utils.ViewModePreference
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
 
 class SubscriptionListFragment : Fragment(), MenuProvider {
@@ -26,10 +29,11 @@ class SubscriptionListFragment : Fragment(), MenuProvider {
 
     private val subscriptionViewModel: SubscriptionViewModel by viewModels()
     private lateinit var subscriptionAdapter: SubscriptionAdapter
+    private lateinit var viewModePreference: ViewModePreference
 
     private var originalSubscriptionsList = listOf<Subscription>()
-
     private var currentQuery = ""
+    private var isGridMode = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,14 +48,17 @@ class SubscriptionListFragment : Fragment(), MenuProvider {
         super.onViewCreated(view, savedInstanceState)
 
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
+        viewModePreference = ViewModePreference(requireContext())
+        isGridMode = viewModePreference.isGridModeEnabled()
 
         binding.fabAddSubscription.setOnClickListener {
+            AnimationUtils.pulseAnimation(it)
             findNavController().navigate(R.id.action_navigation_subscriptions_to_addSubscriptionFragment)
         }
 
         setupRecyclerView()
+        setupViewModeToggle()
         observeSubscriptions()
-
         setupSearchView()
     }
 
@@ -72,6 +79,33 @@ class SubscriptionListFragment : Fragment(), MenuProvider {
             currentQuery = ""
             filterSubscriptions(currentQuery)
             false
+        }
+    }
+
+    private fun setupViewModeToggle() {
+        updateViewModeIcon()
+
+        binding.buttonToggleViewMode.setOnClickListener {
+            AnimationUtils.pulseAnimation(it)
+            isGridMode = !isGridMode
+            viewModePreference.setGridModeEnabled(isGridMode)
+            updateViewModeIcon()
+            updateLayoutManager()
+            subscriptionAdapter.setLayoutMode(isGridMode)
+        }
+    }
+
+    private fun updateViewModeIcon() {
+        binding.buttonToggleViewMode.setImageResource(
+            if (isGridMode) R.drawable.ic_view_list else R.drawable.ic_view_grid
+        )
+    }
+
+    private fun updateLayoutManager() {
+        binding.recyclerViewSubscriptions.layoutManager = if (isGridMode) {
+            GridLayoutManager(requireContext(), 2)
+        } else {
+            LinearLayoutManager(requireContext())
         }
     }
 
@@ -108,16 +142,23 @@ class SubscriptionListFragment : Fragment(), MenuProvider {
     }
 
     private fun setupRecyclerView() {
-        subscriptionAdapter = SubscriptionAdapter { subscription ->
-            val action = SubscriptionListFragmentDirections.actionNavigationSubscriptionsToSubscriptionDetailFragment(
-                subscription.subscriptionId
-            )
-            findNavController().navigate(action)
-        }
+        subscriptionAdapter = SubscriptionAdapter(
+            onSubscriptionClick = { subscription ->
+                val action = SubscriptionListFragmentDirections.actionNavigationSubscriptionsToSubscriptionDetailFragment(
+                    subscription.subscriptionId
+                )
+                findNavController().navigate(action)
+            },
+            isGridMode = isGridMode
+        )
 
         binding.recyclerViewSubscriptions.apply {
             adapter = subscriptionAdapter
-            layoutManager = LinearLayoutManager(requireContext())
+            layoutManager = if (isGridMode) {
+                GridLayoutManager(requireContext(), 2)
+            } else {
+                LinearLayoutManager(requireContext())
+            }
 
             clipToPadding = false
             val bottomPadding = getNavigationBarHeight()
