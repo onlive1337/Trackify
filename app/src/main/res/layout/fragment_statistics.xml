@@ -23,55 +23,62 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:orientation="horizontal"
+                android:baselineAligned="false">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/monthly_spending"
-                    android:textSize="16sp" />
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-                <TextView
-                    android:id="@+id/textViewMonthlySpending"
-                    android:layout_width="wrap_content"
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/monthly_spending"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/textViewMonthlySpending"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        tools:text="₽2,599" />
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:background="?attr/colorOutline"
+                    android:alpha="0.5" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:textSize="24sp"
-                    android:textStyle="bold"
-                    tools:text="₽2,599.00" />
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/yearly_spending"
+                        android:textSize="16sp" />
 
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="4dp">
+                    <TextView
+                        android:id="@+id/textViewYearlySpending"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        tools:text="₽31,188" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/yearly_spending"
-                    android:textSize="16sp" />
-
-                <TextView
-                    android:id="@+id/textViewYearlySpending"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:textSize="24sp"
-                    android:textStyle="bold"
-                    tools:text="₽31,188.00" />
-
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -92,12 +99,42 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/spending_by_category"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
-                <FrameLayout
-                    android:id="@+id/chartContainerByCategory"
+                <com.github.mikephil.charting.charts.PieChart
+                    android:id="@+id/pieChartCategories"
                     android:layout_width="match_parent"
-                    android:layout_height="200dp"
+                    android:layout_height="300dp"
+                    android:layout_marginTop="8dp" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/spending_over_time"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <com.github.mikephil.charting.charts.BarChart
+                    android:id="@+id/barChartMonthly"
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp"
                     android:layout_marginTop="8dp" />
 
             </LinearLayout>
@@ -118,13 +155,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/spending_over_time"
-                    android:textSize="16sp" />
+                    android:text="Расходы по типам подписок"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
-                <FrameLayout
-                    android:id="@+id/chartContainerOverTime"
+                <com.github.mikephil.charting.charts.PieChart
+                    android:id="@+id/pieChartTypes"
                     android:layout_width="match_parent"
-                    android:layout_height="200dp"
+                    android:layout_height="300dp"
                     android:layout_marginTop="8dp" />
 
             </LinearLayout>

@@ -188,6 +188,49 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Test Notifications Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Тестирование уведомлений"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="?attr/colorOutline"
+                    android:alpha="0.2" />
+
+                <Button
+                    android:id="@+id/buttonTestNotification"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Отправить тестовое уведомление" />
+
+                <Button
+                    android:id="@+id/buttonCreateTestSubscription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Создать тестовую подписку и проверить" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- About Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"

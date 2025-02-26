@@ -38,7 +38,11 @@
         android:id="@+id/navigation_settings"
         android:name="com.onlive.trackify.ui.settings.SettingsFragment"
         android:label="@string/title_settings"
-        tools:layout="@layout/fragment_settings" />
+        tools:layout="@layout/fragment_settings">
+        <action
+            android:id="@+id/action_navigation_settings_to_categoryListFragment"
+            app:destination="@id/categoryListFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/addSubscriptionFragment"
@@ -68,6 +72,26 @@
             android:name="subscriptionId"
             app:argType="long"
             android:defaultValue="-1L" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/categoryListFragment"
+        android:name="com.onlive.trackify.ui.category.CategoryListFragment"
+        android:label="Категории"
+        tools:layout="@layout/fragment_category_list">
+        <action
+            android:id="@+id/action_categoryListFragmentToCategoryDetailFragment"
+            app:destination="@id/categoryDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/categoryDetailFragment"
+        android:name="com.onlive.trackify.ui.category.CategoryDetailFragment"
+        android:label="Редактирование категории"
+        tools:layout="@layout/fragment_category_detail">
+        <argument
+            android:name="categoryId"
+            app:argType="long" />
     </fragment>
 
 </navigation>

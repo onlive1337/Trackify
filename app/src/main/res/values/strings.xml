@@ -5,12 +5,10 @@
     <string name="title_statistics">Статистика</string>
     <string name="title_settings">Настройки</string>
 
-    <!-- Общие строки -->
     <string name="save">Сохранить</string>
     <string name="cancel">Отмена</string>
     <string name="delete">Удалить</string>
 
-    <!-- Строки для подписок -->
     <string name="add_subscription">Добавить подписку</string>
     <string name="edit_subscription">Редактировать подписку</string>
     <string name="subscription_name">Название</string>
@@ -24,7 +22,6 @@
     <string name="subscription_end_date">Дата окончания</string>
     <string name="subscription_active">Активна</string>
 
-    <!-- Строки для платежей -->
     <string name="add_payment">Добавить платеж</string>
     <string name="edit_payment">Редактировать платеж</string>
     <string name="payment_amount">Сумма</string>
@@ -32,23 +29,31 @@
     <string name="payment_subscription">Подписка</string>
     <string name="payment_notes">Примечания</string>
 
-    <!-- Строки для категорий -->
     <string name="add_category">Добавить категорию</string>
     <string name="edit_category">Редактировать категорию</string>
     <string name="category_name">Название категории</string>
     <string name="category_color">Цвет</string>
 
-    <!-- Строки для статистики -->
     <string name="monthly_spending">Ежемесячные расходы</string>
     <string name="yearly_spending">Ежегодные расходы</string>
     <string name="spending_by_category">Расходы по категориям</string>
     <string name="spending_over_time">Динамика расходов</string>
 
-    <!-- Строки для настроек -->
     <string name="theme_settings">Настройки темы</string>
     <string name="system_theme">Системная тема</string>
     <string name="light_theme">Светлая тема</string>
     <string name="dark_theme">Темная тема</string>
     <string name="dynamic_colors_enabled">Динамические цвета включены</string>
     <string name="dynamic_colors_unavailable">Динамические цвета недоступны (требуется Android 12+)</string>
+
+    <string name="notification_channel_name">Напоминания о подписках</string>
+    <string name="notification_channel_description">Уведомления о предстоящих платежах по подпискам</string>
+    <string name="notification_upcoming_payment_title">Предстоящий платеж</string>
+    <string name="notification_payment_today">Сегодня платеж за %1$s</string>
+    <string name="notification_payment_tomorrow">Завтра платеж за %1$s</string>
+    <string name="notification_payment_upcoming">Через %2$d дней платеж за %1$s</string>
+    <string name="notifications_enabled">Уведомления включены</string>
+    <string name="notifications_disabled">Уведомления отключены</string>
+    <string name="notifications_permission_denied">Разрешение на уведомления отклонено</string>
+    <string name="notifications_permission_rationale">Разрешение на уведомления необходимо для отправки напоминаний о платежах</string>
 </resources>

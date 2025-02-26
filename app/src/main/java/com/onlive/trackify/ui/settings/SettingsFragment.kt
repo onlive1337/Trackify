@@ -1,14 +1,25 @@
 package com.onlive.trackify.ui.settings
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.onlive.trackify.R
 import com.onlive.trackify.databinding.FragmentSettingsBinding
+import com.onlive.trackify.utils.NotificationTester
+import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.ThemeManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class SettingsFragment : Fragment() {
 
@@ -16,6 +27,30 @@ class SettingsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var themeManager: ThemeManager
+    private lateinit var preferenceManager: PreferenceManager
+    private lateinit var notificationTester: NotificationTester
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            binding.switchNotifications.isChecked = true
+            preferenceManager.setNotificationsEnabled(true)
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.notifications_enabled),
+                Toast.LENGTH_SHORT
+            ).show()
+        } else {
+            binding.switchNotifications.isChecked = false
+            preferenceManager.setNotificationsEnabled(false)
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.notifications_permission_denied),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -30,21 +65,15 @@ class SettingsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         themeManager = ThemeManager(requireContext())
+        preferenceManager = PreferenceManager(requireContext())
+        notificationTester = NotificationTester(requireContext())
 
         setupThemeOptions()
-
-        binding.switchNotifications.setOnCheckedChangeListener { _, isChecked ->
-            Toast.makeText(
-                requireContext(),
-                if (isChecked) "Уведомления включены" else "Уведомления отключены",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
-
-        setupDynamicColorsInfo()
+        setupNotificationOptions()
+        setupTestButtons()
 
         binding.buttonManageCategories.setOnClickListener {
-            Toast.makeText(requireContext(), "Функция в разработке", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.action_navigation_settings_to_categoryListFragment)
         }
     }
 
@@ -62,6 +91,109 @@ class SettingsFragment : Fragment() {
                 else -> ThemeManager.MODE_SYSTEM
             }
             themeManager.setThemeMode(mode)
+        }
+    }
+
+    private fun setupNotificationOptions() {
+        binding.switchNotifications.isChecked = preferenceManager.areNotificationsEnabled()
+
+        binding.switchNotifications.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    when {
+                        ContextCompat.checkSelfPermission(
+                            requireContext(),
+                            Manifest.permission.POST_NOTIFICATIONS
+                        ) == PackageManager.PERMISSION_GRANTED -> {
+                            preferenceManager.setNotificationsEnabled(true)
+                            Toast.makeText(
+                                requireContext(),
+                                getString(R.string.notifications_enabled),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                        shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
+                            Toast.makeText(
+                                requireContext(),
+                                getString(R.string.notifications_permission_rationale),
+                                Toast.LENGTH_LONG
+                            ).show()
+                            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                        else -> {
+                            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                    }
+                } else {
+                    preferenceManager.setNotificationsEnabled(true)
+                    Toast.makeText(
+                        requireContext(),
+                        getString(R.string.notifications_enabled),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } else {
+                preferenceManager.setNotificationsEnabled(false)
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.notifications_disabled),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+
+        setupDynamicColorsInfo()
+    }
+
+    private fun setupTestButtons() {
+        binding.buttonTestNotification.setOnClickListener {
+            if (hasNotificationPermission()) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    notificationTester.sendTestNotification()
+                }
+                Toast.makeText(
+                    requireContext(),
+                    "Отправляю тестовые уведомления...",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                requestNotificationPermission()
+            }
+        }
+
+        binding.buttonCreateTestSubscription.setOnClickListener {
+            if (hasNotificationPermission()) {
+                notificationTester.createTestSubscriptionAndRunCheck()
+                Toast.makeText(
+                    requireContext(),
+                    "Создаю тестовую подписку и проверяю...",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                requestNotificationPermission()
+            }
+        }
+    }
+
+    private fun hasNotificationPermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+    }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Toast.makeText(
+                requireContext(),
+                "Для отправки уведомлений нужно разрешение",
+                Toast.LENGTH_SHORT
+            ).show()
+            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
 

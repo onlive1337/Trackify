@@ -20,4 +20,10 @@ interface CategoryDao {
 
     @Query("SELECT * FROM categories WHERE categoryId = :id")
     fun getCategoryById(id: Long): LiveData<Category>
+
+    @Query("SELECT * FROM categories WHERE categoryId = :id")
+    suspend fun getCategoryByIdSync(id: Long): Category?
+
+    @Query("SELECT COUNT(*) FROM categories")
+    suspend fun getCategoriesCountSync(): Int
 }
