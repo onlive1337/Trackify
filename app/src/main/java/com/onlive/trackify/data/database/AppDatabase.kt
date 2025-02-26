@@ -16,7 +16,7 @@ import kotlinx.coroutines.withContext
 
 @Database(
     entities = [Subscription::class, Payment::class, Category::class, CategoryGroup::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -30,6 +30,7 @@ abstract class AppDatabase : RoomDatabase() {
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
+        private const val DATABASE_NAME = "trackify_database"
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
@@ -70,15 +71,32 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_subscriptions_active ON subscriptions(active)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_subscriptions_categoryId_active ON subscriptions(categoryId, active)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_subscriptions_endDate_active ON subscriptions(endDate, active)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_subscriptions_name ON subscriptions(name)")
+
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_payments_date ON payments(date)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_payments_subscriptionId ON payments(subscriptionId)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_payments_status ON payments(status)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_payments_status_date ON payments(status, date)")
+
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_categories_name ON categories(name)")
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "trackify_database"
+                    DATABASE_NAME
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                     .fallbackToDestructiveMigration()
+                    .setJournalMode(JournalMode.WRITE_AHEAD_LOGGING)
                     .build()
                 INSTANCE = instance
                 instance

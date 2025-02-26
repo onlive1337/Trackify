@@ -22,6 +22,9 @@ interface SubscriptionDao {
     @Query("SELECT * FROM subscriptions WHERE active = 1 ORDER BY name ASC")
     fun getAllActiveSubscriptions(): LiveData<List<Subscription>>
 
+    @Query("SELECT * FROM subscriptions WHERE active = 1 ORDER BY name ASC LIMIT :limit OFFSET :offset")
+    suspend fun getActiveSubscriptionsPage(limit: Int, offset: Int): List<Subscription>
+
     @Query("SELECT * FROM subscriptions ORDER BY name ASC")
     fun getAllSubscriptionsSync(): List<Subscription>
 
@@ -36,6 +39,12 @@ interface SubscriptionDao {
 
     @Query("SELECT * FROM subscriptions WHERE active = 1")
     suspend fun getActiveSubscriptionsSync(): List<Subscription>
+
+    @Query("SELECT * FROM subscriptions WHERE name LIKE '%' || :query || '%' AND active = 1 ORDER BY name ASC")
+    fun searchActiveSubscriptions(query: String): LiveData<List<Subscription>>
+
+    @Query("SELECT COUNT(*) FROM subscriptions WHERE active = 1")
+    fun getActiveSubscriptionsCount(): LiveData<Int>
 
     @Query("DELETE FROM subscriptions")
     suspend fun deleteAllSync()

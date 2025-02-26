@@ -23,6 +23,9 @@ interface PaymentDao {
     @Query("SELECT * FROM payments ORDER BY date DESC")
     fun getAllPayments(): LiveData<List<Payment>>
 
+    @Query("SELECT * FROM payments ORDER BY date DESC LIMIT :limit OFFSET :offset")
+    suspend fun getPaymentsPage(limit: Int, offset: Int): List<Payment>
+
     @Query("SELECT * FROM payments ORDER BY date DESC")
     fun getAllPaymentsSync(): List<Payment>
 
@@ -33,7 +36,10 @@ interface PaymentDao {
     fun getPaymentsBetweenDates(startDate: Date, endDate: Date): LiveData<List<Payment>>
 
     @Query("SELECT SUM(amount) FROM payments WHERE date BETWEEN :startDate AND :endDate")
-    fun getTotalAmountBetweenDates(startDate: Date, endDate: Date): LiveData<Double>
+    fun getTotalAmountBetweenDates(startDate: Date, endDate: Date): LiveData<Double?>
+
+    @Query("SELECT COALESCE(SUM(amount), 0.0) FROM payments WHERE date BETWEEN :startDate AND :endDate")
+    fun getTotalAmountBetweenDatesNullSafe(startDate: Date, endDate: Date): LiveData<Double>
 
     @Query("SELECT * FROM payments WHERE subscriptionId = :subscriptionId ORDER BY date DESC LIMIT 1")
     suspend fun getLastPaymentForSubscriptionSync(subscriptionId: Long): Payment?
@@ -52,6 +58,9 @@ interface PaymentDao {
 
     @Query("SELECT * FROM payments WHERE status = :status AND date <= :date ORDER BY date DESC")
     fun getPendingPaymentsBeforeDate(status: PaymentStatus = PaymentStatus.PENDING, date: Date): LiveData<List<Payment>>
+
+    @Query("SELECT COUNT(*) FROM payments WHERE strftime('%Y-%m', date / 1000, 'unixepoch') = :yearMonth")
+    fun getPaymentsCountByMonth(yearMonth: String): LiveData<Int>
 
     @Query("DELETE FROM payments")
     suspend fun deleteAllSync()
