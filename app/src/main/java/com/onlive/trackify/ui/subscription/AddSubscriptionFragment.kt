@@ -1,6 +1,5 @@
 package com.onlive.trackify.ui.subscription
 
-import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +13,7 @@ import com.onlive.trackify.data.model.BillingFrequency
 import com.onlive.trackify.data.model.Category
 import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.databinding.FragmentAddSubscriptionBinding
+import com.onlive.trackify.utils.DatePickerHelper
 import com.onlive.trackify.viewmodel.CategoryViewModel
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
 import java.text.SimpleDateFormat
@@ -57,51 +57,37 @@ class AddSubscriptionFragment : Fragment() {
     }
 
     private fun setupDatePickers() {
-        // Формат для отображения даты
         val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale("ru"))
+        val datePickerHelper = DatePickerHelper(requireContext())
 
-        // Установка текущей даты для начальной даты
         binding.buttonSelectStartDate.text = dateFormat.format(startDate)
-
-        // Кнопка выбора начальной даты
         binding.buttonSelectStartDate.setOnClickListener {
-            val year = calendar.get(Calendar.YEAR)
-            val month = calendar.get(Calendar.MONTH)
-            val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-            DatePickerDialog(requireContext(), { _, selectedYear, selectedMonth, selectedDay ->
-                calendar.set(selectedYear, selectedMonth, selectedDay)
-                startDate = calendar.time
-                binding.buttonSelectStartDate.text = dateFormat.format(startDate)
-            }, year, month, day).show()
-        }
-
-        // Кнопка выбора конечной даты (или бессрочно)
-        binding.buttonSelectEndDate.text = "Бессрочно"
-
-        binding.buttonSelectEndDate.setOnClickListener {
-            val year = calendar.get(Calendar.YEAR)
-            val month = calendar.get(Calendar.MONTH)
-            val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-            val dialog = DatePickerDialog(requireContext(), { _, selectedYear, selectedMonth, selectedDay ->
-                calendar.set(selectedYear, selectedMonth, selectedDay)
-                endDate = calendar.time
-                binding.buttonSelectEndDate.text = dateFormat.format(endDate!!)
-            }, year, month, day)
-
-            // Добавляем кнопку "Бессрочно"
-            dialog.setButton(DatePickerDialog.BUTTON_NEUTRAL, "Бессрочно") { _, _ ->
-                endDate = null
-                binding.buttonSelectEndDate.text = "Бессрочно"
+            datePickerHelper.showAdvancedDatePickerForSubscription(
+                initialDate = startDate,
+                allowNullDate = false
+            ) { selectedDate ->
+                selectedDate?.let {
+                    startDate = it
+                    binding.buttonSelectStartDate.text = dateFormat.format(startDate)
+                }
             }
-
-            dialog.show()
+        }
+        binding.buttonSelectEndDate.text = endDate?.let { dateFormat.format(it) } ?: "Бессрочно"
+        binding.buttonSelectEndDate.setOnClickListener {
+            datePickerHelper.showAdvancedDatePickerForSubscription(
+                initialDate = endDate ?: Calendar.getInstance().apply {
+                    time = startDate
+                    add(Calendar.YEAR, 1)
+                }.time,
+                allowNullDate = true
+            ) { selectedDate ->
+                endDate = selectedDate
+                binding.buttonSelectEndDate.text = selectedDate?.let { dateFormat.format(it) } ?: "Бессрочно"
+            }
         }
     }
 
     private fun setupCategorySpinner() {
-        // Создаем простой адаптер с пустым списком (пока)
         categoryAdapter = ArrayAdapter(
             requireContext(),
             android.R.layout.simple_spinner_item,
@@ -110,11 +96,9 @@ class AddSubscriptionFragment : Fragment() {
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerCategory.adapter = categoryAdapter
 
-        // Наблюдаем за списком категорий
         categoryViewModel.allCategories.observe(viewLifecycleOwner) { categoriesList ->
             categories = categoriesList
 
-            // Обновляем адаптер с новыми данными
             val categoryNames = mutableListOf("Без категории")
             categoryNames.addAll(categoriesList.map { it.name })
 
@@ -129,7 +113,6 @@ class AddSubscriptionFragment : Fragment() {
     }
 
     private fun saveSubscription() {
-        // Проверка обязательных полей
         val name = binding.editTextName.text.toString().trim()
         if (name.isEmpty()) {
             binding.editTextName.error = "Введите название"
@@ -142,7 +125,6 @@ class AddSubscriptionFragment : Fragment() {
             return
         }
 
-        // Получение остальных данных
         val description = binding.editTextDescription.text.toString().trim().let {
             if (it.isEmpty()) null else it
         }
@@ -153,14 +135,12 @@ class AddSubscriptionFragment : Fragment() {
             return
         }
 
-        // Определение частоты оплаты
         val billingFrequency = if (binding.radioButtonMonthly.isChecked) {
             BillingFrequency.MONTHLY
         } else {
             BillingFrequency.YEARLY
         }
 
-        // Определение категории
         val categoryPosition = binding.spinnerCategory.selectedItemPosition
         val categoryId = if (categoryPosition > 0 && categories.isNotEmpty()) {
             categories[categoryPosition - 1].categoryId
@@ -168,7 +148,6 @@ class AddSubscriptionFragment : Fragment() {
             null
         }
 
-        // Создание объекта подписки
         val subscription = Subscription(
             name = name,
             description = description,
@@ -180,13 +159,10 @@ class AddSubscriptionFragment : Fragment() {
             active = true
         )
 
-        // Сохранение в базу данных
         subscriptionViewModel.insert(subscription)
 
-        // Сообщение об успешном сохранении
         Toast.makeText(requireContext(), "Подписка добавлена", Toast.LENGTH_SHORT).show()
 
-        // Возвращаемся назад
         findNavController().popBackStack()
     }
 

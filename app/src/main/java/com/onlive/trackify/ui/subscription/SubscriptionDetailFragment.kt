@@ -1,7 +1,6 @@
 package com.onlive.trackify.ui.subscription
 
 import android.app.AlertDialog
-import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,6 +18,7 @@ import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.databinding.FragmentSubscriptionDetailBinding
 import com.onlive.trackify.ui.payment.PaymentAdapter
 import com.onlive.trackify.ui.payment.PaymentWithSubscriptionName
+import com.onlive.trackify.utils.DatePickerHelper
 import com.onlive.trackify.viewmodel.CategoryViewModel
 import com.onlive.trackify.viewmodel.PaymentViewModel
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
@@ -60,19 +60,14 @@ class SubscriptionDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Настройка RecyclerView для платежей
         setupPaymentsRecyclerView()
 
-        // Настройка выбора даты
         setupDatePickers()
 
-        // Настройка выбора категории
         setupCategorySpinner()
 
-        // Загрузка подписки по ID из аргументов
         loadSubscription()
 
-        // Обработчики кнопок
         binding.buttonSave.setOnClickListener {
             saveSubscription()
         }
@@ -98,46 +93,35 @@ class SubscriptionDetailFragment : Fragment() {
     }
 
     private fun setupDatePickers() {
-        // Формат для отображения даты
         val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale("ru"))
+        val datePickerHelper = DatePickerHelper(requireContext())
 
-        // Кнопка выбора начальной даты
         binding.buttonSelectStartDate.setOnClickListener {
-            val year = calendar.get(Calendar.YEAR)
-            val month = calendar.get(Calendar.MONTH)
-            val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-            DatePickerDialog(requireContext(), { _, selectedYear, selectedMonth, selectedDay ->
-                calendar.set(selectedYear, selectedMonth, selectedDay)
-                startDate = calendar.time
-                binding.buttonSelectStartDate.text = dateFormat.format(startDate)
-            }, year, month, day).show()
-        }
-
-        // Кнопка выбора конечной даты (или бессрочно)
-        binding.buttonSelectEndDate.setOnClickListener {
-            val year = calendar.get(Calendar.YEAR)
-            val month = calendar.get(Calendar.MONTH)
-            val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-            val dialog = DatePickerDialog(requireContext(), { _, selectedYear, selectedMonth, selectedDay ->
-                calendar.set(selectedYear, selectedMonth, selectedDay)
-                endDate = calendar.time
-                binding.buttonSelectEndDate.text = dateFormat.format(endDate!!)
-            }, year, month, day)
-
-            // Добавляем кнопку "Бессрочно"
-            dialog.setButton(DatePickerDialog.BUTTON_NEUTRAL, "Бессрочно") { _, _ ->
-                endDate = null
-                binding.buttonSelectEndDate.text = "Бессрочно"
+            datePickerHelper.showAdvancedDatePickerForSubscription(
+                initialDate = startDate,
+                allowNullDate = false
+            ) { selectedDate ->
+                selectedDate?.let {
+                    startDate = it
+                    binding.buttonSelectStartDate.text = dateFormat.format(startDate)
+                }
             }
-
-            dialog.show()
+        }
+        binding.buttonSelectEndDate.setOnClickListener {
+            datePickerHelper.showAdvancedDatePickerForSubscription(
+                initialDate = endDate ?: Calendar.getInstance().apply {
+                    time = startDate
+                    add(Calendar.YEAR, 1)
+                }.time,
+                allowNullDate = true
+            ) { selectedDate ->
+                endDate = selectedDate
+                binding.buttonSelectEndDate.text = selectedDate?.let { dateFormat.format(it) } ?: "Бессрочно"
+            }
         }
     }
 
     private fun setupCategorySpinner() {
-        // Создаем простой адаптер с пустым списком (пока)
         categoryAdapter = ArrayAdapter(
             requireContext(),
             android.R.layout.simple_spinner_item,
@@ -146,11 +130,9 @@ class SubscriptionDetailFragment : Fragment() {
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerCategory.adapter = categoryAdapter
 
-        // Наблюдаем за списком категорий
         categoryViewModel.allCategories.observe(viewLifecycleOwner) { categoriesList ->
             categories = categoriesList
 
-            // Обновляем адаптер с новыми данными
             val categoryNames = mutableListOf("Без категории")
             categoryNames.addAll(categoriesList.map { it.name })
 
@@ -162,7 +144,6 @@ class SubscriptionDetailFragment : Fragment() {
             categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             binding.spinnerCategory.adapter = categoryAdapter
 
-            // Если у нас уже есть подписка, выберем её категорию
             subscription?.let { sub ->
                 selectCategoryInSpinner(sub.categoryId)
             }
@@ -172,7 +153,6 @@ class SubscriptionDetailFragment : Fragment() {
     private fun loadSubscription() {
         val subscriptionId = args.subscriptionId
 
-        // Загрузка данных подписки
         subscriptionViewModel.getSubscriptionById(subscriptionId).observe(viewLifecycleOwner) { sub ->
             if (sub != null) {
                 subscription = sub
@@ -180,7 +160,6 @@ class SubscriptionDetailFragment : Fragment() {
             }
         }
 
-        // Загрузка платежей для этой подписки
         paymentViewModel.getPaymentsBySubscription(subscriptionId).observe(viewLifecycleOwner) { payments ->
             if (payments.isEmpty()) {
                 binding.textViewNoPayments.visibility = View.VISIBLE
@@ -189,7 +168,6 @@ class SubscriptionDetailFragment : Fragment() {
                 binding.textViewNoPayments.visibility = View.GONE
                 binding.recyclerViewPayments.visibility = View.VISIBLE
 
-                // Получаем название подписки
                 subscription?.let { sub ->
                     val paymentsWithName = payments.map { payment ->
                         PaymentWithSubscriptionName(payment, sub.name)
@@ -201,18 +179,15 @@ class SubscriptionDetailFragment : Fragment() {
     }
 
     private fun updateUI(subscription: Subscription) {
-        // Заполнение полей формы данными подписки
         binding.editTextName.setText(subscription.name)
         binding.editTextDescription.setText(subscription.description)
         binding.editTextPrice.setText(subscription.price.toString())
 
-        // Частота оплаты
         when (subscription.billingFrequency) {
             BillingFrequency.MONTHLY -> binding.radioButtonMonthly.isChecked = true
             BillingFrequency.YEARLY -> binding.radioButtonYearly.isChecked = true
         }
 
-        // Даты
         val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale("ru"))
 
         startDate = subscription.startDate
@@ -225,10 +200,8 @@ class SubscriptionDetailFragment : Fragment() {
             binding.buttonSelectEndDate.text = "Бессрочно"
         }
 
-        // Категория
         selectCategoryInSpinner(subscription.categoryId)
 
-        // Статус активности
         binding.switchActive.isChecked = subscription.active
     }
 
@@ -238,10 +211,8 @@ class SubscriptionDetailFragment : Fragment() {
             return
         }
 
-        // Ищем индекс категории в списке
         val index = categories.indexOfFirst { it.categoryId == categoryId }
         if (index != -1) {
-            // +1 потому что первый элемент - "Без категории"
             binding.spinnerCategory.setSelection(index + 1)
         } else {
             binding.spinnerCategory.setSelection(0)
@@ -249,7 +220,6 @@ class SubscriptionDetailFragment : Fragment() {
     }
 
     private fun saveSubscription() {
-        // Проверка обязательных полей
         val name = binding.editTextName.text.toString().trim()
         if (name.isEmpty()) {
             binding.editTextName.error = "Введите название"
@@ -262,7 +232,6 @@ class SubscriptionDetailFragment : Fragment() {
             return
         }
 
-        // Получение остальных данных
         val description = binding.editTextDescription.text.toString().trim().let {
             if (it.isEmpty()) null else it
         }
@@ -273,14 +242,12 @@ class SubscriptionDetailFragment : Fragment() {
             return
         }
 
-        // Определение частоты оплаты
         val billingFrequency = if (binding.radioButtonMonthly.isChecked) {
             BillingFrequency.MONTHLY
         } else {
             BillingFrequency.YEARLY
         }
 
-        // Определение категории
         val categoryPosition = binding.spinnerCategory.selectedItemPosition
         val categoryId = if (categoryPosition > 0 && categories.isNotEmpty()) {
             categories[categoryPosition - 1].categoryId
@@ -288,10 +255,8 @@ class SubscriptionDetailFragment : Fragment() {
             null
         }
 
-        // Активность подписки
         val isActive = binding.switchActive.isChecked
 
-        // Создание обновленного объекта подписки
         subscription?.let { sub ->
             val updatedSubscription = sub.copy(
                 name = name,
@@ -304,13 +269,10 @@ class SubscriptionDetailFragment : Fragment() {
                 active = isActive
             )
 
-            // Сохранение в базу данных
             subscriptionViewModel.update(updatedSubscription)
 
-            // Сообщение об успешном сохранении
             Toast.makeText(requireContext(), "Подписка обновлена", Toast.LENGTH_SHORT).show()
 
-            // Возвращаемся назад
             findNavController().popBackStack()
         }
     }

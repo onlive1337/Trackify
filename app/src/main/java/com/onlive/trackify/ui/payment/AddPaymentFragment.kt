@@ -1,6 +1,5 @@
 package com.onlive.trackify.ui.payment
 
-import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +13,7 @@ import androidx.navigation.fragment.navArgs
 import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.databinding.FragmentAddPaymentBinding
+import com.onlive.trackify.utils.DatePickerHelper
 import com.onlive.trackify.viewmodel.PaymentViewModel
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
 import java.text.SimpleDateFormat
@@ -57,14 +57,12 @@ class AddPaymentFragment : Fragment() {
             savePayment()
         }
 
-        // Проверяем, был ли передан ID подписки (отличный от -1)
         if (args.subscriptionId != -1L) {
             selectedSubscriptionId = args.subscriptionId
         }
     }
 
     private fun setupSubscriptionSpinner() {
-        // Инициализация адаптера с пустыми данными
         subscriptionAdapter = ArrayAdapter(
             requireContext(),
             android.R.layout.simple_spinner_item,
@@ -73,11 +71,9 @@ class AddPaymentFragment : Fragment() {
         subscriptionAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerSubscription.adapter = subscriptionAdapter
 
-        // Наблюдаем за списком подписок
         subscriptionViewModel.allActiveSubscriptions.observe(viewLifecycleOwner) { subs ->
             subscriptions = subs
 
-            // Обновляем адаптер с новыми данными
             val subscriptionNames = subs.map { it.name }
 
             subscriptionAdapter = ArrayAdapter(
@@ -88,7 +84,6 @@ class AddPaymentFragment : Fragment() {
             subscriptionAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             binding.spinnerSubscription.adapter = subscriptionAdapter
 
-            // Если был передан ID подписки, выберем её в спиннере
             selectedSubscriptionId?.let { id ->
                 selectSubscriptionInSpinner(id)
             }
@@ -96,28 +91,24 @@ class AddPaymentFragment : Fragment() {
     }
 
     private fun setupDatePicker() {
-        // Формат для отображения даты
         val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale("ru"))
+        val datePickerHelper = DatePickerHelper(requireContext())
 
-        // Установка текущей даты
         binding.buttonSelectDate.text = dateFormat.format(paymentDate)
-
-        // Настройка выбора даты
         binding.buttonSelectDate.setOnClickListener {
-            val year = calendar.get(Calendar.YEAR)
-            val month = calendar.get(Calendar.MONTH)
-            val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-            DatePickerDialog(requireContext(), { _, selectedYear, selectedMonth, selectedDay ->
-                calendar.set(selectedYear, selectedMonth, selectedDay)
-                paymentDate = calendar.time
-                binding.buttonSelectDate.text = dateFormat.format(paymentDate)
-            }, year, month, day).show()
+            datePickerHelper.showAdvancedDatePickerForSubscription(
+                initialDate = paymentDate,
+                allowNullDate = false
+            ) { selectedDate ->
+                selectedDate?.let {
+                    paymentDate = it
+                    binding.buttonSelectDate.text = dateFormat.format(paymentDate)
+                }
+            }
         }
     }
 
     private fun selectSubscriptionInSpinner(subscriptionId: Long) {
-        // Ищем индекс подписки в списке
         val index = subscriptions.indexOfFirst { it.subscriptionId == subscriptionId }
         if (index != -1) {
             binding.spinnerSubscription.setSelection(index)
@@ -125,13 +116,11 @@ class AddPaymentFragment : Fragment() {
     }
 
     private fun savePayment() {
-        // Проверка выбора подписки
         if (subscriptions.isEmpty() || binding.spinnerSubscription.selectedItemPosition == -1) {
             Toast.makeText(requireContext(), "Выберите подписку", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // Проверка ввода суммы
         val amountText = binding.editTextAmount.text.toString().trim()
         if (amountText.isEmpty()) {
             binding.editTextAmount.error = "Введите сумму"
@@ -144,16 +133,13 @@ class AddPaymentFragment : Fragment() {
             return
         }
 
-        // Получение ID выбранной подписки
         val position = binding.spinnerSubscription.selectedItemPosition
         val subscriptionId = subscriptions[position].subscriptionId
 
-        // Получение примечаний
         val notes = binding.editTextNotes.text.toString().trim().let {
             if (it.isEmpty()) null else it
         }
 
-        // Создание объекта платежа
         val payment = Payment(
             subscriptionId = subscriptionId,
             amount = amount,
@@ -161,13 +147,10 @@ class AddPaymentFragment : Fragment() {
             notes = notes
         )
 
-        // Сохранение в базу данных
         paymentViewModel.insert(payment)
 
-        // Сообщение об успешном сохранении
         Toast.makeText(requireContext(), "Платеж добавлен", Toast.LENGTH_SHORT).show()
 
-        // Возвращаемся назад
         findNavController().popBackStack()
     }
 

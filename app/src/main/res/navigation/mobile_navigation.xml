@@ -12,10 +12,18 @@
         tools:layout="@layout/fragment_subscription_list">
         <action
             android:id="@+id/action_navigation_subscriptions_to_addSubscriptionFragment"
-            app:destination="@id/addSubscriptionFragment" />
+            app:destination="@id/addSubscriptionFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_navigation_subscriptions_to_subscriptionDetailFragment"
-            app:destination="@id/subscriptionDetailFragment" />
+            app:destination="@id/subscriptionDetailFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -25,10 +33,18 @@
         tools:layout="@layout/fragment_payment_list">
         <action
             android:id="@+id/action_navigation_payments_to_addPaymentFragment"
-            app:destination="@id/addPaymentFragment" />
+            app:destination="@id/addPaymentFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_navigation_payments_to_bulkPaymentActionsFragment"
-            app:destination="@id/bulkPaymentActionsFragment" />
+            app:destination="@id/bulkPaymentActionsFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -44,13 +60,25 @@
         tools:layout="@layout/fragment_settings">
         <action
             android:id="@+id/action_navigation_settings_to_categoryListFragment"
-            app:destination="@id/categoryListFragment" />
+            app:destination="@id/categoryListFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_navigation_settings_to_categoryGroupListFragment"
-            app:destination="@id/categoryGroupListFragment" />
+            app:destination="@id/categoryGroupListFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_navigation_settings_to_notificationSettingsFragment"
-            app:destination="@id/notificationSettingsFragment" />
+            app:destination="@id/notificationSettingsFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -69,7 +97,11 @@
             app:argType="long" />
         <action
             android:id="@+id/action_subscriptionDetailFragment_to_addPaymentFragment"
-            app:destination="@id/addPaymentFragment" />
+            app:destination="@id/addPaymentFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -91,7 +123,11 @@
 
     <action
         android:id="@+id/action_navigation_payments_to_pendingPaymentsFragment"
-        app:destination="@id/pendingPaymentsFragment" />
+        app:destination="@id/pendingPaymentsFragment"
+        app:enterAnim="@anim/slide_in_right"
+        app:exitAnim="@anim/slide_out_left"
+        app:popEnterAnim="@anim/slide_in_left"
+        app:popExitAnim="@anim/slide_out_right" />
 
     <fragment
         android:id="@+id/upcomingPaymentsFragment"
@@ -107,11 +143,19 @@
 
     <action
         android:id="@+id/action_global_to_upcomingPaymentsFragment"
-        app:destination="@id/upcomingPaymentsFragment" />
+        app:destination="@id/upcomingPaymentsFragment"
+        app:enterAnim="@anim/slide_in_right"
+        app:exitAnim="@anim/slide_out_left"
+        app:popEnterAnim="@anim/slide_in_left"
+        app:popExitAnim="@anim/slide_out_right" />
 
     <action
         android:id="@+id/action_navigation_settings_to_dataManagementFragment"
-        app:destination="@id/dataManagementFragment" />
+        app:destination="@id/dataManagementFragment"
+        app:enterAnim="@anim/slide_in_right"
+        app:exitAnim="@anim/slide_out_left"
+        app:popEnterAnim="@anim/slide_in_left"
+        app:popExitAnim="@anim/slide_out_right" />
 
     <fragment
         android:id="@+id/categoryListFragment"
@@ -120,7 +164,11 @@
         tools:layout="@layout/fragment_category_list">
         <action
             android:id="@+id/action_categoryListFragmentToCategoryDetailFragment"
-            app:destination="@id/categoryDetailFragment" />
+            app:destination="@id/categoryDetailFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -140,10 +188,18 @@
         tools:layout="@layout/fragment_category_group_list">
         <action
             android:id="@+id/action_categoryGroupListFragmentToCategoryGroupDetailFragment"
-            app:destination="@id/categoryGroupDetailFragment" />
+            app:destination="@id/categoryGroupDetailFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_categoryGroupListFragment_to_categoryListFragment"
-            app:destination="@id/categoryListFragment" />
+            app:destination="@id/categoryListFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
