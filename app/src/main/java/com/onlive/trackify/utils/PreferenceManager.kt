@@ -8,6 +8,9 @@ class PreferenceManager(context: Context) {
         private const val PREFS_NAME = "trackify_preferences"
         private const val KEY_NOTIFICATIONS_ENABLED = "notifications_enabled"
         private const val KEY_REMINDER_DAYS = "reminder_days"
+        private const val KEY_NOTIFICATION_TIME = "notification_time_hour"
+        private const val KEY_NOTIFICATION_MINUTE = "notification_time_minute"
+        private const val KEY_NOTIFICATION_FREQUENCY = "notification_frequency"
     }
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -29,4 +32,37 @@ class PreferenceManager(context: Context) {
     fun setReminderDays(days: Set<Int>) {
         prefs.edit().putStringSet(KEY_REMINDER_DAYS, days.map { it.toString() }.toSet()).apply()
     }
+
+    fun getNotificationFrequency(): NotificationFrequency {
+        val value = prefs.getString(KEY_NOTIFICATION_FREQUENCY, NotificationFrequency.DAILY.name)
+        return try {
+            NotificationFrequency.valueOf(value ?: NotificationFrequency.DAILY.name)
+        } catch (e: IllegalArgumentException) {
+            NotificationFrequency.DAILY
+        }
+    }
+
+    fun setNotificationFrequency(frequency: NotificationFrequency) {
+        prefs.edit().putString(KEY_NOTIFICATION_FREQUENCY, frequency.name).apply()
+    }
+
+    fun getNotificationTime(): Pair<Int, Int> {
+        val hour = prefs.getInt(KEY_NOTIFICATION_TIME, 9)
+        val minute = prefs.getInt(KEY_NOTIFICATION_MINUTE, 0)
+        return Pair(hour, minute)
+    }
+
+    fun setNotificationTime(hour: Int, minute: Int) {
+        prefs.edit()
+            .putInt(KEY_NOTIFICATION_TIME, hour)
+            .putInt(KEY_NOTIFICATION_MINUTE, minute)
+            .apply()
+    }
+}
+
+enum class NotificationFrequency {
+    DAILY,
+    WEEKLY,
+    MONTHLY,
+    CUSTOM
 }

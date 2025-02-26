@@ -9,6 +9,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.onlive.trackify.data.database.AppDatabase
 import com.onlive.trackify.data.model.BillingFrequency
+import com.onlive.trackify.utils.NotificationFrequency
 import com.onlive.trackify.utils.NotificationHelper
 import com.onlive.trackify.utils.PreferenceManager
 import kotlinx.coroutines.Dispatchers
@@ -46,7 +47,24 @@ class SubscriptionReminderWorker(
             val activeSubscriptions = subscriptionDao.getActiveSubscriptionsSync()
 
             val today = Calendar.getInstance()
-            val reminderDays = preferenceManager.getReminderDays()
+            var reminderDays = preferenceManager.getReminderDays()
+
+            val inputDays = inputData.getIntArray("reminder_days")
+            if (inputDays != null && inputDays.isNotEmpty()) {
+                reminderDays = inputDays.toSet()
+            }
+
+            if (preferenceManager.getNotificationFrequency() == NotificationFrequency.WEEKLY) {
+                if (today.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
+                    return@withContext Result.success()
+                }
+            }
+
+            if (preferenceManager.getNotificationFrequency() == NotificationFrequency.MONTHLY) {
+                if (today.get(Calendar.DAY_OF_MONTH) != 1) {
+                    return@withContext Result.success()
+                }
+            }
 
             for (subscription in activeSubscriptions) {
                 val nextPaymentDate = calculateNextPaymentDate(subscription.startDate, subscription.billingFrequency)

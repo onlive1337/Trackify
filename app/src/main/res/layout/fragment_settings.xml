@@ -148,6 +148,15 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
                 </LinearLayout>
+
+                <Button
+                    android:id="@+id/buttonNotificationSettings"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Настройки уведомлений"
+                    android:drawableStart="@drawable/ic_settings"
+                    android:drawablePadding="8dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

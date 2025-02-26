@@ -2,6 +2,9 @@ package com.onlive.trackify.ui.payment
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
@@ -40,6 +43,10 @@ class PaymentListFragment : Fragment() {
 
         binding.cardPendingPayments.setOnClickListener {
             findNavController().navigate(R.id.action_navigation_payments_to_pendingPaymentsFragment)
+        }
+
+        binding.buttonBulkActions.setOnClickListener {
+            findNavController().navigate(R.id.action_navigation_payments_to_bulkPaymentActionsFragment)
         }
 
         setupRecyclerView()

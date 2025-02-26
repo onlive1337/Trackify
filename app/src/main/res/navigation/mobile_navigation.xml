@@ -26,6 +26,9 @@
         <action
             android:id="@+id/action_navigation_payments_to_addPaymentFragment"
             app:destination="@id/addPaymentFragment" />
+        <action
+            android:id="@+id/action_navigation_payments_to_bulkPaymentActionsFragment"
+            app:destination="@id/bulkPaymentActionsFragment" />
     </fragment>
 
     <fragment
@@ -42,6 +45,12 @@
         <action
             android:id="@+id/action_navigation_settings_to_categoryListFragment"
             app:destination="@id/categoryListFragment" />
+        <action
+            android:id="@+id/action_navigation_settings_to_categoryGroupListFragment"
+            app:destination="@id/categoryGroupListFragment" />
+        <action
+            android:id="@+id/action_navigation_settings_to_notificationSettingsFragment"
+            app:destination="@id/notificationSettingsFragment" />
     </fragment>
 
     <fragment
@@ -123,5 +132,40 @@
             android:name="categoryId"
             app:argType="long" />
     </fragment>
+
+    <fragment
+        android:id="@+id/categoryGroupListFragment"
+        android:name="com.onlive.trackify.ui.category.CategoryGroupListFragment"
+        android:label="Группы категорий"
+        tools:layout="@layout/fragment_category_group_list">
+        <action
+            android:id="@+id/action_categoryGroupListFragmentToCategoryGroupDetailFragment"
+            app:destination="@id/categoryGroupDetailFragment" />
+        <action
+            android:id="@+id/action_categoryGroupListFragment_to_categoryListFragment"
+            app:destination="@id/categoryListFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/categoryGroupDetailFragment"
+        android:name="com.onlive.trackify.ui.category.CategoryGroupDetailFragment"
+        android:label="Редактирование группы"
+        tools:layout="@layout/fragment_category_group_detail">
+        <argument
+            android:name="groupId"
+            app:argType="long" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/notificationSettingsFragment"
+        android:name="com.onlive.trackify.ui.settings.NotificationSettingsFragment"
+        android:label="Настройки уведомлений"
+        tools:layout="@layout/fragment_notification_settings" />
+
+    <fragment
+        android:id="@+id/bulkPaymentActionsFragment"
+        android:name="com.onlive.trackify.ui.payment.BulkPaymentActionsFragment"
+        android:label="Групповые операции"
+        tools:layout="@layout/fragment_bulk_payment_actions" />
 
 </navigation>

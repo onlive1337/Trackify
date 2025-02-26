@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.onlive.trackify.R
 import com.onlive.trackify.databinding.FragmentSettingsBinding
+import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.NotificationTester
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.ThemeManager
@@ -29,6 +30,7 @@ class SettingsFragment : Fragment() {
     private lateinit var themeManager: ThemeManager
     private lateinit var preferenceManager: PreferenceManager
     private lateinit var notificationTester: NotificationTester
+    private lateinit var notificationScheduler: NotificationScheduler
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -36,6 +38,7 @@ class SettingsFragment : Fragment() {
         if (isGranted) {
             binding.switchNotifications.isChecked = true
             preferenceManager.setNotificationsEnabled(true)
+            notificationScheduler.rescheduleNotifications()
             Toast.makeText(
                 requireContext(),
                 getString(R.string.notifications_enabled),
@@ -67,6 +70,7 @@ class SettingsFragment : Fragment() {
         themeManager = ThemeManager(requireContext())
         preferenceManager = PreferenceManager(requireContext())
         notificationTester = NotificationTester(requireContext())
+        notificationScheduler = NotificationScheduler(requireContext())
 
         setupThemeOptions()
         setupNotificationOptions()
@@ -78,6 +82,10 @@ class SettingsFragment : Fragment() {
 
         binding.buttonDataManagement.setOnClickListener {
             findNavController().navigate(R.id.action_navigation_settings_to_dataManagementFragment)
+        }
+
+        binding.buttonNotificationSettings.setOnClickListener {
+            findNavController().navigate(R.id.action_navigation_settings_to_notificationSettingsFragment)
         }
     }
 
@@ -110,6 +118,7 @@ class SettingsFragment : Fragment() {
                             Manifest.permission.POST_NOTIFICATIONS
                         ) == PackageManager.PERMISSION_GRANTED -> {
                             preferenceManager.setNotificationsEnabled(true)
+                            notificationScheduler.rescheduleNotifications()
                             Toast.makeText(
                                 requireContext(),
                                 getString(R.string.notifications_enabled),
@@ -130,6 +139,7 @@ class SettingsFragment : Fragment() {
                     }
                 } else {
                     preferenceManager.setNotificationsEnabled(true)
+                    notificationScheduler.rescheduleNotifications()
                     Toast.makeText(
                         requireContext(),
                         getString(R.string.notifications_enabled),
@@ -138,6 +148,7 @@ class SettingsFragment : Fragment() {
                 }
             } else {
                 preferenceManager.setNotificationsEnabled(false)
+                notificationScheduler.rescheduleNotifications()
                 Toast.makeText(
                     requireContext(),
                     getString(R.string.notifications_disabled),

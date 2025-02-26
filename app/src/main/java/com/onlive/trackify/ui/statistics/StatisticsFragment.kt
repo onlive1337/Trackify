@@ -46,17 +46,11 @@ class StatisticsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        statisticsViewModel.calculateMonthlySpending()
-        statisticsViewModel.calculateYearlySpending()
-        statisticsViewModel.calculateSpendingByCategory()
-        statisticsViewModel.calculateMonthlySpendingHistory()
-        statisticsViewModel.calculateSpendingBySubscriptionType()
-
-        observeStatistics()
-
         setupPieChart()
         setupBarChart()
         setupTypeChart()
+
+        observeStatistics()
     }
 
     private fun isUsingNightMode(): Boolean {
