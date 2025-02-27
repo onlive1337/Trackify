@@ -20,29 +20,26 @@ object NavigationUtils {
     }
 
     fun safePopBackStack(navController: NavController, @IdRes destinationId: Int, inclusive: Boolean): Boolean {
-        val backStack = navController.currentBackStack.value
-
-        val destinationExists = backStack.any { it.destination.id == destinationId }
-
-        if (destinationExists) {
+        return try {
+            navController.getBackStackEntry(destinationId)
             navController.popBackStack(destinationId, inclusive)
-            return true
+            true
+        } catch (e: Exception) {
+            false
         }
-
-        return false
     }
 
     fun handleBottomNavItemSelected(navController: NavController, currentTabId: Int, selectedTabId: Int): Boolean {
         if (selectedTabId == currentTabId) {
-            val backStackSize = navController.currentBackStack.value.size
-
-            if (backStackSize > 2) {
-                if (!safePopBackStack(navController, selectedTabId, false)) {
+            try {
+                navController.getBackStackEntry(selectedTabId)
+                if (!navController.popBackStack(selectedTabId, false)) {
                     safeNavigate(navController, selectedTabId)
                 }
-                return true
+            } catch (e: Exception) {
+                safeNavigate(navController, selectedTabId)
             }
-            return false
+            return true
         }
 
         return safeNavigate(navController, selectedTabId)

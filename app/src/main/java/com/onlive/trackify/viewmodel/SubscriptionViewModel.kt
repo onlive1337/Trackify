@@ -3,6 +3,7 @@ package com.onlive.trackify.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.onlive.trackify.TrackifyApplication
@@ -113,7 +114,7 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
-    fun getSubscriptionById(id: Long): LiveData<Subscription> {
+    fun getSubscriptionById(id: Long): MediatorLiveData<Subscription?> {
         return repository.getSubscriptionById(id)
     }
 

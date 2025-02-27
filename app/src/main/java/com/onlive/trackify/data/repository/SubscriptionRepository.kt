@@ -84,8 +84,8 @@ class SubscriptionRepository(
         }
     }
 
-    fun getSubscriptionById(id: Long): LiveData<Subscription> {
-        val result = MediatorLiveData<Subscription>()
+    fun getSubscriptionById(id: Long): MediatorLiveData<Subscription?> {
+        val result = MediatorLiveData<Subscription?>()
         val subscription = subscriptionDao.getSubscriptionById(id)
         val categories = categoryDao.getAllCategories()
 
