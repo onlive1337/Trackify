@@ -38,6 +38,7 @@
     <string name="yearly_spending">Ежегодные расходы</string>
     <string name="spending_by_category">Расходы по категориям</string>
     <string name="spending_over_time">Динамика расходов</string>
+    <string name="subscription_types">Расходы по типам подписок</string>
 
     <string name="theme_settings">Настройки темы</string>
     <string name="system_theme">Системная тема</string>

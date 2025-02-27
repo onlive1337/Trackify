@@ -149,18 +149,7 @@ class SettingsFragment : Fragment() {
                 ).show()
             }
         }
-
-        setupDynamicColorsInfo()
-    }
-
-    private fun setupDynamicColorsInfo() {
-        if (themeManager.supportsDynamicColors()) {
-            binding.textViewDynamicColorsStatus.text = getString(R.string.dynamic_colors_enabled)
-            binding.imageViewDynamicColorsStatus.setImageResource(R.drawable.ic_check_circle)
-        } else {
-            binding.textViewDynamicColorsStatus.text = getString(R.string.dynamic_colors_unavailable)
-            binding.imageViewDynamicColorsStatus.setImageResource(R.drawable.ic_info)
-        }
+        
     }
 
     override fun onDestroyView() {

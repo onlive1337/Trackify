@@ -12,10 +12,8 @@ import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.databinding.FragmentUpcomingPaymentsBinding
 import com.onlive.trackify.viewmodel.OverviewViewModel
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
-import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
-import java.util.Locale
 
 class UpcomingPaymentsFragment : Fragment() {
 

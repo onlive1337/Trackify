@@ -2,7 +2,6 @@ package com.onlive.trackify.data.repository
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.MutableLiveData
 import com.onlive.trackify.data.cache.CacheService
 import com.onlive.trackify.data.database.CategoryDao
 import com.onlive.trackify.data.database.SubscriptionDao
@@ -157,7 +156,7 @@ class SubscriptionRepository(
 
     suspend fun getActiveSubscriptionsSync(): Result<List<Subscription>> = withContext(Dispatchers.IO) {
         return@withContext try {
-            val cachedData = cacheService.getList<Subscription>("active_subscriptions")
+            val cachedData: List<Subscription>? = cacheService.getList("active_subscriptions")
             if (cachedData != null) {
                 return@withContext Result.Success(cachedData)
             }
@@ -202,7 +201,7 @@ class SubscriptionRepository(
         return@withContext try {
             val cacheKey = "active_subscriptions_page_${limit}_${offset}"
 
-            val cachedData = cacheService.getList<Subscription>(cacheKey)
+            val cachedData: List<Subscription>? = cacheService.getList(cacheKey)
             if (cachedData != null) {
                 return@withContext Result.Success(cachedData)
             }

@@ -1,6 +1,5 @@
 package com.onlive.trackify.ui.statistics
 
-import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,24 +9,18 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.github.mikephil.charting.animation.Easing
-import com.github.mikephil.charting.components.Legend
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
-import com.github.mikephil.charting.data.PieData
-import com.github.mikephil.charting.data.PieDataSet
-import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.formatter.ValueFormatter
-import com.github.mikephil.charting.utils.ColorTemplate
 import com.onlive.trackify.R
 import com.onlive.trackify.databinding.FragmentStatisticsBinding
 import com.onlive.trackify.viewmodel.StatisticsViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -37,6 +30,12 @@ class StatisticsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val statisticsViewModel: StatisticsViewModel by viewModels()
+
+    private lateinit var categoryLegendAdapter: CategoryLegendAdapter
+    private lateinit var typeLegendAdapter: TypeLegendAdapter
+    private lateinit var donutChartCategory: DonutChartView
+    private lateinit var donutChartType: DonutChartView
+    private lateinit var barChart: BarChart
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,22 +49,120 @@ class StatisticsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupPieChart()
-        setupBarChart()
+        setupCategoryChart()
+        setupMonthlyBarChart()
         setupTypeChart()
+        setupAdapters()
 
         showLoadingState(true)
-
         observeStatistics()
+    }
+
+    private fun setupAdapters() {
+        categoryLegendAdapter = CategoryLegendAdapter()
+        binding.recyclerViewCategoryLegend.apply {
+            adapter = categoryLegendAdapter
+            layoutManager = LinearLayoutManager(requireContext())
+            isNestedScrollingEnabled = false
+        }
+
+        typeLegendAdapter = TypeLegendAdapter()
+        binding.recyclerViewTypeLegend.apply {
+            adapter = typeLegendAdapter
+            layoutManager = LinearLayoutManager(requireContext())
+            isNestedScrollingEnabled = false
+        }
+    }
+
+    private fun setupCategoryChart() {
+        donutChartCategory = DonutChartView(requireContext())
+        binding.categoryChartContainer.addView(donutChartCategory)
+
+        val layoutParams = donutChartCategory.layoutParams as ViewGroup.LayoutParams
+        layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
+        layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+        donutChartCategory.layoutParams = layoutParams
+    }
+
+    private fun setupTypeChart() {
+        donutChartType = DonutChartView(requireContext())
+        binding.typeChartContainer.addView(donutChartType)
+
+        val layoutParams = donutChartType.layoutParams as ViewGroup.LayoutParams
+        layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
+        layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+        donutChartType.layoutParams = layoutParams
+    }
+
+    private fun setupMonthlyBarChart() {
+        barChart = BarChart(requireContext())
+        binding.monthlyChartContainer.addView(barChart)
+
+        styleBarChart()
+    }
+
+    private fun styleBarChart() {
+        val isNightMode = (resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
+                android.content.res.Configuration.UI_MODE_NIGHT_YES
+
+        val textColor = if (isNightMode) Color.WHITE else Color.BLACK
+        val outlineColor = ContextCompat.getColor(requireContext(), if (isNightMode)
+            R.color.md_theme_dark_outline else R.color.md_theme_light_outline)
+        val primaryColor = ContextCompat.getColor(requireContext(), if (isNightMode)
+            R.color.md_theme_dark_primary else R.color.md_theme_light_primary)
+
+        barChart.apply {
+            description.isEnabled = false
+            setDrawGridBackground(false)
+            setDrawBarShadow(false)
+            setDrawValueAboveBar(true)
+            setPinchZoom(false)
+            isDoubleTapToZoomEnabled = false
+            setScaleEnabled(false)
+            setExtraOffsets(10f, 20f, 10f, 10f)
+
+            isHighlightPerTapEnabled = false
+            setDrawMarkers(false)
+
+            axisLeft.apply {
+                setDrawGridLines(true)
+                gridColor = outlineColor
+                setDrawAxisLine(false)
+                granularity = 1f
+                axisMinimum = 0f
+                setTextColor(textColor)
+                textSize = 10f
+                valueFormatter = object : ValueFormatter() {
+                    override fun getFormattedValue(value: Float): String {
+                        return formatCurrency(value.toDouble())
+                    }
+                }
+                setLabelCount(5, true)
+            }
+
+            axisRight.isEnabled = false
+
+            xAxis.apply {
+                position = XAxis.XAxisPosition.BOTTOM
+                setDrawGridLines(false)
+                granularity = 1f
+                setDrawAxisLine(true)
+                axisLineColor = outlineColor
+                setTextColor(textColor)
+                textSize = 10f
+            }
+
+            legend.isEnabled = false
+
+            setNoDataTextColor(textColor)
+            setNoDataText("Нет данных для отображения")
+            animateY(800)
+        }
     }
 
     private fun showLoadingState(isLoading: Boolean) {
         binding.loadingIndicator.visibility = if (isLoading) View.VISIBLE else View.GONE
         binding.statisticsContent.visibility = if (isLoading) View.GONE else View.VISIBLE
-    }
-
-    private fun isUsingNightMode(): Boolean {
-        return resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
     }
 
     private fun observeStatistics() {
@@ -79,7 +176,7 @@ class StatisticsFragment : Fragment() {
 
         statisticsViewModel.spendingByCategory.observe(viewLifecycleOwner) { categorySpending ->
             lifecycleScope.launch {
-                updatePieChart(categorySpending)
+                updateCategoryChart(categorySpending)
             }
         }
 
@@ -98,214 +195,57 @@ class StatisticsFragment : Fragment() {
         showLoadingState(false)
     }
 
-    private fun setupPieChart() {
-        val isNightMode = isUsingNightMode()
-        val textColor = if (isNightMode) Color.WHITE else Color.BLACK
-
-        binding.pieChartCategories.apply {
-            description.isEnabled = false
-            isDrawHoleEnabled = true
-            setHoleColor(Color.TRANSPARENT)
-            holeRadius = 60f
-            transparentCircleRadius = 65f
-            setDrawEntryLabels(false)
-            setDrawCenterText(true)
-            centerText = "Расходы\nпо категориям"
-            setCenterTextSize(14f)
-            setCenterTextColor(textColor)
-            setExtraOffsets(20f, 20f, 20f, 20f)
-
-            isHighlightPerTapEnabled = false
-            setDrawMarkers(false)
-
-            legend.apply {
-                verticalAlignment = Legend.LegendVerticalAlignment.CENTER
-                horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT
-                orientation = Legend.LegendOrientation.VERTICAL
-                setDrawInside(false)
-                yOffset = 0f
-                xOffset = 10f
-                yEntrySpace = 10f
-                isWordWrapEnabled = true
-                textSize = 12f
-                setTextColor(textColor)
-                setMaxSizePercent(0.7f)
-            }
-
-            setNoDataTextColor(textColor)
-            setNoDataText("Нет данных для отображения")
-        }
-    }
-
-    private fun setupBarChart() {
-        val isNightMode = isUsingNightMode()
-        val textColor = if (isNightMode) Color.WHITE else Color.BLACK
-
-        binding.barChartMonthly.apply {
-            description.isEnabled = false
-            setDrawGridBackground(false)
-            setDrawBarShadow(false)
-            setDrawValueAboveBar(true)
-            setPinchZoom(false)
-            isDoubleTapToZoomEnabled = false
-            setScaleEnabled(false)
-            setExtraOffsets(10f, 10f, 10f, 10f)
-
-            isHighlightPerTapEnabled = false
-            setDrawMarkers(false)
-
-            axisLeft.apply {
-                setDrawGridLines(false)
-                setDrawAxisLine(false)
-                granularity = 1f
-                axisMinimum = 0f
-                setTextColor(textColor)
-                valueFormatter = object : ValueFormatter() {
-                    override fun getFormattedValue(value: Float): String {
-                        return formatCurrency(value.toDouble())
-                    }
-                }
-                setLabelCount(5, true)
-            }
-
-            axisRight.isEnabled = false
-
-            xAxis.apply {
-                position = XAxis.XAxisPosition.BOTTOM
-                setDrawGridLines(false)
-                granularity = 1f
-                setDrawAxisLine(true)
-                setTextColor(textColor)
-            }
-
-            animateY(800)
-
-            legend.apply {
-                isEnabled = false
-                setTextColor(textColor)
-            }
-
-            setNoDataTextColor(textColor)
-            setNoDataText("Нет данных для отображения")
-        }
-    }
-
-    private fun setupTypeChart() {
-        val isNightMode = isUsingNightMode()
-        val textColor = if (isNightMode) Color.WHITE else Color.BLACK
-
-        binding.pieChartTypes.apply {
-            description.isEnabled = false
-            isDrawHoleEnabled = true
-            setHoleColor(Color.TRANSPARENT)
-            holeRadius = 60f
-            transparentCircleRadius = 65f
-            setDrawEntryLabels(false)
-            setDrawCenterText(true)
-            centerText = "Расходы\nпо типам"
-            setCenterTextSize(14f)
-            setCenterTextColor(textColor)
-            setExtraOffsets(20f, 20f, 20f, 20f)
-
-            isHighlightPerTapEnabled = false
-            setDrawMarkers(false)
-
-            legend.apply {
-                verticalAlignment = Legend.LegendVerticalAlignment.CENTER
-                horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT
-                orientation = Legend.LegendOrientation.VERTICAL
-                setDrawInside(false)
-                yOffset = 0f
-                xOffset = 10f
-                yEntrySpace = 10f
-                isWordWrapEnabled = true
-                setTextColor(textColor)
-            }
-
-            animateY(800, Easing.EaseInOutQuad)
-
-            setNoDataTextColor(textColor)
-            setNoDataText("Нет данных для отображения")
-        }
-    }
-
-    private suspend fun updatePieChart(categorySpending: List<StatisticsViewModel.CategorySpending>) {
-        val textColor = if (isUsingNightMode()) Color.WHITE else Color.BLACK
-
+    private fun updateCategoryChart(categorySpending: List<StatisticsViewModel.CategorySpending>) {
         if (categorySpending.isEmpty()) {
-            withContext(Dispatchers.Main) {
-                binding.pieChartCategories.setNoDataText("Нет данных для отображения")
-                binding.pieChartCategories.setNoDataTextColor(textColor)
-                binding.pieChartCategories.invalidate()
-            }
+            binding.cardCategorySpending.visibility = View.GONE
             return
         }
 
-        val entries = mutableListOf<PieEntry>()
-        val colors = mutableListOf<Int>()
+        binding.cardCategorySpending.visibility = View.VISIBLE
+        val totalAmount = categorySpending.sumOf { it.amount }
 
-        val limitedData = if (categorySpending.size > 6) {
-            val topCategories = categorySpending.take(5)
-            val otherAmount = categorySpending.drop(5).sumOf { it.amount }
-
-            if (otherAmount > 0) {
-                topCategories + StatisticsViewModel.CategorySpending(
-                    categoryId = null,
-                    categoryName = "Другие",
-                    colorCode = "#808080",
-                    amount = otherAmount
-                )
-            } else {
-                topCategories
-            }
-        } else {
-            categorySpending
+        val chartItems = categorySpending.map {
+            DonutChartView.ChartItem(it.amount, it.colorCode)
         }
 
-        for (category in limitedData) {
-            entries.add(PieEntry(category.amount.toFloat(), category.categoryName))
-            try {
-                colors.add(Color.parseColor(category.colorCode))
-            } catch (e: Exception) {
-                colors.add(ColorTemplate.PASTEL_COLORS[limitedData.indexOf(category) % ColorTemplate.PASTEL_COLORS.size])
-            }
-        }
+        donutChartCategory.setData(
+            items = chartItems,
+            centerText = formatCurrency(totalAmount),
+            centerSubText = "всего"
+        )
 
-        val dataSet = PieDataSet(entries, "Категории").apply {
-            setDrawIcons(false)
-            sliceSpace = 3f
-            selectionShift = 5f
-            setColors(colors)
-        }
-
-        val data = PieData(dataSet).apply {
-            setValueFormatter(object : ValueFormatter() {
-                override fun getFormattedValue(value: Float): String {
-                    return formatCurrency(value.toDouble())
-                }
-            })
-            setValueTextSize(12f)
-            setValueTextColor(Color.WHITE)
-        }
-
-        withContext(Dispatchers.Main) {
-            binding.pieChartCategories.data = data
-            binding.pieChartCategories.highlightValues(null)
-            binding.pieChartCategories.invalidate()
-        }
+        categoryLegendAdapter.submitData(categorySpending, totalAmount)
     }
 
-    private suspend fun updateBarChart(monthlyData: List<StatisticsViewModel.MonthlySpending>) {
-        val textColor = if (isUsingNightMode()) Color.WHITE else Color.BLACK
-
-        if (monthlyData.isEmpty()) {
-            withContext(Dispatchers.Main) {
-                binding.barChartMonthly.setNoDataText("Нет данных для отображения")
-                binding.barChartMonthly.setNoDataTextColor(textColor)
-                binding.barChartMonthly.invalidate()
-            }
+    private fun updateTypeChart(typeSpending: List<StatisticsViewModel.SubscriptionTypeSpending>) {
+        if (typeSpending.isEmpty()) {
+            binding.cardSubscriptionTypes.visibility = View.GONE
             return
         }
+
+        binding.cardSubscriptionTypes.visibility = View.VISIBLE
+        val totalAmount = typeSpending.sumOf { it.amount }
+
+        val chartItems = typeSpending.map {
+            DonutChartView.ChartItem(it.amount, it.colorCode)
+        }
+
+        donutChartType.setData(
+            items = chartItems,
+            centerText = formatCurrency(totalAmount),
+            centerSubText = "в месяц"
+        )
+
+        typeLegendAdapter.submitData(typeSpending, totalAmount)
+    }
+
+    private fun updateBarChart(monthlyData: List<StatisticsViewModel.MonthlySpending>) {
+        if (monthlyData.isEmpty()) {
+            binding.cardMonthlyHistory.visibility = View.GONE
+            return
+        }
+
+        binding.cardMonthlyHistory.visibility = View.VISIBLE
 
         val entries = ArrayList<BarEntry>()
         val labels = ArrayList<String>()
@@ -315,82 +255,42 @@ class StatisticsFragment : Fragment() {
             labels.add(monthlyData[i].month)
         }
 
+        val isNightMode = (resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
+                android.content.res.Configuration.UI_MODE_NIGHT_YES
+        val primaryColor = ContextCompat.getColor(requireContext(), if (isNightMode)
+            R.color.md_theme_dark_primary else R.color.md_theme_light_primary)
+        val textColor = if (isNightMode) Color.WHITE else Color.BLACK
+
         val dataSet = BarDataSet(entries, "Расходы по месяцам").apply {
-            color = ContextCompat.getColor(requireContext(), R.color.md_theme_light_primary)
+            color = primaryColor
             valueTextColor = textColor
             valueTextSize = 12f
             valueFormatter = object : ValueFormatter() {
                 override fun getFormattedValue(value: Float): String {
-                    return formatCurrency(value.toDouble())
+                    return formatCurrency(value.toDouble(), false)
                 }
             }
         }
 
         val barData = BarData(dataSet).apply {
-            barWidth = 0.5f
+            barWidth = 0.7f
         }
 
-        withContext(Dispatchers.Main) {
-            binding.barChartMonthly.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
-            binding.barChartMonthly.data = barData
-            binding.barChartMonthly.invalidate()
-        }
+        barChart.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
+        barChart.data = barData
+        barChart.invalidate()
     }
 
-    private suspend fun updateTypeChart(typeData: List<StatisticsViewModel.SubscriptionTypeSpending>) {
-        val textColor = if (isUsingNightMode()) Color.WHITE else Color.BLACK
-
-        if (typeData.isEmpty()) {
-            withContext(Dispatchers.Main) {
-                binding.pieChartTypes.setNoDataText("Нет данных для отображения")
-                binding.pieChartTypes.setNoDataTextColor(textColor)
-                binding.pieChartTypes.invalidate()
-            }
-            return
-        }
-
-        val entries = mutableListOf<PieEntry>()
-        val colors = mutableListOf<Int>()
-
-        for (type in typeData) {
-            if (type.amount > 0) {
-                entries.add(PieEntry(type.amount.toFloat(), type.type))
-                try {
-                    colors.add(Color.parseColor(type.colorCode))
-                } catch (e: Exception) {
-                    colors.add(ColorTemplate.PASTEL_COLORS[typeData.indexOf(type) % ColorTemplate.PASTEL_COLORS.size])
-                }
-            }
-        }
-
-        val dataSet = PieDataSet(entries, "Типы подписок").apply {
-            setDrawIcons(false)
-            sliceSpace = 3f
-            selectionShift = 5f
-            setColors(colors)
-        }
-
-        val data = PieData(dataSet).apply {
-            setValueFormatter(object : ValueFormatter() {
-                override fun getFormattedValue(value: Float): String {
-                    return formatCurrency(value.toDouble())
-                }
-            })
-            setValueTextSize(12f)
-            setValueTextColor(Color.WHITE)
-        }
-
-        withContext(Dispatchers.Main) {
-            binding.pieChartTypes.data = data
-            binding.pieChartTypes.highlightValues(null)
-            binding.pieChartTypes.invalidate()
-        }
-    }
-
-    private fun formatCurrency(amount: Double): String {
+    private fun formatCurrency(amount: Double, includeSymbol: Boolean = true): String {
         val format = NumberFormat.getCurrencyInstance(Locale("ru", "RU"))
         format.maximumFractionDigits = 0
-        return format.format(amount).replace(",00", "")
+        val formatted = format.format(amount)
+
+        return if (includeSymbol) {
+            formatted
+        } else {
+            formatted.replace("₽", "").trim()
+        }
     }
 
     override fun onDestroyView() {

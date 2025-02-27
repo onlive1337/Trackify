@@ -18,7 +18,9 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <!-- Summary Cards -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardSummary"
                 style="@style/Widget.Material3.CardView.Elevated"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -43,15 +45,17 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/monthly_spending"
-                            android:textSize="16sp" />
+                            android:textSize="16sp"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
 
                         <TextView
                             android:id="@+id/textViewMonthlySpending"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:textSize="20sp"
+                            android:textSize="24sp"
                             android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurface"
                             tools:text="₽2,599" />
 
                     </LinearLayout>
@@ -73,22 +77,26 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/yearly_spending"
-                            android:textSize="16sp" />
+                            android:textSize="16sp"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
 
                         <TextView
                             android:id="@+id/textViewYearlySpending"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:textSize="20sp"
+                            android:textSize="24sp"
                             android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurface"
                             tools:text="₽31,188" />
 
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Category Spending Card -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardCategorySpending"
                 style="@style/Widget.Material3.CardView.Elevated"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -106,19 +114,35 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/spending_by_category"
-                        android:textSize="16sp"
+                        android:textSize="20sp"
+                        android:textColor="?attr/colorOnSurface"
                         android:textStyle="bold" />
 
-                    <com.github.mikephil.charting.charts.PieChart
-                        android:id="@+id/pieChartCategories"
+                    <!-- Stats container -->
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/categoryChartContainer"
                         android:layout_width="match_parent"
-                        android:layout_height="280dp"
-                        android:layout_marginTop="8dp" />
+                        android:layout_height="300dp"
+                        android:layout_marginTop="16dp">
+
+                        <!-- Chart will be added dynamically in code -->
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <!-- Category Legend RecyclerView -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerViewCategoryLegend"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:nestedScrollingEnabled="false" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Monthly Spending History Card -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardMonthlyHistory"
                 style="@style/Widget.Material3.CardView.Elevated"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -136,19 +160,23 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/spending_over_time"
-                        android:textSize="16sp"
+                        android:textSize="20sp"
+                        android:textColor="?attr/colorOnSurface"
                         android:textStyle="bold" />
 
-                    <com.github.mikephil.charting.charts.BarChart
-                        android:id="@+id/barChartMonthly"
+                    <!-- Bar chart container -->
+                    <FrameLayout
+                        android:id="@+id/monthlyChartContainer"
                         android:layout_width="match_parent"
-                        android:layout_height="280dp"
-                        android:layout_marginTop="8dp" />
+                        android:layout_height="300dp"
+                        android:layout_marginTop="16dp" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Subscription Types Card -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardSubscriptionTypes"
                 style="@style/Widget.Material3.CardView.Elevated"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -165,20 +193,30 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Расходы по типам подписок"
-                        android:textSize="16sp"
+                        android:textSize="20sp"
+                        android:textColor="?attr/colorOnSurface"
                         android:textStyle="bold" />
 
-                    <com.github.mikephil.charting.charts.PieChart
-                        android:id="@+id/pieChartTypes"
+                    <!-- Type distribution container -->
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/typeChartContainer"
                         android:layout_width="match_parent"
-                        android:layout_height="280dp"
-                        android:layout_marginTop="8dp" />
+                        android:layout_height="300dp"
+                        android:layout_marginTop="16dp" />
 
+                    <!-- Type Legend RecyclerView -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerViewTypeLegend"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:nestedScrollingEnabled="false" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
 
+        <!-- Loading indicator -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/loadingIndicator"
             android:layout_width="match_parent"
@@ -198,3 +236,4 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </FrameLayout>
 </androidx.core.widget.NestedScrollView>
+

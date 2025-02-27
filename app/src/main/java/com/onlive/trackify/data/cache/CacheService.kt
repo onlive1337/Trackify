@@ -1,7 +1,7 @@
 package com.onlive.trackify.data.cache
 
 import androidx.collection.LruCache
-import java.util.concurrent.TimeUnit
+import com.onlive.trackify.data.model.Subscription
 
 class CacheService {
     companion object {
@@ -38,7 +38,7 @@ class CacheService {
         return cacheEntry.value as? T
     }
 
-    fun <T> putList(key: String, list: List<T>?, timeToLive: Long = DEFAULT_CACHE_TIME_MS) {
+    fun <T> putList(key: String, list: List<Subscription>, timeToLive: Long = DEFAULT_CACHE_TIME_MS) {
         if (list == null) {
             listCache.remove(key)
             return

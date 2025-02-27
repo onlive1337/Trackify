@@ -11,7 +11,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Calendar
 import java.util.Date
-import kotlin.math.abs
 
 class PaymentGenerationWorker(
     appContext: Context,

@@ -3,7 +3,6 @@ package com.onlive.trackify.data
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.MutableLiveData
 import com.onlive.trackify.data.model.BillingFrequency
 import com.onlive.trackify.data.model.Category
 import com.onlive.trackify.data.model.Payment
@@ -12,9 +11,8 @@ import com.onlive.trackify.viewmodel.StatisticsViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.Calendar
-import java.util.Date
+
 import java.util.concurrent.ConcurrentHashMap
 
 class LiveStatisticsUpdater(

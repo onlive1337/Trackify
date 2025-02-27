@@ -7,7 +7,6 @@ import com.onlive.trackify.data.database.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Calendar
-import java.util.Date
 
 class DatabaseCleanupWorker(
     appContext: Context,

@@ -6,7 +6,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
 import com.onlive.trackify.data.database.AppDatabase
 import com.onlive.trackify.data.model.Payment
-import com.onlive.trackify.data.model.PaymentStatus
 import com.onlive.trackify.data.repository.PaymentRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

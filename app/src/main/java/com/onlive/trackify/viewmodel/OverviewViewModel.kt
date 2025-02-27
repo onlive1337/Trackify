@@ -7,14 +7,11 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.onlive.trackify.data.database.AppDatabase
 import com.onlive.trackify.data.model.BillingFrequency
-import com.onlive.trackify.data.model.Payment
-import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.data.repository.PaymentRepository
 import com.onlive.trackify.data.repository.SubscriptionRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.Calendar
-import java.util.Date
 
 class OverviewViewModel(application: Application) : AndroidViewModel(application) {
 
