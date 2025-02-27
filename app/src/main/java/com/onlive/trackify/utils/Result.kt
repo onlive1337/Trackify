@@ -1,7 +1,7 @@
 package com.onlive.trackify.utils
 
 sealed class Result<out T> {
-    data class Success<T>(val data: T) : Result<T>()
+    data class Success<out T>(val data: T) : Result<T>()
 
     data class Error(val message: String, val exception: Exception? = null) : Result<Nothing>()
 
@@ -21,7 +21,7 @@ sealed class Result<out T> {
         else -> null
     }
 
-    fun getOrDefault(defaultValue: T): T = when(this) {
+    fun getOrDefault(defaultValue: @UnsafeVariance T): T = when(this) {
         is Success -> data
         else -> defaultValue
     }

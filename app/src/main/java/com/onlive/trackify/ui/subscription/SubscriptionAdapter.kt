@@ -3,9 +3,7 @@ package com.onlive.trackify.ui.subscription
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.onlive.trackify.data.model.BillingFrequency
@@ -18,33 +16,20 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-class OptimizedSubscriptionAdapter(
+class SubscriptionAdapter(
     private val onSubscriptionClick: (Subscription) -> Unit,
     private var isGridMode: Boolean = false
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+) : ListAdapter<Subscription, RecyclerView.ViewHolder>(SubscriptionDiffCallback()) {
 
     companion object {
         private const val VIEW_TYPE_LIST = 1
         private const val VIEW_TYPE_GRID = 2
-
         private val DATE_FORMAT = SimpleDateFormat("dd MMMM yyyy", Locale("ru"))
     }
 
-    private val diffCallback = object : DiffUtil.ItemCallback<Subscription>() {
-        override fun areItemsTheSame(oldItem: Subscription, newItem: Subscription): Boolean {
-            return oldItem.subscriptionId == newItem.subscriptionId
-        }
-
-        override fun areContentsTheSame(oldItem: Subscription, newItem: Subscription): Boolean {
-            return oldItem == newItem
-        }
+    override fun getItemViewType(position: Int): Int {
+        return if (isGridMode) VIEW_TYPE_GRID else VIEW_TYPE_LIST
     }
-
-    private val differ = AsyncListDiffer(this, diffCallback)
-
-    var subscriptions: List<Subscription>
-        get() = differ.currentList
-        set(value) = differ.submitList(value)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
@@ -68,17 +53,11 @@ class OptimizedSubscriptionAdapter(
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        val currentItem = differ.currentList[position]
+        val subscription = getItem(position)
         when (holder) {
-            is ListSubscriptionViewHolder -> holder.bind(currentItem)
-            is GridSubscriptionViewHolder -> holder.bind(currentItem)
+            is ListSubscriptionViewHolder -> holder.bind(subscription)
+            is GridSubscriptionViewHolder -> holder.bind(subscription)
         }
-    }
-
-    override fun getItemCount(): Int = differ.currentList.size
-
-    override fun getItemViewType(position: Int): Int {
-        return if (isGridMode) VIEW_TYPE_GRID else VIEW_TYPE_LIST
     }
 
     fun setLayoutMode(isGrid: Boolean) {
@@ -96,7 +75,7 @@ class OptimizedSubscriptionAdapter(
                 AnimationUtils.pulseAnimation(it)
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
-                    onSubscriptionClick(differ.currentList[position])
+                    onSubscriptionClick(getItem(position))
                 }
             }
         }
@@ -118,6 +97,16 @@ class OptimizedSubscriptionAdapter(
             )
             binding.textViewNextPayment.text =
                 "Следующий платеж: ${DATE_FORMAT.format(nextPayment)}"
+
+            try {
+                subscription.categoryColor?.let { colorCode ->
+                    binding.viewCategoryColor.setBackgroundColor(android.graphics.Color.parseColor(colorCode))
+                } ?: run {
+                    binding.viewCategoryColor.setBackgroundColor(android.graphics.Color.LTGRAY)
+                }
+            } catch (e: Exception) {
+                binding.viewCategoryColor.setBackgroundColor(android.graphics.Color.LTGRAY)
+            }
         }
     }
 
@@ -129,7 +118,7 @@ class OptimizedSubscriptionAdapter(
                 AnimationUtils.pulseAnimation(it)
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
-                    onSubscriptionClick(differ.currentList[position])
+                    onSubscriptionClick(getItem(position))
                 }
             }
         }
@@ -151,6 +140,16 @@ class OptimizedSubscriptionAdapter(
             )
             binding.textViewNextPayment.text =
                 "Следующий платеж: ${DATE_FORMAT.format(nextPayment)}"
+
+            try {
+                subscription.categoryColor?.let { colorCode ->
+                    binding.viewCategoryColor.setBackgroundColor(android.graphics.Color.parseColor(colorCode))
+                } ?: run {
+                    binding.viewCategoryColor.setBackgroundColor(android.graphics.Color.LTGRAY)
+                }
+            } catch (e: Exception) {
+                binding.viewCategoryColor.setBackgroundColor(android.graphics.Color.LTGRAY)
+            }
         }
     }
 
@@ -168,5 +167,15 @@ class OptimizedSubscriptionAdapter(
         }
 
         return calendar.time
+    }
+
+    class SubscriptionDiffCallback : DiffUtil.ItemCallback<Subscription>() {
+        override fun areItemsTheSame(oldItem: Subscription, newItem: Subscription): Boolean {
+            return oldItem.subscriptionId == newItem.subscriptionId
+        }
+
+        override fun areContentsTheSame(oldItem: Subscription, newItem: Subscription): Boolean {
+            return oldItem == newItem
+        }
     }
 }

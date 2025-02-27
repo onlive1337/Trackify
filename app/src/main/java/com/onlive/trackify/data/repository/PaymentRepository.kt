@@ -19,6 +19,7 @@ class PaymentRepository(private val paymentDao: PaymentDao) {
     private val cacheTime = TimeUnit.MINUTES.toMillis(5)
 
     val allPayments: LiveData<List<Payment>> = paymentDao.getAllPayments()
+
     val pendingPayments: LiveData<List<Payment>> = paymentDao.getPaymentsByStatus(PaymentStatus.PENDING)
     val pendingPaymentsCount: LiveData<Int> = paymentDao.getPaymentsCountByStatus(PaymentStatus.PENDING)
 

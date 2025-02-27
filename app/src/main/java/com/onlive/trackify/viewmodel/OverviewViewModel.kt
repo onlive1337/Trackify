@@ -48,41 +48,57 @@ class OverviewViewModel(application: Application) : AndroidViewModel(application
 
     private fun calculateTotalMonthlySpending() {
         viewModelScope.launch(Dispatchers.IO) {
-            val subscriptions = subscriptionRepository.getActiveSubscriptionsSync()
+            val result = subscriptionRepository.getActiveSubscriptionsSync()
 
-            var monthlyCost = 0.0
-            for (subscription in subscriptions) {
-                monthlyCost += when (subscription.billingFrequency) {
-                    BillingFrequency.MONTHLY -> subscription.price
-                    BillingFrequency.YEARLY -> subscription.price / 12
+            if (result.isSuccess) {
+                val subscriptions = result.getOrNull() ?: emptyList()
+                var monthlyCost = 0.0
+
+                for (subscription in subscriptions) {
+                    monthlyCost += when (subscription.billingFrequency) {
+                        BillingFrequency.MONTHLY -> subscription.price
+                        BillingFrequency.YEARLY -> subscription.price / 12
+                    }
                 }
-            }
 
-            _totalMonthlySpending.postValue(monthlyCost)
+                _totalMonthlySpending.postValue(monthlyCost)
+            }
         }
     }
 
     private fun calculateActiveSubscriptionsCount() {
         viewModelScope.launch(Dispatchers.IO) {
-            val subscriptions = subscriptionRepository.getActiveSubscriptionsSync()
-            _activeSubscriptionsCount.postValue(subscriptions.size)
+            val result = subscriptionRepository.getActiveSubscriptionsSync()
+            if (result.isSuccess) {
+                val subscriptions = result.getOrNull() ?: emptyList()
+                _activeSubscriptionsCount.postValue(subscriptions.size)
+            } else {
+                _activeSubscriptionsCount.postValue(0)
+            }
         }
     }
 
     private fun calculateExpiringSubscriptionsCount() {
         viewModelScope.launch(Dispatchers.IO) {
-            val calendar = Calendar.getInstance()
-            val today = calendar.time
+            val result = subscriptionRepository.getActiveSubscriptionsSync()
+            if (result.isSuccess) {
+                val subscriptions = result.getOrNull() ?: emptyList()
+                val calendar = Calendar.getInstance()
+                val today = calendar.time
 
-            calendar.add(Calendar.DAY_OF_YEAR, 30)
-            val thirtyDaysLater = calendar.time
+                calendar.add(Calendar.DAY_OF_YEAR, 30)
+                val thirtyDaysLater = calendar.time
 
-            val subscriptions = subscriptionRepository.getActiveSubscriptionsSync()
-            val expiringCount = subscriptions.count { subscription ->
-                subscription.endDate != null && subscription.endDate.after(today) && subscription.endDate.before(thirtyDaysLater)
+                val expiringCount = subscriptions.count { subscription ->
+                    subscription.endDate != null &&
+                            subscription.endDate.after(today) &&
+                            subscription.endDate.before(thirtyDaysLater)
+                }
+
+                _expiringSubscriptionsCount.postValue(expiringCount)
+            } else {
+                _expiringSubscriptionsCount.postValue(0)
             }
-
-            _expiringSubscriptionsCount.postValue(expiringCount)
         }
     }
 
