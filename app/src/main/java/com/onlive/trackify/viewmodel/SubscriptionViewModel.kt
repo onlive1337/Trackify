@@ -32,8 +32,12 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
     val operationResult: LiveData<Result<*>> = _operationResult
 
     init {
-        val subscriptionDao = AppDatabase.getDatabase(application).subscriptionDao()
-        repository = SubscriptionRepository(subscriptionDao)
+        val database = AppDatabase.getDatabase(application)
+        val subscriptionDao = database.subscriptionDao()
+        val categoryDao = database.categoryDao()
+
+        repository = SubscriptionRepository(subscriptionDao, categoryDao)
+
         allActiveSubscriptions = repository.allActiveSubscriptions
         activeSubscriptionsCount = repository.activeSubscriptionsCount
     }

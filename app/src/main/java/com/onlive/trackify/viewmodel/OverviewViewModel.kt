@@ -18,6 +18,7 @@ import java.util.Date
 
 class OverviewViewModel(application: Application) : AndroidViewModel(application) {
 
+    private val database = AppDatabase.getDatabase(application)
     private val subscriptionRepository: SubscriptionRepository
     private val paymentRepository: PaymentRepository
 
@@ -31,9 +32,12 @@ class OverviewViewModel(application: Application) : AndroidViewModel(application
     val expiringSubscriptionsCount: LiveData<Int> = _expiringSubscriptionsCount
 
     init {
-        val database = AppDatabase.getDatabase(application)
-        subscriptionRepository = SubscriptionRepository(database.subscriptionDao())
-        paymentRepository = PaymentRepository(database.paymentDao())
+        val subscriptionDao = database.subscriptionDao()
+        val categoryDao = database.categoryDao()
+        val paymentDao = database.paymentDao()
+
+        subscriptionRepository = SubscriptionRepository(subscriptionDao, categoryDao)
+        paymentRepository = PaymentRepository(paymentDao)
 
         loadDashboardData()
     }

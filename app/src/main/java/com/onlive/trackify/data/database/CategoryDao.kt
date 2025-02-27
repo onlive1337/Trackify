@@ -26,6 +26,9 @@ interface CategoryDao {
     fun getAllCategories(): LiveData<List<Category>>
 
     @Query("SELECT * FROM categories ORDER BY name ASC")
+    suspend fun getAllCategoriesAsync(): List<Category>
+
+    @Query("SELECT * FROM categories ORDER BY name ASC")
     fun getAllCategoriesSync(): List<Category>
 
     @Query("SELECT * FROM categories WHERE categoryId = :id")

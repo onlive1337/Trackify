@@ -17,6 +17,15 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
+    
+    private var navGraphIds = listOf(
+        R.id.navigation_subscriptions,
+        R.id.navigation_payments,
+        R.id.navigation_statistics,
+        R.id.navigation_settings
+    )
+
+    private var currentTabId = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -50,11 +59,70 @@ class MainActivity : AppCompatActivity() {
         )
 
         setupActionBarWithNavController(navController, appBarConfiguration)
-        navView.setupWithNavController(navController)
+        setupBottomNavigation(navView)
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             title = destination.label
         }
+    }
+
+    private fun setupBottomNavigation(navView: BottomNavigationView) {
+        navView.setupWithNavController(navController)
+
+        navView.setOnItemSelectedListener { item ->
+            if (item.itemId == navView.selectedItemId) {
+                val backStackEntryCount = navController.currentBackStack.value.size
+
+                if (backStackEntryCount > 2) {
+                    navigateToTabStart(item.itemId)
+                    return@setOnItemSelectedListener true
+                }
+            }
+
+            when (item.itemId) {
+                R.id.navigation_subscriptions -> {
+                    currentTabId = 0
+                    if (isNotRootDestination(R.id.navigation_subscriptions)) {
+                        navigateToTabStart(R.id.navigation_subscriptions)
+                    }
+                }
+                R.id.navigation_payments -> {
+                    currentTabId = 1
+                    if (isNotRootDestination(R.id.navigation_payments)) {
+                        navigateToTabStart(R.id.navigation_payments)
+                    }
+                }
+                R.id.navigation_statistics -> {
+                    currentTabId = 2
+                    if (isNotRootDestination(R.id.navigation_statistics)) {
+                        navigateToTabStart(R.id.navigation_statistics)
+                    }
+                }
+                R.id.navigation_settings -> {
+                    currentTabId = 3
+                    if (isNotRootDestination(R.id.navigation_settings)) {
+                        navigateToTabStart(R.id.navigation_settings)
+                    }
+                }
+            }
+            true
+        }
+    }
+
+    private fun isNotRootDestination(destinationId: Int): Boolean {
+        val currentDestination = navController.currentDestination?.id ?: return false
+
+        return when (destinationId) {
+            R.id.navigation_subscriptions -> currentDestination != R.id.navigation_subscriptions
+            R.id.navigation_payments -> currentDestination != R.id.navigation_payments
+            R.id.navigation_statistics -> currentDestination != R.id.navigation_statistics
+            R.id.navigation_settings -> currentDestination != R.id.navigation_settings
+            else -> false
+        }
+    }
+
+    private fun navigateToTabStart(destinationId: Int) {
+        navController.popBackStack(destinationId, false)
     }
 
     override fun onSupportNavigateUp(): Boolean {

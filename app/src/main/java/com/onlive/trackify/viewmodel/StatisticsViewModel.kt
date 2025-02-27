@@ -20,6 +20,7 @@ import java.util.Date
 
 class StatisticsViewModel(application: Application) : AndroidViewModel(application) {
 
+    private val database = AppDatabase.getDatabase(application)
     private val subscriptionRepository: SubscriptionRepository
     private val paymentRepository: PaymentRepository
     private val categoryRepository: CategoryRepository
@@ -33,10 +34,13 @@ class StatisticsViewModel(application: Application) : AndroidViewModel(applicati
     val categories: LiveData<List<Category>>
 
     init {
-        val database = AppDatabase.getDatabase(application)
-        subscriptionRepository = SubscriptionRepository(database.subscriptionDao())
-        paymentRepository = PaymentRepository(database.paymentDao())
-        categoryRepository = CategoryRepository(database.categoryDao())
+        val subscriptionDao = database.subscriptionDao()
+        val paymentDao = database.paymentDao()
+        val categoryDao = database.categoryDao()
+
+        subscriptionRepository = SubscriptionRepository(subscriptionDao, categoryDao)
+        paymentRepository = PaymentRepository(paymentDao)
+        categoryRepository = CategoryRepository(categoryDao)
 
         categories = categoryRepository.allCategories
 
