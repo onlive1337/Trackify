@@ -156,7 +156,7 @@ class SubscriptionRepository(
 
     suspend fun getActiveSubscriptionsSync(): Result<List<Subscription>> = withContext(Dispatchers.IO) {
         return@withContext try {
-            val cachedData: List<Subscription>? = cacheService.getList("active_subscriptions")
+            val cachedData: List<Subscription>? = cacheService.getList<Subscription>("active_subscriptions")
             if (cachedData != null) {
                 return@withContext Result.Success(cachedData)
             }
@@ -201,7 +201,7 @@ class SubscriptionRepository(
         return@withContext try {
             val cacheKey = "active_subscriptions_page_${limit}_${offset}"
 
-            val cachedData: List<Subscription>? = cacheService.getList(cacheKey)
+            val cachedData: List<Subscription>? = cacheService.getList<Subscription>(cacheKey)
             if (cachedData != null) {
                 return@withContext Result.Success(cachedData)
             }

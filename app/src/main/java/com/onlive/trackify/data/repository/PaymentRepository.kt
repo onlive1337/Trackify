@@ -134,7 +134,7 @@ class PaymentRepository(private val paymentDao: PaymentDao) {
             }
 
             val page = paymentDao.getPaymentsPage(limit, offset)
-            cacheService.putList(cacheKey, page, cacheTime)
+            cacheService.putList<Payment>(cacheKey, page, cacheTime)
             Result.Success(page)
         } catch (e: Exception) {
             Result.Error(e.message ?: "Ошибка при загрузке страницы платежей")

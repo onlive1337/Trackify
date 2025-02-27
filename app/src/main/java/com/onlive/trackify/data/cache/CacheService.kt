@@ -38,8 +38,8 @@ class CacheService {
         return cacheEntry.value as? T
     }
 
-    fun <T> putList(key: String, list: List<Subscription>, timeToLive: Long = DEFAULT_CACHE_TIME_MS) {
-        if (list == null) {
+    fun <T> putList(key: String, list: List<T>, timeToLive: Long = DEFAULT_CACHE_TIME_MS) {
+        if (list.isEmpty()) {
             listCache.remove(key)
             return
         }
