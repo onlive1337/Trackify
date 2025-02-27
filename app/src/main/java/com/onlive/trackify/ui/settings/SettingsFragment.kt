@@ -15,12 +15,8 @@ import androidx.navigation.fragment.findNavController
 import com.onlive.trackify.R
 import com.onlive.trackify.databinding.FragmentSettingsBinding
 import com.onlive.trackify.utils.NotificationScheduler
-import com.onlive.trackify.utils.NotificationTester
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.ThemeManager
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class SettingsFragment : Fragment() {
 
@@ -29,7 +25,6 @@ class SettingsFragment : Fragment() {
 
     private lateinit var themeManager: ThemeManager
     private lateinit var preferenceManager: PreferenceManager
-    private lateinit var notificationTester: NotificationTester
     private lateinit var notificationScheduler: NotificationScheduler
 
     private val requestPermissionLauncher = registerForActivityResult(
@@ -69,12 +64,10 @@ class SettingsFragment : Fragment() {
 
         themeManager = ThemeManager(requireContext())
         preferenceManager = PreferenceManager(requireContext())
-        notificationTester = NotificationTester(requireContext())
         notificationScheduler = NotificationScheduler(requireContext())
 
         setupThemeOptions()
         setupNotificationOptions()
-        setupTestButtons()
 
         binding.buttonManageCategories.setOnClickListener {
             findNavController().navigate(R.id.action_navigation_settings_to_categoryListFragment)
@@ -158,58 +151,6 @@ class SettingsFragment : Fragment() {
         }
 
         setupDynamicColorsInfo()
-    }
-
-    private fun setupTestButtons() {
-        binding.buttonTestNotification.setOnClickListener {
-            if (hasNotificationPermission()) {
-                CoroutineScope(Dispatchers.IO).launch {
-                    notificationTester.sendTestNotification()
-                }
-                Toast.makeText(
-                    requireContext(),
-                    "Отправляю тестовые уведомления...",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                requestNotificationPermission()
-            }
-        }
-
-        binding.buttonCreateTestSubscription.setOnClickListener {
-            if (hasNotificationPermission()) {
-                notificationTester.createTestSubscriptionAndRunCheck()
-                Toast.makeText(
-                    requireContext(),
-                    "Создаю тестовую подписку и проверяю...",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                requestNotificationPermission()
-            }
-        }
-    }
-
-    private fun hasNotificationPermission(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-        } else {
-            true
-        }
-    }
-
-    private fun requestNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            Toast.makeText(
-                requireContext(),
-                "Для отправки уведомлений нужно разрешение",
-                Toast.LENGTH_SHORT
-            ).show()
-            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
     }
 
     private fun setupDynamicColorsInfo() {

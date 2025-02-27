@@ -1,18 +1,13 @@
 package com.onlive.trackify.utils
 
 import android.content.Context
-import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import java.net.UnknownHostException
-import java.sql.SQLException
 
 class ErrorHandler private constructor(private val context: Context) {
 
     companion object {
-        private const val TAG = "ErrorHandler"
         private var INSTANCE: ErrorHandler? = null
 
         fun getInstance(context: Context): ErrorHandler {
@@ -35,21 +30,11 @@ class ErrorHandler private constructor(private val context: Context) {
             else -> "Произошла неизвестная ошибка"
         }
 
-        Log.e(TAG, "Error: $errorMessage")
-
-        if (showToast) {
-            Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
-        }
-
         _errorEvent.postValue(Event(errorMessage))
     }
 
     private fun getReadableErrorMessage(e: Exception): String {
-        return when (e) {
-            is UnknownHostException -> "Нет подключения к интернету"
-            is SQLException -> "Ошибка при работе с базой данных"
-            else -> e.message ?: "Произошла неизвестная ошибка"
-        }
+        return e.message ?: "Произошла неизвестная ошибка"
     }
 
     fun observeErrors(owner: LifecycleOwner, observer: (String) -> Unit) {

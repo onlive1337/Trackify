@@ -40,11 +40,4 @@ class PaymentScheduler(private val context: Context) {
     fun cancelPaymentGeneration() {
         WorkManager.getInstance(context).cancelUniqueWork(PAYMENT_GENERATION_WORK_NAME)
     }
-
-    fun runOneTimePaymentGeneration() {
-        val workRequest = androidx.work.OneTimeWorkRequestBuilder<PaymentGenerationWorker>()
-            .build()
-
-        WorkManager.getInstance(context).enqueue(workRequest)
-    }
 }

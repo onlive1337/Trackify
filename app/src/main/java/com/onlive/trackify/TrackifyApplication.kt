@@ -34,11 +34,8 @@ class TrackifyApplication : Application() {
 
         try {
             errorHandler = ErrorHandler.getInstance(this)
-
             cacheService = CacheService.getInstance()
-
             initializeComponents()
-
         } catch (e: Exception) {
             handleFatalError(e)
         }
@@ -62,9 +59,7 @@ class TrackifyApplication : Application() {
         notificationHelper.createNotificationChannel()
 
         setupSubscriptionReminders()
-
         setupDatabaseCleanup()
-
         paymentScheduler.schedulePaymentGeneration()
     }
 
@@ -94,15 +89,11 @@ class TrackifyApplication : Application() {
 
     private fun handleFatalError(e: Exception) {
         e.printStackTrace()
-
-        android.util.Log.e("TrackifyApplication", "Fatal error during initialization", e)
-
         exitProcess(1)
     }
 
     override fun onTerminate() {
         super.onTerminate()
-
         cacheService.clearCache()
     }
 }

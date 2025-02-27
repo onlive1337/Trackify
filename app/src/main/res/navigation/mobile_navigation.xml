@@ -45,6 +45,13 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_navigation_payments_to_pendingPaymentsFragment"
+            app:destination="@id/pendingPaymentsFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -75,6 +82,13 @@
         <action
             android:id="@+id/action_navigation_settings_to_notificationSettingsFragment"
             app:destination="@id/notificationSettingsFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_navigation_settings_to_dataManagementFragment"
+            app:destination="@id/dataManagementFragment"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
@@ -121,14 +135,6 @@
         android:label="Ожидающие платежи"
         tools:layout="@layout/fragment_pending_payments" />
 
-    <action
-        android:id="@+id/action_navigation_payments_to_pendingPaymentsFragment"
-        app:destination="@id/pendingPaymentsFragment"
-        app:enterAnim="@anim/slide_in_right"
-        app:exitAnim="@anim/slide_out_left"
-        app:popEnterAnim="@anim/slide_in_left"
-        app:popExitAnim="@anim/slide_out_right" />
-
     <fragment
         android:id="@+id/upcomingPaymentsFragment"
         android:name="com.onlive.trackify.ui.overview.UpcomingPaymentsFragment"
@@ -144,14 +150,6 @@
     <action
         android:id="@+id/action_global_to_upcomingPaymentsFragment"
         app:destination="@id/upcomingPaymentsFragment"
-        app:enterAnim="@anim/slide_in_right"
-        app:exitAnim="@anim/slide_out_left"
-        app:popEnterAnim="@anim/slide_in_left"
-        app:popExitAnim="@anim/slide_out_right" />
-
-    <action
-        android:id="@+id/action_navigation_settings_to_dataManagementFragment"
-        app:destination="@id/dataManagementFragment"
         app:enterAnim="@anim/slide_in_right"
         app:exitAnim="@anim/slide_out_left"
         app:popEnterAnim="@anim/slide_in_left"
