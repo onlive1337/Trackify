@@ -70,6 +70,37 @@ class CacheService {
         listCache.remove(key)
     }
 
+    fun trimCache() {
+        val currentTime = System.currentTimeMillis()
+
+        val memoryKeys = mutableListOf<String>()
+        for (i in 0 until memoryCache.size()) {
+            memoryCache.snapshot().keys.elementAtOrNull(i)?.let { key ->
+                memoryCache.get(key)?.let { entry ->
+                    if (currentTime > entry.expirationTime) {
+                        memoryKeys.add(key)
+                    }
+                }
+            }
+        }
+        memoryKeys.forEach { memoryCache.remove(it) }
+
+        val listKeys = mutableListOf<String>()
+        for (i in 0 until listCache.size()) {
+            listCache.snapshot().keys.elementAtOrNull(i)?.let { key ->
+                listCache.get(key)?.let { entry ->
+                    if (currentTime > entry.expirationTime) {
+                        listKeys.add(key)
+                    }
+                }
+            }
+        }
+        listKeys.forEach { listCache.remove(it) }
+
+        memoryCache.trimToSize(memoryCache.size() / 2)
+        listCache.trimToSize(listCache.size() / 2)
+    }
+
     private data class CacheEntry(val value: Any, val expirationTime: Long)
 
     private data class CacheListEntry(val list: List<*>, val expirationTime: Long)

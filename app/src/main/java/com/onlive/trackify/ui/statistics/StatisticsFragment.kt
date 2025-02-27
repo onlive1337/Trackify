@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
@@ -24,6 +25,9 @@ import com.github.mikephil.charting.utils.ColorTemplate
 import com.onlive.trackify.R
 import com.onlive.trackify.databinding.FragmentStatisticsBinding
 import com.onlive.trackify.viewmodel.StatisticsViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -50,7 +54,14 @@ class StatisticsFragment : Fragment() {
         setupBarChart()
         setupTypeChart()
 
+        showLoadingState(true)
+
         observeStatistics()
+    }
+
+    private fun showLoadingState(isLoading: Boolean) {
+        binding.loadingIndicator.visibility = if (isLoading) View.VISIBLE else View.GONE
+        binding.statisticsContent.visibility = if (isLoading) View.GONE else View.VISIBLE
     }
 
     private fun isUsingNightMode(): Boolean {
@@ -58,24 +69,34 @@ class StatisticsFragment : Fragment() {
     }
 
     private fun observeStatistics() {
-        statisticsViewModel.totalMonthlySpending.observe(viewLifecycleOwner) { monthlySpending ->
-            binding.textViewMonthlySpending.text = formatCurrency(monthlySpending)
-        }
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
+            statisticsViewModel.totalMonthlySpending.observe(viewLifecycleOwner) { monthlySpending ->
+                withContext(Dispatchers.Main) {
+                    binding.textViewMonthlySpending.text = formatCurrency(monthlySpending)
+                }
+            }
 
-        statisticsViewModel.totalYearlySpending.observe(viewLifecycleOwner) { yearlySpending ->
-            binding.textViewYearlySpending.text = formatCurrency(yearlySpending)
-        }
+            statisticsViewModel.totalYearlySpending.observe(viewLifecycleOwner) { yearlySpending ->
+                withContext(Dispatchers.Main) {
+                    binding.textViewYearlySpending.text = formatCurrency(yearlySpending)
+                }
+            }
 
-        statisticsViewModel.spendingByCategory.observe(viewLifecycleOwner) { categorySpending ->
-            updatePieChart(categorySpending)
-        }
+            statisticsViewModel.spendingByCategory.observe(viewLifecycleOwner) { categorySpending ->
+                updatePieChart(categorySpending)
+            }
 
-        statisticsViewModel.monthlySpendingHistory.observe(viewLifecycleOwner) { monthlyHistory ->
-            updateBarChart(monthlyHistory)
-        }
+            statisticsViewModel.monthlySpendingHistory.observe(viewLifecycleOwner) { monthlyHistory ->
+                updateBarChart(monthlyHistory)
+            }
 
-        statisticsViewModel.subscriptionTypeSpending.observe(viewLifecycleOwner) { typeSpending ->
-            updateTypeChart(typeSpending)
+            statisticsViewModel.subscriptionTypeSpending.observe(viewLifecycleOwner) { typeSpending ->
+                updateTypeChart(typeSpending)
+            }
+
+            withContext(Dispatchers.Main) {
+                showLoadingState(false)
+            }
         }
     }
 
@@ -96,6 +117,9 @@ class StatisticsFragment : Fragment() {
             setCenterTextColor(textColor)
             setExtraOffsets(20f, 20f, 20f, 20f)
 
+            isHighlightPerTapEnabled = false
+            setDrawMarkers(false)
+
             legend.apply {
                 verticalAlignment = Legend.LegendVerticalAlignment.CENTER
                 horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT
@@ -107,9 +131,8 @@ class StatisticsFragment : Fragment() {
                 isWordWrapEnabled = true
                 textSize = 12f
                 setTextColor(textColor)
+                setMaxSizePercent(0.7f)
             }
-
-            animateY(1400, Easing.EaseInOutQuad)
 
             setNoDataTextColor(textColor)
             setNoDataText("Нет данных для отображения")
@@ -130,6 +153,9 @@ class StatisticsFragment : Fragment() {
             setScaleEnabled(false)
             setExtraOffsets(10f, 10f, 10f, 10f)
 
+            isHighlightPerTapEnabled = false
+            setDrawMarkers(false)
+
             axisLeft.apply {
                 setDrawGridLines(false)
                 setDrawAxisLine(false)
@@ -141,6 +167,7 @@ class StatisticsFragment : Fragment() {
                         return formatCurrency(value.toDouble())
                     }
                 }
+                setLabelCount(5, true)
             }
 
             axisRight.isEnabled = false
@@ -153,7 +180,7 @@ class StatisticsFragment : Fragment() {
                 setTextColor(textColor)
             }
 
-            animateY(1400)
+            animateY(800)
 
             legend.apply {
                 isEnabled = false
@@ -182,6 +209,9 @@ class StatisticsFragment : Fragment() {
             setCenterTextColor(textColor)
             setExtraOffsets(20f, 20f, 20f, 20f)
 
+            isHighlightPerTapEnabled = false
+            setDrawMarkers(false)
+
             legend.apply {
                 verticalAlignment = Legend.LegendVerticalAlignment.CENTER
                 horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT
@@ -194,32 +224,52 @@ class StatisticsFragment : Fragment() {
                 setTextColor(textColor)
             }
 
-            animateY(1400, Easing.EaseInOutQuad)
+            animateY(800, Easing.EaseInOutQuad)
 
             setNoDataTextColor(textColor)
             setNoDataText("Нет данных для отображения")
         }
     }
 
-    private fun updatePieChart(categorySpending: List<StatisticsViewModel.CategorySpending>) {
+    private suspend fun updatePieChart(categorySpending: List<StatisticsViewModel.CategorySpending>) {
         val textColor = if (isUsingNightMode()) Color.WHITE else Color.BLACK
 
         if (categorySpending.isEmpty()) {
-            binding.pieChartCategories.setNoDataText("Нет данных для отображения")
-            binding.pieChartCategories.setNoDataTextColor(textColor)
-            binding.pieChartCategories.invalidate()
+            withContext(Dispatchers.Main) {
+                binding.pieChartCategories.setNoDataText("Нет данных для отображения")
+                binding.pieChartCategories.setNoDataTextColor(textColor)
+                binding.pieChartCategories.invalidate()
+            }
             return
         }
 
         val entries = mutableListOf<PieEntry>()
         val colors = mutableListOf<Int>()
 
-        for (category in categorySpending) {
+        val limitedData = if (categorySpending.size > 6) {
+            val topCategories = categorySpending.take(5)
+            val otherAmount = categorySpending.drop(5).sumOf { it.amount }
+
+            if (otherAmount > 0) {
+                topCategories + StatisticsViewModel.CategorySpending(
+                    categoryId = null,
+                    categoryName = "Другие",
+                    colorCode = "#808080",
+                    amount = otherAmount
+                )
+            } else {
+                topCategories
+            }
+        } else {
+            categorySpending
+        }
+
+        for (category in limitedData) {
             entries.add(PieEntry(category.amount.toFloat(), category.categoryName))
             try {
                 colors.add(Color.parseColor(category.colorCode))
             } catch (e: Exception) {
-                colors.add(ColorTemplate.PASTEL_COLORS[categorySpending.indexOf(category) % ColorTemplate.PASTEL_COLORS.size])
+                colors.add(ColorTemplate.PASTEL_COLORS[limitedData.indexOf(category) % ColorTemplate.PASTEL_COLORS.size])
             }
         }
 
@@ -240,18 +290,22 @@ class StatisticsFragment : Fragment() {
             setValueTextColor(Color.WHITE)
         }
 
-        binding.pieChartCategories.data = data
-        binding.pieChartCategories.highlightValues(null)
-        binding.pieChartCategories.invalidate()
+        withContext(Dispatchers.Main) {
+            binding.pieChartCategories.data = data
+            binding.pieChartCategories.highlightValues(null)
+            binding.pieChartCategories.invalidate()
+        }
     }
 
-    private fun updateBarChart(monthlyData: List<StatisticsViewModel.MonthlySpending>) {
+    private suspend fun updateBarChart(monthlyData: List<StatisticsViewModel.MonthlySpending>) {
         val textColor = if (isUsingNightMode()) Color.WHITE else Color.BLACK
 
         if (monthlyData.isEmpty()) {
-            binding.barChartMonthly.setNoDataText("Нет данных для отображения")
-            binding.barChartMonthly.setNoDataTextColor(textColor)
-            binding.barChartMonthly.invalidate()
+            withContext(Dispatchers.Main) {
+                binding.barChartMonthly.setNoDataText("Нет данных для отображения")
+                binding.barChartMonthly.setNoDataTextColor(textColor)
+                binding.barChartMonthly.invalidate()
+            }
             return
         }
 
@@ -278,18 +332,22 @@ class StatisticsFragment : Fragment() {
             barWidth = 0.5f
         }
 
-        binding.barChartMonthly.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
-        binding.barChartMonthly.data = barData
-        binding.barChartMonthly.invalidate()
+        withContext(Dispatchers.Main) {
+            binding.barChartMonthly.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
+            binding.barChartMonthly.data = barData
+            binding.barChartMonthly.invalidate()
+        }
     }
 
-    private fun updateTypeChart(typeData: List<StatisticsViewModel.SubscriptionTypeSpending>) {
+    private suspend fun updateTypeChart(typeData: List<StatisticsViewModel.SubscriptionTypeSpending>) {
         val textColor = if (isUsingNightMode()) Color.WHITE else Color.BLACK
 
         if (typeData.isEmpty()) {
-            binding.pieChartTypes.setNoDataText("Нет данных для отображения")
-            binding.pieChartTypes.setNoDataTextColor(textColor)
-            binding.pieChartTypes.invalidate()
+            withContext(Dispatchers.Main) {
+                binding.pieChartTypes.setNoDataText("Нет данных для отображения")
+                binding.pieChartTypes.setNoDataTextColor(textColor)
+                binding.pieChartTypes.invalidate()
+            }
             return
         }
 
@@ -324,9 +382,11 @@ class StatisticsFragment : Fragment() {
             setValueTextColor(Color.WHITE)
         }
 
-        binding.pieChartTypes.data = data
-        binding.pieChartTypes.highlightValues(null)
-        binding.pieChartTypes.invalidate()
+        withContext(Dispatchers.Main) {
+            binding.pieChartTypes.data = data
+            binding.pieChartTypes.highlightValues(null)
+            binding.pieChartTypes.invalidate()
+        }
     }
 
     private fun formatCurrency(amount: Double): String {

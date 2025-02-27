@@ -1,12 +1,15 @@
 package com.onlive.trackify
 
 import android.app.Application
+import android.os.Build
+import androidx.work.Configuration
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.onlive.trackify.data.cache.CacheService
 import com.onlive.trackify.data.database.DatabaseInitializer
 import com.onlive.trackify.utils.ErrorHandler
+import com.onlive.trackify.utils.MemoryUtils
 import com.onlive.trackify.utils.NotificationHelper
 import com.onlive.trackify.utils.PaymentScheduler
 import com.onlive.trackify.utils.PreferenceManager
@@ -17,7 +20,7 @@ import com.google.android.material.color.DynamicColors
 import kotlin.system.exitProcess
 import java.util.concurrent.TimeUnit
 
-class TrackifyApplication : Application() {
+class TrackifyApplication : Application(), Configuration.Provider {
     private lateinit var themeManager: ThemeManager
     private lateinit var notificationHelper: NotificationHelper
     private lateinit var preferenceManager: PreferenceManager
@@ -36,6 +39,10 @@ class TrackifyApplication : Application() {
             errorHandler = ErrorHandler.getInstance(this)
             cacheService = CacheService.getInstance()
             initializeComponents()
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                DynamicColors.applyToActivitiesIfAvailable(this)
+            }
         } catch (e: Exception) {
             handleFatalError(e)
         }
@@ -48,10 +55,6 @@ class TrackifyApplication : Application() {
         paymentScheduler = PaymentScheduler(this)
 
         themeManager.applyTheme()
-
-        if (themeManager.supportsDynamicColors()) {
-            DynamicColors.applyToActivitiesIfAvailable(this)
-        }
 
         databaseInitializer.initializeCategories()
 
@@ -95,5 +98,25 @@ class TrackifyApplication : Application() {
     override fun onTerminate() {
         super.onTerminate()
         cacheService.clearCache()
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        MemoryUtils.handleLowMemory(this)
+        cacheService.clearCache()
+    }
+
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        if (level >= TRIM_MEMORY_RUNNING_LOW) {
+            MemoryUtils.handleLowMemory(this)
+            cacheService.trimCache()
+        }
+    }
+
+    override fun getWorkManagerConfiguration(): Configuration {
+        return Configuration.Builder()
+            .setMinimumLoggingLevel(android.util.Log.INFO)
+            .build()
     }
 }

@@ -12,15 +12,20 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.databinding.FragmentSubscriptionListBinding
 import com.onlive.trackify.utils.AnimationUtils
 import com.onlive.trackify.utils.ViewModePreference
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class SubscriptionListFragment : Fragment(), MenuProvider {
 
@@ -34,6 +39,7 @@ class SubscriptionListFragment : Fragment(), MenuProvider {
     private var originalSubscriptionsList = listOf<Subscription>()
     private var currentQuery = ""
     private var isGridMode = false
+    private var searchJob: Job? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -69,8 +75,14 @@ class SubscriptionListFragment : Fragment(), MenuProvider {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
+                searchJob?.cancel()
+
                 currentQuery = newText ?: ""
-                filterSubscriptions(currentQuery)
+
+                searchJob = lifecycleScope.launch {
+                    delay(300)
+                    filterSubscriptions(currentQuery)
+                }
                 return true
             }
         })
@@ -163,6 +175,19 @@ class SubscriptionListFragment : Fragment(), MenuProvider {
             clipToPadding = false
             val bottomPadding = getNavigationBarHeight()
             setPadding(paddingLeft, paddingTop, paddingRight, bottomPadding)
+
+            setHasFixedSize(true)
+            setItemViewCacheSize(20)
+
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    if (dy > 0 && binding.fabAddSubscription.isShown) {
+                        binding.fabAddSubscription.hide()
+                    } else if (dy < 0 && !binding.fabAddSubscription.isShown) {
+                        binding.fabAddSubscription.show()
+                    }
+                }
+            })
         }
     }
 
@@ -177,13 +202,17 @@ class SubscriptionListFragment : Fragment(), MenuProvider {
 
     private fun observeSubscriptions() {
         subscriptionViewModel.allActiveSubscriptions.observe(viewLifecycleOwner) { subscriptions ->
-            originalSubscriptionsList = subscriptions
+            binding.progressBar.visibility = if (subscriptions == null) View.VISIBLE else View.GONE
 
-            if (currentQuery.isNotEmpty()) {
-                filterSubscriptions(currentQuery)
-            } else {
-                subscriptionAdapter.submitList(subscriptions)
-                updateEmptyView(subscriptions.isEmpty())
+            if (subscriptions != null) {
+                originalSubscriptionsList = subscriptions
+
+                if (currentQuery.isNotEmpty()) {
+                    filterSubscriptions(currentQuery)
+                } else {
+                    subscriptionAdapter.submitList(subscriptions)
+                    updateEmptyView(subscriptions.isEmpty())
+                }
             }
         }
     }
@@ -196,6 +225,7 @@ class SubscriptionListFragment : Fragment(), MenuProvider {
     }
 
     override fun onDestroyView() {
+        searchJob?.cancel()
         super.onDestroyView()
         _binding = null
     }

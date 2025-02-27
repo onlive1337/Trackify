@@ -4,15 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="4dp"
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="4dp"
+    app:cardCornerRadius="24dp"
+    style="@style/Widget.Material3.CardView.Elevated"
     android:clickable="true"
-    android:focusable="true"
-    app:strokeWidth="1dp"
-    app:strokeColor="?attr/colorOutline"
-    app:cardBackgroundColor="?attr/colorSurface"
-    android:stateListAnimator="@animator/card_state_list_animator">
+    android:focusable="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -47,17 +44,14 @@
                 android:textColor="?attr/colorOnSurface"
                 tools:text="Netflix" />
 
-            <TextView
+            <com.google.android.material.chip.Chip
                 android:id="@+id/textViewSubscriptionCategory"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:textSize="14sp"
-                android:background="@drawable/subscription_category_background"
-                android:paddingStart="6dp"
-                android:paddingEnd="6dp"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"
+                android:textSize="12sp"
+                style="@style/Widget.Material3.Chip.Assist"
+                app:chipMinHeight="24dp"
                 tools:text="Развлечения" />
 
             <TextView
