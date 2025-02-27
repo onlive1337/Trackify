@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.onlive.trackify.data.model.Payment
+import com.onlive.trackify.data.model.PaymentStatus
 import com.onlive.trackify.databinding.ItemPaymentBinding
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -37,7 +38,15 @@ class PaymentAdapter : ListAdapter<PaymentWithSubscriptionName, PaymentAdapter.P
             binding.textViewPaymentAmount.text = "₽${paymentWithName.payment.amount}"
             binding.textViewPaymentSubscription.text = paymentWithName.subscriptionName
 
-            // Отображаем примечания, если они есть
+            val chipText = when(paymentWithName.payment.status) {
+                PaymentStatus.PENDING -> "Ожидает"
+                PaymentStatus.CONFIRMED -> "Подтвержден"
+                PaymentStatus.MANUAL -> "Ручной"
+            }
+
+            binding.chipPaymentStatus.text = chipText
+            binding.chipPaymentStatus.visibility = View.VISIBLE
+
             if (paymentWithName.payment.notes.isNullOrEmpty()) {
                 binding.textViewPaymentNotes.visibility = View.GONE
             } else {
@@ -59,7 +68,6 @@ class PaymentAdapter : ListAdapter<PaymentWithSubscriptionName, PaymentAdapter.P
     }
 }
 
-// Вспомогательный класс для хранения имени подписки вместе с платежом
 data class PaymentWithSubscriptionName(
     val payment: Payment,
     val subscriptionName: String

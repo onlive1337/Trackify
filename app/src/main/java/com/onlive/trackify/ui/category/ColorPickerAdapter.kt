@@ -1,6 +1,7 @@
 package com.onlive.trackify.ui.category
 
 import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
@@ -60,9 +61,15 @@ class ColorPickerAdapter(
         fun bind(colorCode: String, isSelected: Boolean) {
             try {
                 val color = Color.parseColor(colorCode)
-                binding.viewColor.setBackgroundColor(color)
+                val shape = GradientDrawable()
+                shape.shape = GradientDrawable.OVAL
+                shape.setColor(color)
+                binding.viewColor.background = shape
             } catch (e: IllegalArgumentException) {
-                binding.viewColor.setBackgroundColor(Color.GRAY)
+                val shape = GradientDrawable()
+                shape.shape = GradientDrawable.OVAL
+                shape.setColor(Color.GRAY)
+                binding.viewColor.background = shape
             }
 
             val borderColor = if (isSelected) {

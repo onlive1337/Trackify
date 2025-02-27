@@ -1,6 +1,7 @@
 package com.onlive.trackify.ui.category
 
 import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -37,9 +38,15 @@ class CategoryGroupAdapter(
 
             try {
                 val color = Color.parseColor(group.colorCode)
-                binding.viewGroupColor.setBackgroundColor(color)
+                val shape = GradientDrawable()
+                shape.shape = GradientDrawable.OVAL
+                shape.setColor(color)
+                binding.viewGroupColor.background = shape
             } catch (e: IllegalArgumentException) {
-                binding.viewGroupColor.setBackgroundColor(Color.GRAY)
+                val shape = GradientDrawable()
+                shape.shape = GradientDrawable.OVAL
+                shape.setColor(Color.GRAY)
+                binding.viewGroupColor.background = shape
             }
 
             binding.root.setOnClickListener {

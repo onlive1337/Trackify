@@ -2,6 +2,7 @@ package com.onlive.trackify.ui.category
 
 import android.app.AlertDialog
 import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -146,9 +147,15 @@ class CategoryGroupDetailFragment : Fragment() {
     private fun updateColorPreview(colorCode: String) {
         try {
             val color = Color.parseColor(colorCode)
-            binding.viewColorPreview.setBackgroundColor(color)
+            val shape = GradientDrawable()
+            shape.shape = GradientDrawable.OVAL
+            shape.setColor(color)
+            binding.viewColorPreview.background = shape
         } catch (e: IllegalArgumentException) {
-            binding.viewColorPreview.setBackgroundColor(Color.GRAY)
+            val shape = GradientDrawable()
+            shape.shape = GradientDrawable.OVAL
+            shape.setColor(Color.GRAY)
+            binding.viewColorPreview.background = shape
         }
     }
 

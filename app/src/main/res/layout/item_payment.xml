@@ -48,7 +48,7 @@
             app:layout_constraintEnd_toStartOf="@+id/textViewPaymentAmount"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textViewPaymentDate"
-            tools:text="Netflix" />
+            tools:text="Claude" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipPaymentStatus"

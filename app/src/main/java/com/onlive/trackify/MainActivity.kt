@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
-    
+
     private var navGraphIds = listOf(
         R.id.navigation_subscriptions,
         R.id.navigation_payments,
@@ -63,6 +63,13 @@ class MainActivity : AppCompatActivity() {
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             title = destination.label
+
+            when (destination.id) {
+                R.id.navigation_subscriptions -> currentTabId = 0
+                R.id.navigation_payments -> currentTabId = 1
+                R.id.navigation_statistics -> currentTabId = 2
+                R.id.navigation_settings -> currentTabId = 3
+            }
         }
     }
 
@@ -70,59 +77,30 @@ class MainActivity : AppCompatActivity() {
         navView.setupWithNavController(navController)
 
         navView.setOnItemSelectedListener { item ->
-            if (item.itemId == navView.selectedItemId) {
-                val backStackEntryCount = navController.currentBackStack.value.size
-
-                if (backStackEntryCount > 2) {
-                    navigateToTabStart(item.itemId)
-                    return@setOnItemSelectedListener true
-                }
+            val targetId = when (item.itemId) {
+                R.id.navigation_subscriptions -> R.id.navigation_subscriptions
+                R.id.navigation_payments -> R.id.navigation_payments
+                R.id.navigation_statistics -> R.id.navigation_statistics
+                R.id.navigation_settings -> R.id.navigation_settings
+                else -> return@setOnItemSelectedListener false
             }
 
-            when (item.itemId) {
-                R.id.navigation_subscriptions -> {
-                    currentTabId = 0
-                    if (isNotRootDestination(R.id.navigation_subscriptions)) {
-                        navigateToTabStart(R.id.navigation_subscriptions)
-                    }
-                }
-                R.id.navigation_payments -> {
-                    currentTabId = 1
-                    if (isNotRootDestination(R.id.navigation_payments)) {
-                        navigateToTabStart(R.id.navigation_payments)
-                    }
-                }
-                R.id.navigation_statistics -> {
-                    currentTabId = 2
-                    if (isNotRootDestination(R.id.navigation_statistics)) {
-                        navigateToTabStart(R.id.navigation_statistics)
-                    }
-                }
-                R.id.navigation_settings -> {
-                    currentTabId = 3
-                    if (isNotRootDestination(R.id.navigation_settings)) {
-                        navigateToTabStart(R.id.navigation_settings)
-                    }
-                }
+            val currentDestinationId = navController.currentDestination?.id ?: -1
+
+            if (currentDestinationId != targetId && targetId == navGraphIds[currentTabId]) {
+                navController.popBackStack(targetId, false)
+                return@setOnItemSelectedListener true
             }
-            true
+
+            try {
+                navController.navigate(targetId)
+                currentTabId = navGraphIds.indexOf(targetId)
+                return@setOnItemSelectedListener true
+            } catch (e: Exception) {
+                e.printStackTrace()
+                return@setOnItemSelectedListener false
+            }
         }
-    }
-
-    private fun isNotRootDestination(destinationId: Int): Boolean {
-        val currentDestination = navController.currentDestination?.id ?: return false
-
-        return when (destinationId) {
-            R.id.navigation_subscriptions -> currentDestination != R.id.navigation_subscriptions
-            R.id.navigation_payments -> currentDestination != R.id.navigation_payments
-            R.id.navigation_statistics -> currentDestination != R.id.navigation_statistics
-            R.id.navigation_settings -> currentDestination != R.id.navigation_settings
-            else -> false
-        }
-    }
-
-    private fun navigateToTabStart(destinationId: Int) {
-        navController.popBackStack(destinationId, false)
     }
 
     override fun onSupportNavigateUp(): Boolean {
