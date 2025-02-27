@@ -21,10 +21,8 @@ object MemoryUtils {
                 activityManager.getRunningAppProcesses()?.find {
                     it.pid == Process.myPid()
                 }?.let {
-                    activityManager.setProcessImportance(it.pid, ActivityManager.RunningAppProcessInfo.IMPORTANCE_BACKGROUND)
+                    Log.d("MemoryUtils", "Process has low memory, requesting cleanup")
                 }
-
-                activityManager.trimMemory(ActivityManager.TRIM_MEMORY_RUNNING_MODERATE)
             }
         } catch (e: Exception) {
             Log.e("MemoryUtils", "Error handling memory management", e)

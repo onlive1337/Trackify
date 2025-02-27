@@ -69,35 +69,33 @@ class StatisticsFragment : Fragment() {
     }
 
     private fun observeStatistics() {
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
-            statisticsViewModel.totalMonthlySpending.observe(viewLifecycleOwner) { monthlySpending ->
-                withContext(Dispatchers.Main) {
-                    binding.textViewMonthlySpending.text = formatCurrency(monthlySpending)
-                }
-            }
+        statisticsViewModel.totalMonthlySpending.observe(viewLifecycleOwner) { monthlySpending ->
+            binding.textViewMonthlySpending.text = formatCurrency(monthlySpending)
+        }
 
-            statisticsViewModel.totalYearlySpending.observe(viewLifecycleOwner) { yearlySpending ->
-                withContext(Dispatchers.Main) {
-                    binding.textViewYearlySpending.text = formatCurrency(yearlySpending)
-                }
-            }
+        statisticsViewModel.totalYearlySpending.observe(viewLifecycleOwner) { yearlySpending ->
+            binding.textViewYearlySpending.text = formatCurrency(yearlySpending)
+        }
 
-            statisticsViewModel.spendingByCategory.observe(viewLifecycleOwner) { categorySpending ->
+        statisticsViewModel.spendingByCategory.observe(viewLifecycleOwner) { categorySpending ->
+            lifecycleScope.launch {
                 updatePieChart(categorySpending)
             }
+        }
 
-            statisticsViewModel.monthlySpendingHistory.observe(viewLifecycleOwner) { monthlyHistory ->
+        statisticsViewModel.monthlySpendingHistory.observe(viewLifecycleOwner) { monthlyHistory ->
+            lifecycleScope.launch {
                 updateBarChart(monthlyHistory)
             }
+        }
 
-            statisticsViewModel.subscriptionTypeSpending.observe(viewLifecycleOwner) { typeSpending ->
+        statisticsViewModel.subscriptionTypeSpending.observe(viewLifecycleOwner) { typeSpending ->
+            lifecycleScope.launch {
                 updateTypeChart(typeSpending)
             }
-
-            withContext(Dispatchers.Main) {
-                showLoadingState(false)
-            }
         }
+
+        showLoadingState(false)
     }
 
     private fun setupPieChart() {

@@ -38,6 +38,8 @@ class TrackifyApplication : Application(), Configuration.Provider {
         try {
             errorHandler = ErrorHandler.getInstance(this)
             cacheService = CacheService.getInstance()
+
+
             initializeComponents()
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

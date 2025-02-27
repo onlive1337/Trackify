@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Base.Theme.Trackify" parent="Theme.Material3.DayNight.NoActionBar">
-        <style name="Theme.Trackify" parent="Base.Theme.Trackify" />
         <item name="android:windowLightStatusBar" tools:targetApi="23">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
 
         <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">shortEdges</item>
-
 
         <item name="toolbarStyle">@style/Widget.App.Toolbar</item>
         <item name="actionBarStyle">@style/Widget.App.ActionBar</item>
@@ -24,6 +22,8 @@
         <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.App.MediumComponent</item>
         <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.App.LargeComponent</item>
     </style>
+
+    <style name="Theme.Trackify" parent="Base.Theme.Trackify" />
 
     <style name="ThemeOverlay.App.ActionBar" parent="ThemeOverlay.Material3.ActionBar">
         <item name="colorControlNormal">?attr/colorOnBackground</item>
