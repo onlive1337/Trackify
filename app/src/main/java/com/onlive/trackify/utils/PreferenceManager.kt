@@ -2,6 +2,7 @@ package com.onlive.trackify.utils
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.onlive.trackify.data.model.Currency
 
 class PreferenceManager(context: Context) {
     companion object {
