@@ -11,6 +11,7 @@ class PreferenceManager(context: Context) {
         private const val KEY_NOTIFICATION_TIME = "notification_time_hour"
         private const val KEY_NOTIFICATION_MINUTE = "notification_time_minute"
         private const val KEY_NOTIFICATION_FREQUENCY = "notification_frequency"
+        private const val KEY_CURRENCY_CODE = "currency_code"
     }
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -57,6 +58,18 @@ class PreferenceManager(context: Context) {
             .putInt(KEY_NOTIFICATION_TIME, hour)
             .putInt(KEY_NOTIFICATION_MINUTE, minute)
             .apply()
+    }
+
+    fun getCurrencyCode(): String {
+        return prefs.getString(KEY_CURRENCY_CODE, "RUB") ?: "RUB"
+    }
+
+    fun setCurrencyCode(currencyCode: String) {
+        prefs.edit().putString(KEY_CURRENCY_CODE, currencyCode).apply()
+    }
+
+    fun getCurrentCurrency(): Currency {
+        return Currency.getCurrencyByCode(getCurrencyCode())
     }
 }
 

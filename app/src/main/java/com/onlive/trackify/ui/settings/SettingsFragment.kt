@@ -80,6 +80,10 @@ class SettingsFragment : Fragment() {
         binding.buttonNotificationSettings.setOnClickListener {
             findNavController().navigate(R.id.action_navigation_settings_to_notificationSettingsFragment)
         }
+
+        binding.buttonCurrencySettings.setOnClickListener {
+            findNavController().navigate(R.id.action_navigation_settings_to_currencySettingsFragment)
+        }
     }
 
     private fun setupThemeOptions() {

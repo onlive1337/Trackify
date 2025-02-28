@@ -61,6 +61,12 @@
         tools:layout="@layout/fragment_statistics" />
 
     <fragment
+        android:id="@+id/currencySettingsFragment"
+        android:name="com.onlive.trackify.ui.settings.CurrencySettingsFragment"
+        android:label="@string/currency_settings"
+        tools:layout="@layout/fragment_currency_settings" />
+
+    <fragment
         android:id="@+id/navigation_settings"
         android:name="com.onlive.trackify.ui.settings.SettingsFragment"
         android:label="@string/title_settings"
@@ -89,6 +95,13 @@
         <action
             android:id="@+id/action_navigation_settings_to_dataManagementFragment"
             app:destination="@id/dataManagementFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_navigation_settings_to_currencySettingsFragment"
+            app:destination="@id/currencySettingsFragment"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
