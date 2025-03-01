@@ -7,13 +7,13 @@ import com.onlive.trackify.data.model.Currency
 class PreferenceManager(context: Context) {
     companion object {
         private const val PREFS_NAME = "trackify_preferences"
-        private const val KEY_NOTIFICATIONS_ENABLED = "notifications_enabled"
-        private const val KEY_REMINDER_DAYS = "reminder_days"
-        private const val KEY_NOTIFICATION_TIME = "notification_time_hour"
-        private const val KEY_NOTIFICATION_MINUTE = "notification_time_minute"
-        private const val KEY_NOTIFICATION_FREQUENCY = "notification_frequency"
-        private const val KEY_CURRENCY_CODE = "currency_code"
-        private const val KEY_LANGUAGE_CODE = "language_code"
+        const val KEY_NOTIFICATIONS_ENABLED = "notifications_enabled"
+        const val KEY_REMINDER_DAYS = "reminder_days"
+        const val KEY_NOTIFICATION_TIME = "notification_time_hour"
+        const val KEY_NOTIFICATION_MINUTE = "notification_time_minute"
+        const val KEY_NOTIFICATION_FREQUENCY = "notification_frequency"
+        const val KEY_CURRENCY_CODE = "currency_code"
+        const val KEY_LANGUAGE_CODE = "language_code"
     }
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

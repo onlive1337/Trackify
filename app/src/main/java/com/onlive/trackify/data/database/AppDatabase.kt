@@ -15,7 +15,7 @@ import androidx.room.withTransaction
 
 @Database(
     entities = [Subscription::class, Payment::class, Category::class, CategoryGroup::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

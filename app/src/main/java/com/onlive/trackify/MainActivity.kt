@@ -120,7 +120,7 @@ class MainActivity : AppCompatActivity(), PreferenceManager.OnPreferenceChangedL
     }
 
     override fun onPreferenceChanged(key: String, value: Any?) {
-        if (key == PreferenceManager.Companion.KEY_LANGUAGE_CODE) {
+        if (key == "language_code") {
             recreate()
         }
     }
