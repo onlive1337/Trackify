@@ -84,6 +84,10 @@ class SettingsFragment : Fragment() {
         binding.buttonCurrencySettings.setOnClickListener {
             findNavController().navigate(R.id.action_navigation_settings_to_currencySettingsFragment)
         }
+
+        binding.buttonLanguageSettings.setOnClickListener {
+            findNavController().navigate(R.id.action_navigation_settings_to_languageSettingsFragment)
+        }
     }
 
     private fun setupThemeOptions() {
@@ -153,7 +157,7 @@ class SettingsFragment : Fragment() {
                 ).show()
             }
         }
-        
+
     }
 
     override fun onDestroyView() {

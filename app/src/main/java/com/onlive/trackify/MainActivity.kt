@@ -1,5 +1,6 @@
 package com.onlive.trackify
 
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -12,11 +13,14 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.color.DynamicColors
 import com.onlive.trackify.databinding.ActivityMainBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.onlive.trackify.utils.LocaleHelper
+import com.onlive.trackify.utils.PreferenceManager
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
+    private lateinit var preferenceManager: PreferenceManager
 
     private var navGraphIds = listOf(
         R.id.navigation_subscriptions,
@@ -26,6 +30,12 @@ class MainActivity : AppCompatActivity() {
     )
 
     private var currentTabId = 0
+
+    override fun attachBaseContext(newBase: Context) {
+        preferenceManager = PreferenceManager(newBase)
+        val context = LocaleHelper.getLocalizedContext(newBase, preferenceManager)
+        super.attachBaseContext(context)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

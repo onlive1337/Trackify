@@ -13,6 +13,7 @@ class PreferenceManager(context: Context) {
         private const val KEY_NOTIFICATION_MINUTE = "notification_time_minute"
         private const val KEY_NOTIFICATION_FREQUENCY = "notification_frequency"
         private const val KEY_CURRENCY_CODE = "currency_code"
+        private const val KEY_LANGUAGE_CODE = "language_code"
     }
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -71,6 +72,14 @@ class PreferenceManager(context: Context) {
 
     fun getCurrentCurrency(): Currency {
         return Currency.getCurrencyByCode(getCurrencyCode())
+    }
+
+    fun getLanguageCode(): String {
+        return prefs.getString(KEY_LANGUAGE_CODE, "") ?: ""
+    }
+
+    fun setLanguageCode(languageCode: String) {
+        prefs.edit().putString(KEY_LANGUAGE_CODE, languageCode).apply()
     }
 }
 

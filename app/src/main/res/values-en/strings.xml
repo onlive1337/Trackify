@@ -28,17 +28,39 @@
     <string name="payment_date">Date</string>
     <string name="payment_subscription">Subscription</string>
     <string name="payment_notes">Notes</string>
+    <string name="payment_status_pending">Pending</string>
+    <string name="payment_status_confirmed">Confirmed</string>
+    <string name="payment_status_manual">Manual</string>
+    <string name="pending_payments">Pending payments</string>
+    <string name="confirm_payment">Confirm</string>
+    <string name="bulk_payment_actions">Bulk actions</string>
+    <string name="payments_select_all">Select all</string>
+    <string name="payments_selected_count">Selected: %d</string>
+    <string name="confirm_selected">Confirm selected</string>
+    <string name="delete_selected">Delete selected</string>
+    <string name="no_payments">No payments yet</string>
+    <string name="next_payment">Next payment: %s</string>
 
     <string name="add_category">Add category</string>
     <string name="edit_category">Edit category</string>
     <string name="category_name">Category name</string>
     <string name="category_color">Color</string>
+    <string name="categories">Categories</string>
+    <string name="category_groups">Category groups</string>
+    <string name="no_categories">No categories yet</string>
+    <string name="manage_categories">Manage categories</string>
+    <string name="select_color">Select color</string>
 
     <string name="monthly_spending">Monthly spending</string>
     <string name="yearly_spending">Yearly spending</string>
     <string name="spending_by_category">Spending by category</string>
     <string name="spending_over_time">Spending over time</string>
     <string name="subscription_types">Subscription types expense</string>
+    <string name="monthly_type">Monthly</string>
+    <string name="yearly_type">Yearly (per month)</string>
+    <string name="no_data">No data to display</string>
+    <string name="total">total</string>
+    <string name="per_month">per month</string>
 
     <string name="theme_settings">Theme settings</string>
     <string name="system_theme">System theme</string>
@@ -57,8 +79,85 @@
     <string name="notifications_disabled">Notifications disabled</string>
     <string name="notifications_permission_denied">Notification permission denied</string>
     <string name="notifications_permission_rationale">Notification permission is needed to send payment reminders</string>
+    <string name="notification_settings">Notification settings</string>
+    <string name="notification_time">Notification time</string>
+    <string name="notification_frequency">Notification frequency</string>
+    <string name="daily">Daily</string>
+    <string name="weekly">Weekly (Mondays)</string>
+    <string name="monthly">Monthly (1st day)</string>
+    <string name="custom">Custom</string>
+    <string name="reminder_days">Reminder days</string>
+    <string name="day_of_payment">On payment day</string>
+    <string name="one_day_before">1 day before</string>
+    <string name="three_days_before">3 days before</string>
+    <string name="week_before">7 days before</string>
+    <string name="two_weeks_before">14 days before</string>
+    <string name="month_before">30 days before</string>
 
     <string name="currency_settings">Currency settings</string>
     <string name="currency_description">Choose the currency for displaying amounts in the app</string>
     <string name="currency_saved">Currency changed to %s</string>
+    <string name="currency">Currency</string>
+    <string name="choose_currency">Choose currency</string>
+
+    <string name="language_settings">Language settings</string>
+    <string name="language_description">Choose application language</string>
+    <string name="language_changed">Language changed. Changes will take effect after application restart</string>
+    <string name="app_language">Application language</string>
+    <string name="choose_language">Choose language</string>
+    <string name="system_language">System language</string>
+
+    <string name="theme">Theme</string>
+    <string name="general_settings">General settings</string>
+    <string name="notifications">Notifications</string>
+    <string name="data_management">Data management</string>
+    <string name="export_import_data">Export and import data</string>
+    <string name="about_app">About app</string>
+    <string name="app_version">Version 1.0.0</string>
+    <string name="app_description">Application for tracking subscriptions</string>
+    <string name="export_data">Export data</string>
+    <string name="import_data">Import data</string>
+    <string name="export_description">Save all application data to a JSON file. This will allow you to restore your data if necessary or transfer it to another device.</string>
+    <string name="import_description">Restore data from a previously created JSON file. Warning! Importing data will replace all existing data in the application.</string>
+
+    <string name="upcoming_payments">Upcoming payments</string>
+    <string name="today">Today</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="days_until">In %d days</string>
+    <string name="week">Week</string>
+    <string name="month">Month</string>
+    <string name="all">All</string>
+    <string name="no_upcoming_payments">No upcoming payments</string>
+
+    <string name="search_subscriptions">Search subscriptions</string>
+    <string name="no_subscriptions">No subscriptions yet</string>
+    <string name="subscriptions_not_found">Subscriptions not found</string>
+
+    <string name="payment_history">Payment history</string>
+    <string name="no_payment_history">No payment history</string>
+    <string name="add_payment_button">Add payment</string>
+
+    <string name="delete_payment_confirmation">Delete payment</string>
+    <string name="delete_payment_message">Are you sure you want to delete this payment?</string>
+    <string name="payment_deleted">Payment deleted</string>
+    <string name="payment_added">Payment added</string>
+    <string name="payment_updated">Payment updated</string>
+    <string name="payment_confirmed">Payment confirmed</string>
+
+    <string name="delete_subscription_confirmation">Delete subscription</string>
+    <string name="delete_subscription_message">Are you sure you want to delete this subscription? This action cannot be undone.</string>
+    <string name="subscription_deleted">Subscription deleted</string>
+    <string name="subscription_added">Subscription added</string>
+    <string name="subscription_updated">Subscription updated</string>
+
+    <string name="delete_category_confirmation">Delete category</string>
+    <string name="delete_category_message">Are you sure you want to delete this category?</string>
+    <string name="category_deleted">Category deleted</string>
+    <string name="category_added">Category created</string>
+    <string name="category_updated">Category updated</string>
+    <string name="enter_category_name">Enter category name</string>
+    <string name="category_no_name">Enter category name</string>
+
+    <string name="without_category">No category</string>
+    <string name="unknown">Unknown</string>
 </resources>
