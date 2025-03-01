@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.onlive.trackify.databinding.ItemUpcomingPaymentBinding
 import com.onlive.trackify.ui.overview.UpcomingPaymentsFragment.UpcomingPayment
-import java.text.NumberFormat
+import com.onlive.trackify.utils.CurrencyFormatter
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -34,12 +34,13 @@ class UpcomingPaymentAdapter :
 
         fun bind(upcomingPayment: UpcomingPayment) {
             val dateFormat = SimpleDateFormat("d MMMM yyyy", Locale("ru"))
-            val currencyFormat = NumberFormat.getCurrencyInstance(Locale("ru", "RU"))
-            currencyFormat.maximumFractionDigits = 0
 
             binding.textViewSubscriptionName.text = upcomingPayment.subscription.name
             binding.textViewPaymentDate.text = dateFormat.format(upcomingPayment.paymentDate)
-            binding.textViewPaymentAmount.text = currencyFormat.format(upcomingPayment.subscription.price)
+            binding.textViewPaymentAmount.text = CurrencyFormatter.formatAmount(
+                binding.root.context,
+                upcomingPayment.subscription.price
+            )
 
             val daysText = when(upcomingPayment.daysUntil) {
                 0 -> "Сегодня"

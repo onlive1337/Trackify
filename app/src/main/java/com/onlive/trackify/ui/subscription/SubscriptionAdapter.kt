@@ -11,6 +11,7 @@ import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.databinding.ItemSubscriptionBinding
 import com.onlive.trackify.databinding.ItemSubscriptionGridBinding
 import com.onlive.trackify.utils.AnimationUtils
+import com.onlive.trackify.utils.CurrencyFormatter
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -84,8 +85,10 @@ class SubscriptionAdapter(
             binding.textViewSubscriptionName.text = subscription.name
 
             val priceString = when (subscription.billingFrequency) {
-                BillingFrequency.MONTHLY -> "₽${subscription.price}/мес"
-                BillingFrequency.YEARLY -> "₽${subscription.price}/год"
+                BillingFrequency.MONTHLY ->
+                    CurrencyFormatter.formatAmount(binding.root.context, subscription.price) + "/мес"
+                BillingFrequency.YEARLY ->
+                    CurrencyFormatter.formatAmount(binding.root.context, subscription.price) + "/год"
             }
             binding.textViewSubscriptionPrice.text = priceString
 
@@ -127,8 +130,10 @@ class SubscriptionAdapter(
             binding.textViewSubscriptionName.text = subscription.name
 
             val priceString = when (subscription.billingFrequency) {
-                BillingFrequency.MONTHLY -> "₽${subscription.price}/мес"
-                BillingFrequency.YEARLY -> "₽${subscription.price}/год"
+                BillingFrequency.MONTHLY ->
+                    CurrencyFormatter.formatAmount(binding.root.context, subscription.price) + "/мес"
+                BillingFrequency.YEARLY ->
+                    CurrencyFormatter.formatAmount(binding.root.context, subscription.price) + "/год"
             }
             binding.textViewSubscriptionPrice.text = priceString
 

@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.onlive.trackify.databinding.ItemPendingPaymentBinding
+import com.onlive.trackify.utils.CurrencyFormatter
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -37,7 +38,10 @@ class PendingPaymentAdapter(
             val payment = paymentWithName.payment
 
             binding.textViewPaymentDate.text = dateFormat.format(payment.date)
-            binding.textViewPaymentAmount.text = "₽${payment.amount}"
+            binding.textViewPaymentAmount.text = CurrencyFormatter.formatAmount(
+                binding.root.context,
+                payment.amount
+            )
             binding.textViewPaymentSubscription.text = paymentWithName.subscriptionName
 
             if (payment.notes.isNullOrEmpty()) {

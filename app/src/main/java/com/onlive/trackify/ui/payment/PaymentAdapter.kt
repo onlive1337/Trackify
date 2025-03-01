@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.data.model.PaymentStatus
 import com.onlive.trackify.databinding.ItemPaymentBinding
+import com.onlive.trackify.utils.CurrencyFormatter
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -35,7 +36,10 @@ class PaymentAdapter : ListAdapter<PaymentWithSubscriptionName, PaymentAdapter.P
             val dateFormat = SimpleDateFormat("d MMMM yyyy", Locale("ru"))
 
             binding.textViewPaymentDate.text = dateFormat.format(paymentWithName.payment.date)
-            binding.textViewPaymentAmount.text = "₽${paymentWithName.payment.amount}"
+            binding.textViewPaymentAmount.text = CurrencyFormatter.formatAmount(
+                binding.root.context,
+                paymentWithName.payment.amount
+            )
             binding.textViewPaymentSubscription.text = paymentWithName.subscriptionName
 
             val chipText = when(paymentWithName.payment.status) {
