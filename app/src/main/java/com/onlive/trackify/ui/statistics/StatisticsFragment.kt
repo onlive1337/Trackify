@@ -19,10 +19,9 @@ import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.onlive.trackify.R
 import com.onlive.trackify.databinding.FragmentStatisticsBinding
+import com.onlive.trackify.utils.CurrencyFormatter
 import com.onlive.trackify.viewmodel.StatisticsViewModel
 import kotlinx.coroutines.launch
-import java.text.NumberFormat
-import java.util.Locale
 
 class StatisticsFragment : Fragment() {
 
@@ -211,7 +210,7 @@ class StatisticsFragment : Fragment() {
         donutChartCategory.setData(
             items = chartItems,
             centerText = formatCurrency(totalAmount),
-            centerSubText = "всего"
+            centerSubText = getString(R.string.total)
         )
 
         categoryLegendAdapter.submitData(categorySpending, totalAmount)
@@ -233,7 +232,7 @@ class StatisticsFragment : Fragment() {
         donutChartType.setData(
             items = chartItems,
             centerText = formatCurrency(totalAmount),
-            centerSubText = "в месяц"
+            centerSubText = getString(R.string.per_month)
         )
 
         typeLegendAdapter.submitData(typeSpending, totalAmount)
@@ -282,15 +281,7 @@ class StatisticsFragment : Fragment() {
     }
 
     private fun formatCurrency(amount: Double, includeSymbol: Boolean = true): String {
-        val format = NumberFormat.getCurrencyInstance(Locale("ru", "RU"))
-        format.maximumFractionDigits = 0
-        val formatted = format.format(amount)
-
-        return if (includeSymbol) {
-            formatted
-        } else {
-            formatted.replace("₽", "").trim()
-        }
+        return CurrencyFormatter.formatAmount(requireContext(), amount, includeSymbol)
     }
 
     override fun onDestroyView() {

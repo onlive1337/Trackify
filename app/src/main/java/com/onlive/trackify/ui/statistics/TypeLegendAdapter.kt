@@ -9,9 +9,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.onlive.trackify.R
+import com.onlive.trackify.utils.CurrencyFormatter
 import com.onlive.trackify.viewmodel.StatisticsViewModel
-import java.text.NumberFormat
-import java.util.Locale
 
 class TypeLegendAdapter : ListAdapter<StatisticsViewModel.SubscriptionTypeSpending, TypeLegendAdapter.ViewHolder>(
     TypeDiffCallback()
@@ -31,10 +30,7 @@ class TypeLegendAdapter : ListAdapter<StatisticsViewModel.SubscriptionTypeSpendi
             }
 
             nameText.text = item.type
-
-            val format = NumberFormat.getCurrencyInstance(Locale("ru", "RU"))
-            format.maximumFractionDigits = 0
-            amountText.text = format.format(item.amount)
+            amountText.text = CurrencyFormatter.formatAmount(itemView.context, item.amount)
 
             val percentage = if (totalAmount > 0) (item.amount / totalAmount) * 100 else 0.0
             percentText.text = String.format("%.1f%%", percentage)

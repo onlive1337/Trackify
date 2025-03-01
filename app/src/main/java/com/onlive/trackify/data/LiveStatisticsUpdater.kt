@@ -11,7 +11,10 @@ import com.onlive.trackify.viewmodel.StatisticsViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 import java.util.concurrent.ConcurrentHashMap
 
@@ -261,20 +264,9 @@ class LiveStatisticsUpdater(
     }
 
     private fun getMonthName(month: Int): String {
-        return when (month) {
-            Calendar.JANUARY -> "Янв"
-            Calendar.FEBRUARY -> "Фев"
-            Calendar.MARCH -> "Мар"
-            Calendar.APRIL -> "Апр"
-            Calendar.MAY -> "Май"
-            Calendar.JUNE -> "Июн"
-            Calendar.JULY -> "Июл"
-            Calendar.AUGUST -> "Авг"
-            Calendar.SEPTEMBER -> "Сен"
-            Calendar.OCTOBER -> "Окт"
-            Calendar.NOVEMBER -> "Ноя"
-            Calendar.DECEMBER -> "Дек"
-            else -> "???"
-        }
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.MONTH, month)
+        val dateFormat = SimpleDateFormat("MMM", Locale.getDefault())
+        return dateFormat.format(calendar.time)
     }
 }
