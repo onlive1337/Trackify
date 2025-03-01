@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.onlive.trackify.R
 import com.onlive.trackify.databinding.ItemUpcomingPaymentBinding
 import com.onlive.trackify.ui.overview.UpcomingPaymentsFragment.UpcomingPayment
 import com.onlive.trackify.utils.CurrencyFormatter
@@ -33,7 +34,8 @@ class UpcomingPaymentAdapter :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(upcomingPayment: UpcomingPayment) {
-            val dateFormat = SimpleDateFormat("d MMMM yyyy", Locale("ru"))
+            val context = binding.root.context
+            val dateFormat = SimpleDateFormat("d MMMM yyyy", Locale.getDefault())
 
             binding.textViewSubscriptionName.text = upcomingPayment.subscription.name
             binding.textViewPaymentDate.text = dateFormat.format(upcomingPayment.paymentDate)
@@ -43,9 +45,9 @@ class UpcomingPaymentAdapter :
             )
 
             val daysText = when(upcomingPayment.daysUntil) {
-                0 -> "Сегодня"
-                1 -> "Завтра"
-                else -> "Через ${upcomingPayment.daysUntil} дней"
+                0 -> context.getString(R.string.today)
+                1 -> context.getString(R.string.tomorrow)
+                else -> context.getString(R.string.days_until, upcomingPayment.daysUntil)
             }
             binding.textViewDaysUntil.text = daysText
 

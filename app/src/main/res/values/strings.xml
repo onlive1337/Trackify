@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Trackify</string>
     <string name="title_subscriptions">Подписки</string>
@@ -160,4 +161,61 @@
 
     <string name="without_category">Без категории</string>
     <string name="unknown">Неизвестно</string>
+
+    <string name="upcoming_payment_title">Предстоящие платежи</string>
+    <string name="filter_by_time">Фильтр по времени</string>
+    <string name="category_select_title">Выбор категории</string>
+    <string name="payment_history_title">История платежей</string>
+    <string name="no_payments_for_subscription">Нет платежей для этой подписки</string>
+    <string name="category_group_title">Группы категорий</string>
+    <string name="category_group_description">Группы позволяют организовать ваши категории и фильтровать подписки по группам</string>
+    <string name="no_category_groups">У вас пока нет групп категорий</string>
+    <string name="add_category_group">Добавить группу</string>
+    <string name="manage_category_groups">Управление группами категорий</string>
+    <string name="category_group_name">Название группы</string>
+    <string name="category_group_description_hint">Описание (необязательно)</string>
+    <string name="category_group_color">Цвет группы</string>
+    <string name="select_group_color">Выберите цвет</string>
+    <string name="categories_in_group">Категории в группе</string>
+    <string name="no_categories_in_group">В этой группе пока нет категорий</string>
+    <string name="delete_group_confirmation">Удаление группы</string>
+    <string name="delete_group_message">Вы уверены, что хотите удалить эту группу? Категории в этой группе не будут удалены, но потеряют привязку к группе.</string>
+    <string name="group_deleted">Группа удалена</string>
+    <string name="group_added">Группа создана</string>
+    <string name="group_updated">Группа обновлена</string>
+    <string name="sort_options">Параметры сортировки</string>
+    <string name="sort_by_name_asc">По имени (А-Я)</string>
+    <string name="sort_by_name_desc">По имени (Я-А)</string>
+    <string name="sort_by_color">По цвету</string>
+    <string name="bulk_payment_title">Групповые операции с платежами</string>
+    <string name="bulk_payment_instruction">Выберите платежи для выполнения групповых операций</string>
+    <string name="all_payments">Все платежи</string>
+    <string name="payments_pending_confirmation">Ожидают подтверждения</string>
+    <string name="manual_payments">Ручные</string>
+    <string name="confirmed_payments">Подтвержденные</string>
+    <string name="selected_count">Выбрано: %d</string>
+    <string name="no_payments_for_bulk">Нет платежей для групповых операций</string>
+    <string name="pending_payments_card_title">Платежи, ожидающие подтверждения</string>
+    <string name="notification_settings_title">Настройки уведомлений</string>
+    <string name="notification_time_title">Время уведомлений</string>
+    <string name="notification_time_description">Выберите время, когда вы хотите получать уведомления о подписках</string>
+    <string name="notification_frequency_title">Частота уведомлений</string>
+    <string name="notification_frequency_description">Выберите, как часто вы хотите получать напоминания о подписках</string>
+    <string name="reminder_days_title">Дни напоминаний</string>
+    <string name="reminder_days_description">Выберите, за сколько дней до платежа вы хотите получать уведомления</string>
+    <string name="on_payment_day">В день платежа</string>
+    <string name="data_management_title">Управление данными</string>
+    <string name="export_title">Экспорт данных</string>
+    <string name="import_title">Импорт данных</string>
+    <string name="export_button">Экспортировать данные</string>
+    <string name="import_button">Импортировать данные</string>
+    <string name="import_confirmation_title">Подтверждение импорта</string>
+    <string name="import_confirmation_message">Импорт данных заменит все существующие данные в приложении. Продолжить?</string>
+    <string name="export_success">Данные успешно экспортированы в %s</string>
+    <string name="export_error">Ошибка при экспорте данных</string>
+    <string name="import_success">Данные успешно импортированы</string>
+    <string name="import_error">Ошибка при импорте данных</string>
+    <string name="toggle_view_mode">Переключить режим просмотра</string>
+    <string name="subscription_types_spending">Расходы по типам подписок</string>
+    <string name="no_payments_selected">Не выбрано ни одного платежа</string>
 </resources>

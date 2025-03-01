@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.onlive.trackify.R
 import com.onlive.trackify.data.model.PaymentStatus
 import com.onlive.trackify.databinding.FragmentBulkPaymentActionsBinding
 import com.onlive.trackify.viewmodel.PaymentViewModel
@@ -120,7 +121,7 @@ class BulkPaymentActionsFragment : Fragment() {
             val subscription = subscriptions.find { it.subscriptionId == payment.subscriptionId }
             PaymentWithSubscriptionName(
                 payment = payment,
-                subscriptionName = subscription?.name ?: "Неизвестно"
+                subscriptionName = subscription?.name ?: getString(R.string.unknown)
             )
         }
 
@@ -140,7 +141,7 @@ class BulkPaymentActionsFragment : Fragment() {
             val subscription = subscriptions.find { it.subscriptionId == payment.subscriptionId }
             PaymentWithSubscriptionName(
                 payment = payment,
-                subscriptionName = subscription?.name ?: "Неизвестно"
+                subscriptionName = subscription?.name ?: getString(R.string.unknown)
             )
         }
 
@@ -160,7 +161,7 @@ class BulkPaymentActionsFragment : Fragment() {
             val subscription = subscriptions.find { it.subscriptionId == payment.subscriptionId }
             PaymentWithSubscriptionName(
                 payment = payment,
-                subscriptionName = subscription?.name ?: "Неизвестно"
+                subscriptionName = subscription?.name ?: getString(R.string.unknown)
             )
         }
 
@@ -180,7 +181,7 @@ class BulkPaymentActionsFragment : Fragment() {
             val subscription = subscriptions.find { it.subscriptionId == payment.subscriptionId }
             PaymentWithSubscriptionName(
                 payment = payment,
-                subscriptionName = subscription?.name ?: "Неизвестно"
+                subscriptionName = subscription?.name ?: getString(R.string.unknown)
             )
         }
 
@@ -196,12 +197,12 @@ class BulkPaymentActionsFragment : Fragment() {
         binding.buttonConfirmSelected.isEnabled = hasSelected
         binding.buttonDeleteSelected.isEnabled = hasSelected
 
-        binding.textViewSelectedCount.text = "Выбрано: ${selectedPayments.size}"
+        binding.textViewSelectedCount.text = getString(R.string.selected_count, selectedPayments.size)
     }
 
     private fun confirmSelectedPayments() {
         if (selectedPayments.isEmpty()) {
-            Toast.makeText(requireContext(), "Не выбрано ни одного платежа", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.no_payments_selected), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -217,7 +218,7 @@ class BulkPaymentActionsFragment : Fragment() {
 
         Toast.makeText(
             requireContext(),
-            "Подтверждено платежей: ${paymentsToConfirm.size}",
+            getString(R.string.payment_confirmed) + ": ${paymentsToConfirm.size}",
             Toast.LENGTH_SHORT
         ).show()
 
@@ -227,7 +228,7 @@ class BulkPaymentActionsFragment : Fragment() {
 
     private fun deleteSelectedPayments() {
         if (selectedPayments.isEmpty()) {
-            Toast.makeText(requireContext(), "Не выбрано ни одного платежа", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.no_payments_selected), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -243,7 +244,7 @@ class BulkPaymentActionsFragment : Fragment() {
 
         Toast.makeText(
             requireContext(),
-            "Удалено платежей: ${paymentsToDelete.size}",
+            getString(R.string.payment_deleted) + ": ${paymentsToDelete.size}",
             Toast.LENGTH_SHORT
         ).show()
 

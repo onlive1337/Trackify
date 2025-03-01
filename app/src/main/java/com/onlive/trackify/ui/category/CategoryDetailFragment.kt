@@ -13,6 +13,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
+import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Category
 import com.onlive.trackify.databinding.FragmentCategoryDetailBinding
 import com.onlive.trackify.viewmodel.CategoryViewModel
@@ -130,7 +131,7 @@ class CategoryDetailFragment : Fragment() {
         val name = binding.categoryNameEditText.text.toString().trim()
 
         if (name.isEmpty()) {
-            binding.categoryNameEditText.error = "Введите название категории"
+            binding.categoryNameEditText.error = getString(R.string.category_no_name)
             return
         }
 
@@ -140,14 +141,14 @@ class CategoryDetailFragment : Fragment() {
                 colorCode = currentColorCode
             )
             categoryViewModel.update(updatedCategory)
-            Toast.makeText(requireContext(), "Категория обновлена", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.category_updated), Toast.LENGTH_SHORT).show()
         } else {
             val newCategory = Category(
                 name = name,
                 colorCode = currentColorCode
             )
             categoryViewModel.insert(newCategory)
-            Toast.makeText(requireContext(), "Категория создана", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.category_added), Toast.LENGTH_SHORT).show()
         }
 
         findNavController().popBackStack()
@@ -155,16 +156,16 @@ class CategoryDetailFragment : Fragment() {
 
     private fun showDeleteConfirmationDialog() {
         AlertDialog.Builder(requireContext())
-            .setTitle("Удаление категории")
-            .setMessage("Вы уверены, что хотите удалить эту категорию? Это действие нельзя отменить.")
-            .setPositiveButton("Удалить") { _, _ ->
+            .setTitle(getString(R.string.delete_category_confirmation))
+            .setMessage(getString(R.string.delete_category_message))
+            .setPositiveButton(getString(R.string.delete)) { _, _ ->
                 category?.let {
                     categoryViewModel.delete(it)
-                    Toast.makeText(requireContext(), "Категория удалена", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.category_deleted), Toast.LENGTH_SHORT).show()
                     findNavController().popBackStack()
                 }
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
 
