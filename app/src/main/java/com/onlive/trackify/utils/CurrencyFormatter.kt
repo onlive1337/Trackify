@@ -15,7 +15,15 @@ object CurrencyFormatter {
         val preferenceManager = PreferenceManager(context)
         val currency = preferenceManager.getCurrentCurrency()
 
-        val format = NumberFormat.getCurrencyInstance(Locale.getDefault())
+        val locale = when (currency.code) {
+            "RUB" -> Locale("ru", "RU")
+            "USD" -> Locale.US
+            "EUR" -> Locale.GERMANY
+            "GBP" -> Locale.UK
+            else -> Locale.getDefault()
+        }
+
+        val format = NumberFormat.getCurrencyInstance(locale)
         format.maximumFractionDigits = 2
         format.minimumFractionDigits = 2
         format.currency = java.util.Currency.getInstance(currency.code)

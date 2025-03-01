@@ -16,7 +16,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.onlive.trackify.utils.LocaleHelper
 import com.onlive.trackify.utils.PreferenceManager
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), PreferenceManager.OnPreferenceChangedListener {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
@@ -81,6 +81,8 @@ class MainActivity : AppCompatActivity() {
                 R.id.navigation_settings -> currentTabId = 3
             }
         }
+
+        preferenceManager.addOnPreferenceChangedListener(this)
     }
 
     private fun setupBottomNavigation(navView: BottomNavigationView) {
@@ -115,5 +117,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp() || super.onSupportNavigateUp()
+    }
+
+    override fun onPreferenceChanged(key: String, value: Any?) {
+        if (key == PreferenceManager.Companion.KEY_LANGUAGE_CODE) {
+            recreate()
+        }
+    }
+
+    override fun onDestroy() {
+        preferenceManager.removeOnPreferenceChangedListener(this)
+        super.onDestroy()
     }
 }

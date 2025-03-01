@@ -67,6 +67,7 @@ class LanguageSettingsFragment : Fragment() {
         if (selectedId != -1) {
             val radioButton = binding.root.findViewById<RadioButton>(selectedId)
             val languageCode = radioButton.tag as String
+
             preferenceManager.setLanguageCode(languageCode)
 
             Toast.makeText(

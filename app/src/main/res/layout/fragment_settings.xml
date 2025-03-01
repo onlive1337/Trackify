@@ -29,7 +29,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Тема"
+                    android:text="@string/theme"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -51,7 +51,7 @@
                         android:id="@+id/radioButtonSystemTheme"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Системная тема"
+                        android:text="@string/system_theme"
                         android:textSize="16sp"
                         android:paddingVertical="8dp" />
 
@@ -59,7 +59,7 @@
                         android:id="@+id/radioButtonLightTheme"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Светлая тема"
+                        android:text="@string/light_theme"
                         android:textSize="16sp"
                         android:paddingVertical="8dp" />
 
@@ -67,7 +67,7 @@
                         android:id="@+id/radioButtonDarkTheme"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Темная тема"
+                        android:text="@string/dark_theme"
                         android:textSize="16sp"
                         android:paddingVertical="8dp" />
                 </RadioGroup>
@@ -92,7 +92,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Общие настройки"
+                    android:text="@string/general_settings"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -115,7 +115,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Уведомления"
+                        android:text="@string/notifications"
                         android:textSize="16sp" />
 
                     <com.google.android.material.switchmaterial.SwitchMaterial
@@ -129,7 +129,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Настройки уведомлений"
+                    android:text="@string/notification_settings"
                     android:drawableStart="@drawable/ic_settings"
                     android:drawablePadding="8dp" />
             </LinearLayout>
@@ -151,7 +151,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Валюта"
+                    android:text="@string/currency"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -167,7 +167,7 @@
                     android:id="@+id/buttonCurrencySettings"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Выбор валюты" />
+                    android:text="@string/choose_currency" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -187,7 +187,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Категории"
+                    android:text="@string/categories"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -203,7 +203,7 @@
                     android:id="@+id/buttonManageCategories"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Управление категориями" />
+                    android:text="@string/manage_categories" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -223,7 +223,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Язык приложения"
+                    android:text="@string/app_language"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -239,7 +239,7 @@
                     android:id="@+id/buttonLanguageSettings"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Выбор языка" />
+                    android:text="@string/choose_language" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -259,7 +259,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Управление данными"
+                    android:text="@string/data_management"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -275,7 +275,7 @@
                     android:id="@+id/buttonDataManagement"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Экспорт и импорт данных" />
+                    android:text="@string/export_import_data" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -295,7 +295,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="О приложении"
+                    android:text="@string/about_app"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -310,7 +310,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Trackify"
+                    android:text="@string/app_name"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
@@ -318,13 +318,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Версия 1.0.0" />
+                    android:text="@string/app_version" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Приложение для отслеживания подписок" />
+                    android:text="@string/app_description" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>

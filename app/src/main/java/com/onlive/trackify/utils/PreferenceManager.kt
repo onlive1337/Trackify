@@ -17,6 +17,25 @@ class PreferenceManager(context: Context) {
     }
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private val listeners = mutableListOf<OnPreferenceChangedListener>()
+
+    interface OnPreferenceChangedListener {
+        fun onPreferenceChanged(key: String, value: Any?)
+    }
+
+    fun addOnPreferenceChangedListener(listener: OnPreferenceChangedListener) {
+        if (!listeners.contains(listener)) {
+            listeners.add(listener)
+        }
+    }
+
+    fun removeOnPreferenceChangedListener(listener: OnPreferenceChangedListener) {
+        listeners.remove(listener)
+    }
+
+    private fun notifyListeners(key: String, value: Any?) {
+        listeners.forEach { it.onPreferenceChanged(key, value) }
+    }
 
     fun areNotificationsEnabled(): Boolean {
         return prefs.getBoolean(KEY_NOTIFICATIONS_ENABLED, true)
@@ -24,6 +43,7 @@ class PreferenceManager(context: Context) {
 
     fun setNotificationsEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_NOTIFICATIONS_ENABLED, enabled).apply()
+        notifyListeners(KEY_NOTIFICATIONS_ENABLED, enabled)
     }
 
     fun getReminderDays(): Set<Int> {
@@ -34,6 +54,7 @@ class PreferenceManager(context: Context) {
 
     fun setReminderDays(days: Set<Int>) {
         prefs.edit().putStringSet(KEY_REMINDER_DAYS, days.map { it.toString() }.toSet()).apply()
+        notifyListeners(KEY_REMINDER_DAYS, days)
     }
 
     fun getNotificationFrequency(): NotificationFrequency {
@@ -47,6 +68,7 @@ class PreferenceManager(context: Context) {
 
     fun setNotificationFrequency(frequency: NotificationFrequency) {
         prefs.edit().putString(KEY_NOTIFICATION_FREQUENCY, frequency.name).apply()
+        notifyListeners(KEY_NOTIFICATION_FREQUENCY, frequency)
     }
 
     fun getNotificationTime(): Pair<Int, Int> {
@@ -60,6 +82,7 @@ class PreferenceManager(context: Context) {
             .putInt(KEY_NOTIFICATION_TIME, hour)
             .putInt(KEY_NOTIFICATION_MINUTE, minute)
             .apply()
+        notifyListeners(KEY_NOTIFICATION_TIME, Pair(hour, minute))
     }
 
     fun getCurrencyCode(): String {
@@ -68,6 +91,7 @@ class PreferenceManager(context: Context) {
 
     fun setCurrencyCode(currencyCode: String) {
         prefs.edit().putString(KEY_CURRENCY_CODE, currencyCode).apply()
+        notifyListeners(KEY_CURRENCY_CODE, currencyCode)
     }
 
     fun getCurrentCurrency(): Currency {
@@ -80,6 +104,7 @@ class PreferenceManager(context: Context) {
 
     fun setLanguageCode(languageCode: String) {
         prefs.edit().putString(KEY_LANGUAGE_CODE, languageCode).apply()
+        notifyListeners(KEY_LANGUAGE_CODE, languageCode)
     }
 }
 
