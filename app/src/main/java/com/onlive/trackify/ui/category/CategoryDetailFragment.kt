@@ -30,25 +30,9 @@ class CategoryDetailFragment : Fragment() {
     private lateinit var colorAdapter: ColorPickerAdapter
 
     private val predefinedColors = listOf(
-        "#FF5252", // Красный
-        "#FF4081", // Розовый
-        "#E040FB", // Пурпурный
-        "#7C4DFF", // Фиолетовый
-        "#536DFE", // Индиго
-        "#448AFF", // Синий
-        "#40C4FF", // Голубой
-        "#18FFFF", // Бирюзовый
-        "#64FFDA", // Мятный
-        "#69F0AE", // Зеленый
-        "#B2FF59", // Лаймовый
-        "#EEFF41", // Желтый
-        "#FFFF00", // Ярко-желтый
-        "#FFD740", // Янтарный
-        "#FFAB40", // Оранжевый
-        "#FF6E40", // Глубокий оранжевый
-        "#8D6E63", // Коричневый
-        "#BDBDBD", // Серый
-        "#212121"  // Черный
+        "#FF5252", "#FF4081", "#E040FB", "#7C4DFF", "#536DFE", "#448AFF", "#40C4FF", "#18FFFF",
+        "#64FFDA", "#69F0AE", "#B2FF59", "#EEFF41", "#FFFF00", "#FFD740", "#FFAB40", "#FF6E40",
+        "#8D6E63", "#BDBDBD", "#212121"
     )
 
     private var category: Category? = null
@@ -95,7 +79,7 @@ class CategoryDetailFragment : Fragment() {
 
         binding.recyclerViewColors.apply {
             adapter = colorAdapter
-            layoutManager = GridLayoutManager(requireContext(), 5) // 5 цветов в ряду
+            layoutManager = GridLayoutManager(requireContext(), 5)
         }
     }
 

@@ -10,7 +10,7 @@
         android:id="@+id/textViewTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Групповые операции с платежами"
+        android:text="@string/bulk_payment_title"
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
@@ -22,7 +22,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="Выберите платежи для выполнения групповых операций"
+        android:text="@string/bulk_payment_instruction"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textViewTitle" />
@@ -48,28 +48,28 @@
                 android:id="@+id/chipAllPayments"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Все платежи"
+                android:text="@string/all_payments"
                 android:checkable="true" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipPendingPayments"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ожидают подтверждения"
+                android:text="@string/payments_pending_confirmation"
                 android:checkable="true" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipManualPayments"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ручные"
+                android:text="@string/manual_payments"
                 android:checkable="true" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipConfirmedPayments"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Подтвержденные"
+                android:text="@string/confirmed_payments"
                 android:checkable="true" />
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
@@ -79,7 +79,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="Выбрано: 0"
+        android:text="@string/selected_count"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/scrollViewChips" />
@@ -100,7 +100,7 @@
         android:id="@+id/textViewEmpty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Нет платежей для выполнения групповых операций"
+        android:text="@string/no_payments_for_bulk"
         android:textSize="16sp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -110,6 +110,7 @@
 
     <LinearLayout
         android:id="@+id/layoutActions"
+        style="?android:attr/buttonBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -119,11 +120,12 @@
 
         <Button
             android:id="@+id/buttonConfirmSelected"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginEnd="8dp"
-            android:text="Подтвердить выбранные"
+            android:text="@string/confirm_selected"
             android:enabled="false" />
 
         <Button
@@ -132,7 +134,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Удалить выбранные"
+            android:text="@string/delete_selected"
             android:textColor="#F44336"
             android:enabled="false" />
     </LinearLayout>

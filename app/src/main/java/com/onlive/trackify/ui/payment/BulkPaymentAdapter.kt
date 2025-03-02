@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.data.model.PaymentStatus
 import com.onlive.trackify.databinding.ItemBulkPaymentBinding
@@ -38,26 +39,27 @@ class BulkPaymentAdapter(
 
         fun bind(paymentWithName: PaymentWithSubscriptionName) {
             val payment = paymentWithName.payment
-            val dateFormat = SimpleDateFormat("d MMMM yyyy", Locale("ru"))
+            val context = binding.root.context
+            val dateFormat = SimpleDateFormat("d MMMM yyyy", Locale.getDefault())
 
             binding.textViewPaymentDate.text = dateFormat.format(payment.date)
             binding.textViewPaymentAmount.text = CurrencyFormatter.formatAmount(
-                binding.root.context,
+                context,
                 payment.amount
             )
             binding.textViewPaymentSubscription.text = paymentWithName.subscriptionName
 
             when (payment.status) {
                 PaymentStatus.PENDING -> {
-                    binding.chipStatus.text = "Ожидает"
+                    binding.chipStatus.text = context.getString(R.string.payment_status_pending)
                     binding.chipStatus.setChipBackgroundColorResource(android.R.color.holo_orange_light)
                 }
                 PaymentStatus.CONFIRMED -> {
-                    binding.chipStatus.text = "Подтвержден"
+                    binding.chipStatus.text = context.getString(R.string.payment_status_confirmed)
                     binding.chipStatus.setChipBackgroundColorResource(android.R.color.holo_green_light)
                 }
                 PaymentStatus.MANUAL -> {
-                    binding.chipStatus.text = "Ручной"
+                    binding.chipStatus.text = context.getString(R.string.payment_status_manual)
                     binding.chipStatus.setChipBackgroundColorResource(android.R.color.holo_blue_light)
                 }
             }

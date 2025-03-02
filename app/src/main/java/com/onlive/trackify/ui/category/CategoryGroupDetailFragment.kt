@@ -14,6 +14,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Category
 import com.onlive.trackify.data.model.CategoryGroup
 import com.onlive.trackify.databinding.FragmentCategoryGroupDetailBinding
@@ -163,7 +164,7 @@ class CategoryGroupDetailFragment : Fragment() {
         val name = binding.editTextGroupName.text.toString().trim()
 
         if (name.isEmpty()) {
-            binding.editTextGroupName.error = "Введите название группы"
+            binding.editTextGroupName.error = getString(R.string.enter_category_name)
             return
         }
 
@@ -178,7 +179,7 @@ class CategoryGroupDetailFragment : Fragment() {
                 colorCode = currentColorCode
             )
             categoryGroupViewModel.update(updatedGroup)
-            Toast.makeText(requireContext(), "Группа обновлена", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.group_updated), Toast.LENGTH_SHORT).show()
         } else {
             val newGroup = CategoryGroup(
                 name = name,
@@ -186,7 +187,7 @@ class CategoryGroupDetailFragment : Fragment() {
                 colorCode = currentColorCode
             )
             categoryGroupViewModel.insert(newGroup)
-            Toast.makeText(requireContext(), "Группа создана", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.group_added), Toast.LENGTH_SHORT).show()
         }
 
         findNavController().popBackStack()
@@ -194,16 +195,16 @@ class CategoryGroupDetailFragment : Fragment() {
 
     private fun showDeleteConfirmationDialog() {
         AlertDialog.Builder(requireContext())
-            .setTitle("Удаление группы")
-            .setMessage("Вы уверены, что хотите удалить эту группу? Категории в этой группе не будут удалены, но потеряют привязку к группе.")
-            .setPositiveButton("Удалить") { _, _ ->
+            .setTitle(getString(R.string.delete_group_confirmation))
+            .setMessage(getString(R.string.delete_group_message))
+            .setPositiveButton(getString(R.string.delete)) { _, _ ->
                 group?.let {
                     categoryGroupViewModel.delete(it)
-                    Toast.makeText(requireContext(), "Группа удалена", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.group_deleted), Toast.LENGTH_SHORT).show()
                     findNavController().popBackStack()
                 }
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
 

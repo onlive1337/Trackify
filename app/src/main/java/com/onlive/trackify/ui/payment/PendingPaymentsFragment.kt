@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.onlive.trackify.R
 import com.onlive.trackify.databinding.FragmentPendingPaymentsBinding
 import com.onlive.trackify.viewmodel.PaymentViewModel
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
@@ -34,6 +35,9 @@ class PendingPaymentsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        binding.textViewTitle.text = getString(R.string.pending_payments)
+        binding.textViewDescription.text = getString(R.string.payments_pending_confirmation)
+
         setupRecyclerView()
         observeData()
     }
@@ -42,7 +46,7 @@ class PendingPaymentsFragment : Fragment() {
         pendingPaymentAdapter = PendingPaymentAdapter(
             onConfirmClick = { paymentWithName ->
                 paymentViewModel.confirmPayment(paymentWithName.payment)
-                Toast.makeText(requireContext(), "Платеж подтвержден", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.payment_confirmed), Toast.LENGTH_SHORT).show()
             },
             onDeleteClick = { paymentWithName ->
                 showDeleteConfirmationDialog(paymentWithName)
@@ -82,7 +86,7 @@ class PendingPaymentsFragment : Fragment() {
             val subscription = subscriptions.find { it.subscriptionId == payment.subscriptionId }
             PaymentWithSubscriptionName(
                 payment = payment,
-                subscriptionName = subscription?.name ?: "Неизвестно"
+                subscriptionName = subscription?.name ?: getString(R.string.unknown)
             )
         }
 
@@ -91,13 +95,13 @@ class PendingPaymentsFragment : Fragment() {
 
     private fun showDeleteConfirmationDialog(paymentWithName: PaymentWithSubscriptionName) {
         AlertDialog.Builder(requireContext())
-            .setTitle("Удаление платежа")
-            .setMessage("Вы уверены, что хотите удалить этот платеж?")
-            .setPositiveButton("Удалить") { _, _ ->
+            .setTitle(getString(R.string.delete_payment_confirmation))
+            .setMessage(getString(R.string.delete_payment_message))
+            .setPositiveButton(getString(R.string.delete)) { _, _ ->
                 paymentViewModel.delete(paymentWithName.payment)
-                Toast.makeText(requireContext(), "Платеж удален", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.payment_deleted), Toast.LENGTH_SHORT).show()
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
 

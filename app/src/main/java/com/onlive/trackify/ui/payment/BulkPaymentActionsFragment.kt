@@ -37,6 +37,9 @@ class BulkPaymentActionsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        binding.textViewTitle.text = getString(R.string.bulk_payment_title)
+        binding.textViewInstruction.text = getString(R.string.bulk_payment_instruction)
+
         setupRecyclerView()
         observeData()
         setupFilterChips()
@@ -82,6 +85,11 @@ class BulkPaymentActionsFragment : Fragment() {
     }
 
     private fun setupFilterChips() {
+        binding.chipAllPayments.text = getString(R.string.all_payments)
+        binding.chipPendingPayments.text = getString(R.string.payments_pending_confirmation)
+        binding.chipManualPayments.text = getString(R.string.manual_payments)
+        binding.chipConfirmedPayments.text = getString(R.string.confirmed_payments)
+
         binding.chipAllPayments.setOnClickListener {
             updatePaymentsList()
         }
@@ -102,6 +110,9 @@ class BulkPaymentActionsFragment : Fragment() {
     }
 
     private fun setupActionButtons() {
+        binding.buttonConfirmSelected.text = getString(R.string.confirm_selected)
+        binding.buttonDeleteSelected.text = getString(R.string.delete_selected)
+
         binding.buttonConfirmSelected.setOnClickListener {
             confirmSelectedPayments()
         }

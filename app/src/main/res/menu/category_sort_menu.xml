@@ -3,12 +3,12 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/sort_name_asc"
-            android:title="По имени (А-Я)" />
+            android:title="@string/sort_by_name_asc" />
         <item
             android:id="@+id/sort_name_desc"
-            android:title="По имени (Я-А)" />
+            android:title="@string/sort_by_name_desc" />
         <item
             android:id="@+id/sort_color"
-            android:title="По цвету" />
+            android:title="@string/sort_by_color" />
     </group>
 </menu>

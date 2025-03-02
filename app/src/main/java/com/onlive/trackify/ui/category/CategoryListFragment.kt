@@ -7,7 +7,6 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -45,15 +44,11 @@ class CategoryListFragment : Fragment(), MenuProvider {
         setupRecyclerView()
         observeCategories()
 
-        binding.fabAddCategory.setOnClickListener {
+        binding.fabAddGroup.setOnClickListener {
             val action = CategoryListFragmentDirections.actionCategoryListFragmentToCategoryDetailFragment(
                 categoryId = -1L
             )
             findNavController().navigate(action)
-        }
-
-        binding.buttonSortOptions.setOnClickListener { view ->
-            showSortOptionsMenu(view)
         }
     }
 
@@ -70,7 +65,7 @@ class CategoryListFragment : Fragment(), MenuProvider {
             }
         )
 
-        binding.recyclerViewCategories.apply {
+        binding.recyclerViewGroups.apply {
             adapter = categoryAdapter
             layoutManager = LinearLayoutManager(requireContext())
 
@@ -92,53 +87,37 @@ class CategoryListFragment : Fragment(), MenuProvider {
 
             if (sortedCategories.isEmpty()) {
                 binding.textViewEmptyList.visibility = View.VISIBLE
-                binding.recyclerViewCategories.visibility = View.GONE
+                binding.recyclerViewGroups.visibility = View.GONE
             } else {
                 binding.textViewEmptyList.visibility = View.GONE
-                binding.recyclerViewCategories.visibility = View.VISIBLE
+                binding.recyclerViewGroups.visibility = View.VISIBLE
             }
         }
-    }
-
-    private fun showSortOptionsMenu(view: View) {
-        val popup = PopupMenu(requireContext(), view)
-        popup.menuInflater.inflate(R.menu.category_sort_menu, popup.menu)
-
-        when (currentSortOrder) {
-            SortOrder.NAME_ASC -> popup.menu.findItem(R.id.sort_name_asc).isChecked = true
-            SortOrder.NAME_DESC -> popup.menu.findItem(R.id.sort_name_desc).isChecked = true
-            SortOrder.COLOR -> popup.menu.findItem(R.id.sort_color).isChecked = true
-        }
-
-        popup.setOnMenuItemClickListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.sort_name_asc -> {
-                    currentSortOrder = SortOrder.NAME_ASC
-                    observeCategories()
-                    true
-                }
-                R.id.sort_name_desc -> {
-                    currentSortOrder = SortOrder.NAME_DESC
-                    observeCategories()
-                    true
-                }
-                R.id.sort_color -> {
-                    currentSortOrder = SortOrder.COLOR
-                    observeCategories()
-                    true
-                }
-                else -> false
-            }
-        }
-
-        popup.show()
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menuInflater.inflate(R.menu.category_sort_menu, menu)
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-        return false
+        return when (menuItem.itemId) {
+            R.id.sort_name_asc -> {
+                currentSortOrder = SortOrder.NAME_ASC
+                observeCategories()
+                true
+            }
+            R.id.sort_name_desc -> {
+                currentSortOrder = SortOrder.NAME_DESC
+                observeCategories()
+                true
+            }
+            R.id.sort_color -> {
+                currentSortOrder = SortOrder.COLOR
+                observeCategories()
+                true
+            }
+            else -> false
+        }
     }
 
     override fun onDestroyView() {
