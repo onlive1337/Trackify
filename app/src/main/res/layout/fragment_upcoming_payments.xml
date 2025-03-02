@@ -11,7 +11,7 @@
         android:id="@+id/textViewTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Предстоящие платежи"
+        android:text="@string/upcoming_payments"
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
@@ -32,28 +32,28 @@
             android:id="@+id/chipToday"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Сегодня"
+            android:text="@string/today"
             android:checkable="true" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipWeek"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Неделя"
+            android:text="@string/week"
             android:checkable="true" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipMonth"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Месяц"
+            android:text="@string/month"
             android:checkable="true" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipAll"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Все"
+            android:text="@string/all"
             android:checkable="true" />
     </com.google.android.material.chip.ChipGroup>
 
@@ -72,7 +72,7 @@
         android:id="@+id/textViewEmpty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Нет предстоящих платежей"
+        android:text="@string/no_upcoming_payments"
         android:textSize="16sp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"

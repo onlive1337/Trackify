@@ -39,6 +39,7 @@ class StatisticsViewModel(application: Application) : AndroidViewModel(applicati
         categories = categoryRepository.allCategories
 
         liveStatisticsUpdater = LiveStatisticsUpdater(
+            application,
             subscriptionRepository.allActiveSubscriptions,
             paymentRepository.allPayments,
             categories
@@ -58,18 +59,23 @@ class StatisticsViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun calculateMonthlySpending() = viewModelScope.launch {
+        liveStatisticsUpdater.calculateMonthlySpending()
     }
 
     fun calculateYearlySpending() = viewModelScope.launch {
+        liveStatisticsUpdater.calculateYearlySpending()
     }
 
     fun calculateSpendingByCategory() = viewModelScope.launch {
+        liveStatisticsUpdater.calculateSpendingByCategory()
     }
 
     fun calculateMonthlySpendingHistory(monthsCount: Int = 6) = viewModelScope.launch {
+        liveStatisticsUpdater.calculateMonthlySpendingHistory(monthsCount)
     }
 
     fun calculateSpendingBySubscriptionType() = viewModelScope.launch {
+        liveStatisticsUpdater.calculateSpendingBySubscriptionType()
     }
 
     data class CategorySpending(

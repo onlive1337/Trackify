@@ -18,7 +18,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Группы категорий"
+            android:text="@string/category_groups"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -26,7 +26,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Группы позволяют организовать ваши категории и фильтровать подписки по группам"
+            android:text="@string/category_group_description"
             android:textSize="14sp" />
 
         <Button
@@ -35,7 +35,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Управление категориями" />
+            android:text="@string/manage_categories" />
     </androidx.appcompat.widget.LinearLayoutCompat>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -53,7 +53,7 @@
         android:id="@+id/textViewEmptyList"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="У вас пока нет групп категорий"
+        android:text="@string/no_category_groups"
         android:textSize="18sp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -66,7 +66,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:contentDescription="Добавить группу"
+        android:contentDescription="@string/add_category_group"
         android:src="@android:drawable/ic_input_add"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

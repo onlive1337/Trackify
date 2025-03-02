@@ -143,9 +143,11 @@ class SubscriptionListFragment : Fragment(), MenuProvider {
             binding.recyclerViewSubscriptions.visibility = View.GONE
 
             binding.textViewEmpty.text = if (isFiltered) {
-                "Подписки не найдены"
+                getString(R.string
+                    .subscriptions_not_found)
             } else {
-                "У вас пока нет подписок"
+                getString(R.string
+                    .no_subscriptions)
             }
         } else {
             binding.textViewEmpty.visibility = View.GONE

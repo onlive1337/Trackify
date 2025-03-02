@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp">
 
     <LinearLayout
+        style="?android:attr/buttonBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -20,15 +22,17 @@
             android:layout_weight="1"
             android:paddingStart="12dp"
             android:gravity="start|center_vertical"
-            android:text="01.01.2023"
-            android:textSize="16sp" />
+            android:text="@string/date"
+            android:textSize="16sp"
+            tools:ignore="RtlSymmetry" />
 
         <Button
             android:id="@+id/buttonSelectDate"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="Выбрать"
+            android:text="@string/choose"
             android:drawableStart="@android:drawable/ic_menu_my_calendar"
             android:drawablePadding="4dp" />
     </LinearLayout>
@@ -37,7 +41,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Быстрый выбор:"
+        android:text="@string/quick_pick"
         android:textStyle="bold" />
 
     <HorizontalScrollView
@@ -57,7 +61,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="4dp"
-                android:text="Сегодня" />
+                android:text="@string/today" />
 
             <Button
                 android:id="@+id/buttonTomorrow"
@@ -65,7 +69,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="4dp"
-                android:text="Завтра" />
+                android:text="@string/tomorrow" />
 
             <Button
                 android:id="@+id/buttonOneWeek"
@@ -73,7 +77,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="4dp"
-                android:text="Через неделю" />
+                android:text="@string/in_a_week" />
 
             <Button
                 android:id="@+id/buttonOneMonth"
@@ -81,14 +85,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="4dp"
-                android:text="Через месяц" />
+                android:text="@string/in_a_month" />
 
             <Button
                 android:id="@+id/buttonOneYear"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Через год" />
+                android:text="@string/one_year_later" />
         </LinearLayout>
     </HorizontalScrollView>
 </LinearLayout>

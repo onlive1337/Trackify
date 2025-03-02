@@ -64,7 +64,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Подтвердить"
+            android:text="@string/confirm_payment"
             app:icon="@android:drawable/ic_menu_save"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textViewPaymentNotes" />
@@ -75,7 +75,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="Удалить"
+            android:text="@string/delete"
             android:textColor="#F44336"
             app:icon="@android:drawable/ic_menu_delete"
             app:layout_constraintStart_toEndOf="@+id/buttonConfirmPayment"

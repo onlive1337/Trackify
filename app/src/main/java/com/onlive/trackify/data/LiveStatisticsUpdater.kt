@@ -1,5 +1,6 @@
 package com.onlive.trackify.data
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
@@ -13,12 +14,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
+import com.onlive.trackify.R
 
 import java.util.concurrent.ConcurrentHashMap
 
 class LiveStatisticsUpdater(
+    private val context: Context,
     subscriptionsLiveData: LiveData<List<Subscription>>,
     paymentsLiveData: LiveData<List<Payment>>,
     categoriesLiveData: LiveData<List<Category>>
@@ -85,7 +87,7 @@ class LiveStatisticsUpdater(
         }
     }
 
-    private fun calculateMonthlySpending() {
+    fun calculateMonthlySpending() {
         calculationScope.launch {
             try {
                 var monthlyCost = 0.0
@@ -107,7 +109,7 @@ class LiveStatisticsUpdater(
         }
     }
 
-    private fun calculateYearlySpending() {
+    fun calculateYearlySpending() {
         calculationScope.launch {
             try {
                 var yearlyCost = 0.0
@@ -129,7 +131,7 @@ class LiveStatisticsUpdater(
         }
     }
 
-    private fun calculateSpendingByCategory() {
+    fun calculateSpendingByCategory() {
         calculationScope.launch {
             try {
                 val categorySpendingMap = mutableMapOf<Long?, Double>()
@@ -170,7 +172,7 @@ class LiveStatisticsUpdater(
         }
     }
 
-    private fun calculateMonthlySpendingHistory(monthsCount: Int = 6) {
+    fun calculateMonthlySpendingHistory(monthsCount: Int = 6) {
         calculationScope.launch {
             try {
                 val calendar = Calendar.getInstance()
@@ -235,7 +237,7 @@ class LiveStatisticsUpdater(
         }
     }
 
-    private fun calculateSpendingBySubscriptionType() {
+    fun calculateSpendingBySubscriptionType() {
         calculationScope.launch {
             try {
                 var monthlyTotal = 0.0
@@ -251,8 +253,16 @@ class LiveStatisticsUpdater(
                 }
 
                 val result = listOf(
-                    StatisticsViewModel.SubscriptionTypeSpending("Ежемесячные", monthlyTotal, "#4285F4"),
-                    StatisticsViewModel.SubscriptionTypeSpending("Ежегодные (в месяц)", yearlyTotal, "#34A853")
+                    StatisticsViewModel.SubscriptionTypeSpending(
+                        context.getString(R.string.monthly_spending),
+                        monthlyTotal,
+                        "#4285F4"
+                    ),
+                    StatisticsViewModel.SubscriptionTypeSpending(
+                        context.getString(R.string.yearly_type),
+                        yearlyTotal,
+                        "#34A853"
+                    )
                 )
 
                 subscriptionTypeSpending.postValue(result)

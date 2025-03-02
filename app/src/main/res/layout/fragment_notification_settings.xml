@@ -15,7 +15,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Настройки уведомлений"
+            android:text="@string/notification_settings_title"
             android:textSize="20sp"
             android:textStyle="bold"
             android:layout_marginBottom="16dp" />
@@ -36,7 +36,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Время уведомлений"
+                    android:text="@string/notification_time_title"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -44,7 +44,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Выберите время, когда вы хотите получать уведомления о подписках" />
+                    android:text="@string/notification_time_description" />
 
                 <Button
                     android:id="@+id/buttonSelectTime"
@@ -74,7 +74,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Частота уведомлений"
+                    android:text="@string/notification_frequency_title"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -82,7 +82,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Выберите, как часто вы хотите получать напоминания о подписках" />
+                    android:text="@string/notification_frequency_description" />
 
                 <RadioGroup
                     android:id="@+id/radioGroupFrequency"
@@ -94,7 +94,7 @@
                         android:id="@+id/radioDaily"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Ежедневно"
+                        android:text="@string/daily"
                         android:textSize="16sp"
                         android:padding="8dp" />
 
@@ -102,7 +102,7 @@
                         android:id="@+id/radioWeekly"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Еженедельно (по понедельникам)"
+                        android:text="@string/weekly"
                         android:textSize="16sp"
                         android:padding="8dp" />
 
@@ -110,7 +110,7 @@
                         android:id="@+id/radioMonthly"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Ежемесячно (1-го числа)"
+                        android:text="@string/monthly"
                         android:textSize="16sp"
                         android:padding="8dp" />
 
@@ -118,7 +118,7 @@
                         android:id="@+id/radioCustom"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Настраиваемая (выбрать дни)"
+                        android:text="@string/custom"
                         android:textSize="16sp"
                         android:padding="8dp" />
 
@@ -145,7 +145,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Дни напоминаний"
+                    android:text="@string/reminder_days_title"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -153,7 +153,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Выберите, за сколько дней до платежа вы хотите получать уведомления" />
+                    android:text="@string/reminder_days_description" />
 
                 <com.google.android.material.chip.ChipGroup
                     android:id="@+id/chipGroupDays"
@@ -165,42 +165,42 @@
                         android:id="@+id/chipDay0"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="В день платежа"
+                        android:text="@string/on_payment_day"
                         android:checkable="true" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipDay1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="За 1 день"
+                        android:text="@string/one_day_before"
                         android:checkable="true" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipDay3"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="За 3 дня"
+                        android:text="@string/three_days_before"
                         android:checkable="true" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipDay7"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="За 7 дней"
+                        android:text="@string/week_before"
                         android:checkable="true" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipDay14"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="За 14 дней"
+                        android:text="@string/two_weeks_before"
                         android:checkable="true" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipDay30"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="За 30 дней"
+                        android:text="@string/month_before"
                         android:checkable="true" />
 
                 </com.google.android.material.chip.ChipGroup>
@@ -211,7 +211,7 @@
             android:id="@+id/buttonSave"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Сохранить"
+            android:text="@string/save"
             android:layout_marginTop="16dp" />
 
     </LinearLayout>

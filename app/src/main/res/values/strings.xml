@@ -9,6 +9,7 @@
     <string name="save">Сохранить</string>
     <string name="cancel">Отмена</string>
     <string name="delete">Удалить</string>
+    <string name="indefinitely">Бессрочно</string>
 
     <string name="add_subscription">Добавить подписку</string>
     <string name="edit_subscription">Редактировать подписку</string>
@@ -44,6 +45,7 @@
 
     <string name="add_category">Добавить категорию</string>
     <string name="edit_category">Редактировать категорию</string>
+    <string name="editing_category">Редактирование категории</string>
     <string name="category_name">Название категории</string>
     <string name="category_color">Цвет</string>
     <string name="categories">Категории</string>
@@ -130,6 +132,15 @@
     <string name="all">Все</string>
     <string name="no_upcoming_payments">Нет предстоящих платежей</string>
 
+    <string name="date">01.01.2023</string>
+    <string name="choose">Выбрать</string>
+    <string name="quick_pick">Быстрый выбор:</string>
+    <string name="in_a_week">Через неделю</string>
+    <string name="in_a_month">Через месяц</string>
+    <string name="one_year_later">Через год</string>
+
+    <string name="per_year">/год</string>
+
     <string name="search_subscriptions">Поиск подписок</string>
     <string name="no_subscriptions">У вас пока нет подписок</string>
     <string name="subscriptions_not_found">Подписки не найдены</string>
@@ -151,6 +162,7 @@
     <string name="subscription_added">Подписка добавлена</string>
     <string name="subscription_updated">Подписка обновлена</string>
 
+    <string name="delete_category">Удалить категорию</string>
     <string name="delete_category_confirmation">Удаление категории</string>
     <string name="delete_category_message">Вы уверены, что хотите удалить эту категорию?</string>
     <string name="category_deleted">Категория удалена</string>
@@ -173,11 +185,13 @@
     <string name="add_category_group">Добавить группу</string>
     <string name="manage_category_groups">Управление группами категорий</string>
     <string name="category_group_name">Название группы</string>
+    <string name="editing_group">Редактирование группы</string>
     <string name="category_group_description_hint">Описание (необязательно)</string>
     <string name="category_group_color">Цвет группы</string>
     <string name="select_group_color">Выберите цвет</string>
     <string name="categories_in_group">Категории в группе</string>
     <string name="no_categories_in_group">В этой группе пока нет категорий</string>
+    <string name="delete_group">Удалить группу</string>
     <string name="delete_group_confirmation">Удаление группы</string>
     <string name="delete_group_message">Вы уверены, что хотите удалить эту группу? Категории в этой группе не будут удалены, но потеряют привязку к группе.</string>
     <string name="group_deleted">Группа удалена</string>

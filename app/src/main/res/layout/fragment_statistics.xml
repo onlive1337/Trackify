@@ -18,7 +18,6 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Summary Cards -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardSummary"
                 style="@style/Widget.Material3.CardView.Elevated"
@@ -94,7 +93,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Category Spending Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardCategorySpending"
                 style="@style/Widget.Material3.CardView.Elevated"
@@ -118,18 +116,15 @@
                         android:textColor="?attr/colorOnSurface"
                         android:textStyle="bold" />
 
-                    <!-- Stats container -->
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:id="@+id/categoryChartContainer"
                         android:layout_width="match_parent"
                         android:layout_height="300dp"
                         android:layout_marginTop="16dp">
 
-                        <!-- Chart will be added dynamically in code -->
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
-                    <!-- Category Legend RecyclerView -->
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recyclerViewCategoryLegend"
                         android:layout_width="match_parent"
@@ -140,7 +135,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Monthly Spending History Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardMonthlyHistory"
                 style="@style/Widget.Material3.CardView.Elevated"
@@ -164,7 +158,6 @@
                         android:textColor="?attr/colorOnSurface"
                         android:textStyle="bold" />
 
-                    <!-- Bar chart container -->
                     <FrameLayout
                         android:id="@+id/monthlyChartContainer"
                         android:layout_width="match_parent"
@@ -174,7 +167,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Subscription Types Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardSubscriptionTypes"
                 style="@style/Widget.Material3.CardView.Elevated"
@@ -192,19 +184,17 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Расходы по типам подписок"
+                        android:text="@string/subscription_types_spending"
                         android:textSize="20sp"
                         android:textColor="?attr/colorOnSurface"
                         android:textStyle="bold" />
 
-                    <!-- Type distribution container -->
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:id="@+id/typeChartContainer"
                         android:layout_width="match_parent"
                         android:layout_height="300dp"
                         android:layout_marginTop="16dp" />
 
-                    <!-- Type Legend RecyclerView -->
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recyclerViewTypeLegend"
                         android:layout_width="match_parent"
@@ -216,7 +206,6 @@
 
         </LinearLayout>
 
-        <!-- Loading indicator -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/loadingIndicator"
             android:layout_width="match_parent"

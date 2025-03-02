@@ -1,11 +1,11 @@
 package com.onlive.trackify.ui.subscription
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.onlive.trackify.R
 import com.onlive.trackify.data.model.BillingFrequency
 import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.databinding.ItemSubscriptionBinding
@@ -86,20 +86,20 @@ class SubscriptionAdapter(
 
             val priceString = when (subscription.billingFrequency) {
                 BillingFrequency.MONTHLY ->
-                    CurrencyFormatter.formatAmount(binding.root.context, subscription.price) + "/мес"
+                    CurrencyFormatter.formatAmount(binding.root.context, subscription.price) + binding.root.context.getString(R.string.per_month)
                 BillingFrequency.YEARLY ->
-                    CurrencyFormatter.formatAmount(binding.root.context, subscription.price) + "/год"
+                    CurrencyFormatter.formatAmount(binding.root.context, subscription.price) + binding.root.context.getString(R.string.per_year)
             }
             binding.textViewSubscriptionPrice.text = priceString
 
-            binding.textViewSubscriptionCategory.text = subscription.categoryName ?: "Без категории"
+            binding.textViewSubscriptionCategory.text = subscription.categoryName ?: binding.root.context.getString(R.string.without_category)
 
             val nextPayment = calculateNextPaymentDate(
                 subscription.startDate,
                 subscription.billingFrequency
             )
-            binding.textViewNextPayment.text =
-                "Следующий платеж: ${DATE_FORMAT.format(nextPayment)}"
+            val nextPaymentText = binding.root.context.getString(R.string.next_payment, DATE_FORMAT.format(nextPayment))
+            binding.textViewNextPayment.text = nextPaymentText
 
             try {
                 subscription.categoryColor?.let { colorCode ->
@@ -131,20 +131,20 @@ class SubscriptionAdapter(
 
             val priceString = when (subscription.billingFrequency) {
                 BillingFrequency.MONTHLY ->
-                    CurrencyFormatter.formatAmount(binding.root.context, subscription.price) + "/мес"
+                    CurrencyFormatter.formatAmount(binding.root.context, subscription.price) + binding.root.context.getString(R.string.per_month)
                 BillingFrequency.YEARLY ->
-                    CurrencyFormatter.formatAmount(binding.root.context, subscription.price) + "/год"
+                    CurrencyFormatter.formatAmount(binding.root.context, subscription.price) + binding.root.context.getString(R.string.per_year)
             }
             binding.textViewSubscriptionPrice.text = priceString
 
-            binding.textViewSubscriptionCategory.text = subscription.categoryName ?: "Без категории"
+            binding.textViewSubscriptionCategory.text = subscription.categoryName ?: binding.root.context.getString(R.string.without_category)
 
             val nextPayment = calculateNextPaymentDate(
                 subscription.startDate,
                 subscription.billingFrequency
             )
-            binding.textViewNextPayment.text =
-                "Следующий платеж: ${DATE_FORMAT.format(nextPayment)}"
+            val nextPaymentText = binding.root.context.getString(R.string.next_payment, DATE_FORMAT.format(nextPayment))
+            binding.textViewNextPayment.text = nextPaymentText
 
             try {
                 subscription.categoryColor?.let { colorCode ->

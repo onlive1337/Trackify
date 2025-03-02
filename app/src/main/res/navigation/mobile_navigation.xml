@@ -152,19 +152,19 @@
     <fragment
         android:id="@+id/pendingPaymentsFragment"
         android:name="com.onlive.trackify.ui.payment.PendingPaymentsFragment"
-        android:label="Ожидающие платежи"
+        android:label="@string/pending_payments"
         tools:layout="@layout/fragment_pending_payments" />
 
     <fragment
         android:id="@+id/upcomingPaymentsFragment"
         android:name="com.onlive.trackify.ui.overview.UpcomingPaymentsFragment"
-        android:label="Предстоящие платежи"
+        android:label="@string/upcoming_payments"
         tools:layout="@layout/fragment_upcoming_payments" />
 
     <fragment
         android:id="@+id/dataManagementFragment"
         android:name="com.onlive.trackify.ui.settings.DataManagementFragment"
-        android:label="Управление данными"
+        android:label="@string/data_management"
         tools:layout="@layout/fragment_data_management" />
 
     <action
@@ -178,7 +178,7 @@
     <fragment
         android:id="@+id/categoryListFragment"
         android:name="com.onlive.trackify.ui.category.CategoryListFragment"
-        android:label="Категории"
+        android:label="@string/categories"
         tools:layout="@layout/fragment_category_list">
         <action
             android:id="@+id/action_categoryListFragmentToCategoryDetailFragment"
@@ -192,7 +192,7 @@
     <fragment
         android:id="@+id/categoryDetailFragment"
         android:name="com.onlive.trackify.ui.category.CategoryDetailFragment"
-        android:label="Редактирование категории"
+        android:label="@string/editing_category"
         tools:layout="@layout/fragment_category_detail">
         <argument
             android:name="categoryId"
@@ -202,7 +202,7 @@
     <fragment
         android:id="@+id/categoryGroupListFragment"
         android:name="com.onlive.trackify.ui.category.CategoryGroupListFragment"
-        android:label="Группы категорий"
+        android:label="@string/category_groups"
         tools:layout="@layout/fragment_category_group_list">
         <action
             android:id="@+id/action_categoryGroupListFragmentToCategoryGroupDetailFragment"
@@ -223,7 +223,7 @@
     <fragment
         android:id="@+id/categoryGroupDetailFragment"
         android:name="com.onlive.trackify.ui.category.CategoryGroupDetailFragment"
-        android:label="Редактирование группы"
+        android:label="@string/editing_group"
         tools:layout="@layout/fragment_category_group_detail">
         <argument
             android:name="groupId"
@@ -233,13 +233,13 @@
     <fragment
         android:id="@+id/notificationSettingsFragment"
         android:name="com.onlive.trackify.ui.settings.NotificationSettingsFragment"
-        android:label="Настройки уведомлений"
+        android:label="@string/notification_settings_title"
         tools:layout="@layout/fragment_notification_settings" />
 
     <fragment
         android:id="@+id/bulkPaymentActionsFragment"
         android:name="com.onlive.trackify.ui.payment.BulkPaymentActionsFragment"
-        android:label="Групповые операции"
+        android:label="@string/bulk_payment_actions"
         tools:layout="@layout/fragment_bulk_payment_actions" />
 
     <fragment
