@@ -12,6 +12,8 @@
     <string name="cancel">Отмена</string>
     <string name="delete">Удалить</string>
     <string name="indefinitely">Бессрочно</string>
+    <string name="select_date">Выберите дату</string>
+    <string name="done">Готово</string>
 
     <string name="add_subscription">Добавить подписку</string>
     <string name="edit_subscription">Редактировать подписку</string>

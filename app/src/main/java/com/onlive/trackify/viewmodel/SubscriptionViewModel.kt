@@ -35,7 +35,7 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
         val subscriptionDao = database.subscriptionDao()
         val categoryDao = database.categoryDao()
 
-        repository = SubscriptionRepository(subscriptionDao, categoryDao)
+        repository = SubscriptionRepository(subscriptionDao, categoryDao, application)
 
         allActiveSubscriptions = repository.allActiveSubscriptions
         activeSubscriptionsCount = repository.activeSubscriptionsCount

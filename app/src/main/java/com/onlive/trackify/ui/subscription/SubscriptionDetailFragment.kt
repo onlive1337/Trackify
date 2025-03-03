@@ -12,6 +12,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.onlive.trackify.R
 import com.onlive.trackify.data.model.BillingFrequency
 import com.onlive.trackify.data.model.Category
 import com.onlive.trackify.data.model.Subscription
@@ -116,7 +117,7 @@ class SubscriptionDetailFragment : Fragment() {
                 allowNullDate = true
             ) { selectedDate ->
                 endDate = selectedDate
-                binding.buttonSelectEndDate.text = selectedDate?.let { dateFormat.format(it) } ?: "Бессрочно"
+                binding.buttonSelectEndDate.text = selectedDate?.let { dateFormat.format(it) } ?: context?.getString(R.string.indefinitely)
             }
         }
     }
@@ -197,7 +198,7 @@ class SubscriptionDetailFragment : Fragment() {
         if (endDate != null) {
             binding.buttonSelectEndDate.text = dateFormat.format(endDate!!)
         } else {
-            binding.buttonSelectEndDate.text = "Бессрочно"
+            binding.buttonSelectEndDate.text = getString(R.string.indefinitely)
         }
 
         selectCategoryInSpinner(subscription.categoryId)

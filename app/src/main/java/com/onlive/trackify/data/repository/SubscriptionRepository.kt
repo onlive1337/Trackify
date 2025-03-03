@@ -1,7 +1,9 @@
 package com.onlive.trackify.data.repository
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
+import com.onlive.trackify.R
 import com.onlive.trackify.data.cache.CacheService
 import com.onlive.trackify.data.database.CategoryDao
 import com.onlive.trackify.data.database.SubscriptionDao
@@ -15,7 +17,8 @@ import java.util.concurrent.TimeUnit
 
 class SubscriptionRepository(
     private val subscriptionDao: SubscriptionDao,
-    private val categoryDao: CategoryDao
+    private val categoryDao: CategoryDao,
+    private val context: Context
 ) {
 
     private val cacheService = CacheService.getInstance()
@@ -45,7 +48,7 @@ class SubscriptionRepository(
                 val category = subscription.categoryId?.let { id ->
                     categories.find { it.categoryId == id }
                 }
-                categoryName = category?.name ?: "Без категории"
+                categoryName = category?.name ?: context.getString(R.string.without_category)
                 categoryColor = category?.colorCode
             }
         }

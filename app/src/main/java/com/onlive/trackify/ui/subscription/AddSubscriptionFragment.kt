@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.onlive.trackify.R
 import com.onlive.trackify.data.model.BillingFrequency
 import com.onlive.trackify.data.model.Category
 import com.onlive.trackify.data.model.Subscription
@@ -72,7 +73,8 @@ class AddSubscriptionFragment : Fragment() {
                 }
             }
         }
-        binding.buttonSelectEndDate.text = endDate?.let { dateFormat.format(it) } ?: "Бессрочно"
+        binding.buttonSelectEndDate.text = endDate?.let { dateFormat.format(it) }
+            ?: context?.getString(R.string.indefinitely)
         binding.buttonSelectEndDate.setOnClickListener {
             datePickerHelper.showAdvancedDatePickerForSubscription(
                 initialDate = endDate ?: Calendar.getInstance().apply {
@@ -82,16 +84,18 @@ class AddSubscriptionFragment : Fragment() {
                 allowNullDate = true
             ) { selectedDate ->
                 endDate = selectedDate
-                binding.buttonSelectEndDate.text = selectedDate?.let { dateFormat.format(it) } ?: "Бессрочно"
+                binding.buttonSelectEndDate.text = selectedDate?.let { dateFormat.format(it) } ?: context?.getString(R.string.indefinitely)
             }
         }
     }
 
     private fun setupCategorySpinner() {
+        val noCategoryString = getString(R.string.without_category)
+
         categoryAdapter = ArrayAdapter(
             requireContext(),
             android.R.layout.simple_spinner_item,
-            mutableListOf("Без категории")
+            mutableListOf(noCategoryString)
         )
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerCategory.adapter = categoryAdapter
@@ -99,7 +103,7 @@ class AddSubscriptionFragment : Fragment() {
         categoryViewModel.allCategories.observe(viewLifecycleOwner) { categoriesList ->
             categories = categoriesList
 
-            val categoryNames = mutableListOf("Без категории")
+            val categoryNames = mutableListOf(noCategoryString)
             categoryNames.addAll(categoriesList.map { it.name })
 
             categoryAdapter = ArrayAdapter(

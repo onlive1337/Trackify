@@ -157,7 +157,7 @@ class LiveStatisticsUpdater(
                     val category = if (categoryId != null) categories[categoryId] else null
                     StatisticsViewModel.CategorySpending(
                         categoryId = categoryId,
-                        categoryName = category?.name ?: "Без категории",
+                        categoryName = category?.name ?: context.getString(R.string.without_category),
                         colorCode = category?.colorCode ?: "#808080",
                         amount = amount
                     )

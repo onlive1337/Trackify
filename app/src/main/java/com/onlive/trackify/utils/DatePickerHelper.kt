@@ -5,6 +5,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog
+import com.onlive.trackify.R
 import com.onlive.trackify.databinding.DialogAdvancedDatePickerBinding
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -30,14 +31,14 @@ class DatePickerHelper(private val context: Context) {
 
         val dialog = AlertDialog.Builder(context)
             .setView(binding.root)
-            .setTitle("Выберите дату")
-            .setPositiveButton("Готово") { _, _ ->
+            .setTitle(context.getString(R.string.select_date))
+            .setPositiveButton(context.getString(R.string.done)) { _, _ ->
                 onDateSelected(calendar.time)
             }
             .create()
 
         if (allowNullDate) {
-            dialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Бессрочно") { _, _ ->
+            dialog.setButton(AlertDialog.BUTTON_NEUTRAL, context.getString(R.string.indefinitely)) { _, _ ->
                 onDateSelected(null)
             }
         }

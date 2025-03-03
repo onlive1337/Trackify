@@ -80,29 +80,25 @@ class DataExportImportManager(private val context: Context) {
                 return@withContext false
             }
 
+            val categories = importedData.categories
+            val subscriptions = importedData.subscriptions
+            val payments = importedData.payments
+
             database.runInTransaction {
-                withContext(Dispatchers.IO) {
-                    database.categoryDao().deleteAllSync()
-                    database.subscriptionDao().deleteAllSync()
-                    database.paymentDao().deleteAllSync()
+                database.categoryDao().deleteAllSync()
+                database.subscriptionDao().deleteAllSync()
+                database.paymentDao().deleteAllSync()
+
+                for (category in categories) {
+                    database.categoryDao().insert(category)
                 }
 
-                for (category in importedData.categories) {
-                    withContext(Dispatchers.IO) {
-                        database.categoryDao().insertSync(category)
-                    }
+                for (subscription in subscriptions) {
+                    database.subscriptionDao().insert(subscription)
                 }
 
-                for (subscription in importedData.subscriptions) {
-                    withContext(Dispatchers.IO) {
-                        database.subscriptionDao().insertSync(subscription)
-                    }
-                }
-
-                for (payment in importedData.payments) {
-                    withContext(Dispatchers.IO) {
-                        database.paymentDao().insertSync(payment)
-                    }
+                for (payment in payments) {
+                    database.paymentDao().insert(payment)
                 }
             }
 

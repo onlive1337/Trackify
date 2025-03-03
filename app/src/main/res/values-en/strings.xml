@@ -12,6 +12,8 @@
     <string name="cancel">Cancel</string>
     <string name="delete">Delete</string>
     <string name="indefinitely">Indefinitely</string>
+    <string name="select_date">Select a date</string>
+    <string name="done">Done</string>
 
     <string name="add_subscription">Add subscription</string>
     <string name="edit_subscription">Edit subscription</string>
