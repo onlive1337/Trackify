@@ -103,16 +103,19 @@ class CategoryListFragment : Fragment(), MenuProvider {
         return when (menuItem.itemId) {
             R.id.sort_name_asc -> {
                 currentSortOrder = SortOrder.NAME_ASC
+                menuItem.isChecked = true
                 observeCategories()
                 true
             }
             R.id.sort_name_desc -> {
                 currentSortOrder = SortOrder.NAME_DESC
+                menuItem.isChecked = true
                 observeCategories()
                 true
             }
             R.id.sort_color -> {
                 currentSortOrder = SortOrder.COLOR
+                menuItem.isChecked = true
                 observeCategories()
                 true
             }

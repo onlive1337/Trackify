@@ -3,7 +3,8 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/sort_name_asc"
-            android:title="@string/sort_by_name_asc" />
+            android:title="@string/sort_by_name_asc"
+            android:checked="true" />
         <item
             android:id="@+id/sort_name_desc"
             android:title="@string/sort_by_name_desc" />

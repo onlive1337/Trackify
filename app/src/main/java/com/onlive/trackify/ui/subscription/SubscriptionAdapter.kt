@@ -25,7 +25,7 @@ class SubscriptionAdapter(
     companion object {
         private const val VIEW_TYPE_LIST = 1
         private const val VIEW_TYPE_GRID = 2
-        private val DATE_FORMAT = SimpleDateFormat("dd MMMM yyyy", Locale("ru"))
+        private fun getDateFormat(context: android.content.Context) = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -98,7 +98,8 @@ class SubscriptionAdapter(
                 subscription.startDate,
                 subscription.billingFrequency
             )
-            val nextPaymentText = binding.root.context.getString(R.string.next_payment, DATE_FORMAT.format(nextPayment))
+            val dateFormat = getDateFormat(binding.root.context)
+            val nextPaymentText = binding.root.context.getString(R.string.next_payment, dateFormat.format(nextPayment))
             binding.textViewNextPayment.text = nextPaymentText
 
             try {
@@ -143,7 +144,8 @@ class SubscriptionAdapter(
                 subscription.startDate,
                 subscription.billingFrequency
             )
-            val nextPaymentText = binding.root.context.getString(R.string.next_payment, DATE_FORMAT.format(nextPayment))
+            val dateFormat = getDateFormat(binding.root.context)
+            val nextPaymentText = binding.root.context.getString(R.string.next_payment, dateFormat.format(nextPayment))
             binding.textViewNextPayment.text = nextPaymentText
 
             try {

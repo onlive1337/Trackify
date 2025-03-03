@@ -10,8 +10,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.onlive.trackify.R
 import com.onlive.trackify.databinding.FragmentDataManagementBinding
 import com.onlive.trackify.utils.DataExportImportManager
 import kotlinx.coroutines.launch
@@ -96,9 +98,17 @@ class DataManagementFragment : Fragment() {
 
             if (success) {
                 val fileName = getFileName(uri)
-                Toast.makeText(requireContext(), "Данные успешно экспортированы в $fileName", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.data_exported_success, fileName),
+                    Toast.LENGTH_LONG
+                ).show()
             } else {
-                Toast.makeText(requireContext(), "Ошибка при экспорте данных", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.data_export_error),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
@@ -113,13 +123,13 @@ class DataManagementFragment : Fragment() {
     }
 
     private fun importData(uri: Uri) {
-        androidx.appcompat.app.AlertDialog.Builder(requireContext())
-            .setTitle("Подтверждение импорта")
-            .setMessage("Импорт данных заменит все существующие данные. Продолжить?")
-            .setPositiveButton("Да") { _, _ ->
+        AlertDialog.Builder(requireContext())
+            .setTitle(getString(R.string.import_confirmation_title))
+            .setMessage(getString(R.string.import_confirmation_message))
+            .setPositiveButton(getString(R.string.yes)) { _, _ ->
                 proceedWithImport(uri)
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
 
@@ -136,9 +146,17 @@ class DataManagementFragment : Fragment() {
             binding.buttonImport.isEnabled = true
 
             if (success) {
-                Toast.makeText(requireContext(), "Данные успешно импортированы", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.data_imported_success),
+                    Toast.LENGTH_LONG
+                ).show()
             } else {
-                Toast.makeText(requireContext(), "Ошибка при импорте данных", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.data_import_error),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
@@ -157,7 +175,7 @@ class DataManagementFragment : Fragment() {
             }
         }
 
-        return uri.lastPathSegment ?: "файл"
+        return uri.lastPathSegment ?: getString(R.string.default_file_name)
     }
 
     override fun onDestroyView() {

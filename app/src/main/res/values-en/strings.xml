@@ -5,6 +5,8 @@
     <string name="title_payments">Payments</string>
     <string name="title_statistics">Statistics</string>
     <string name="title_settings">Settings</string>
+    <string name="settings_saved">Settings saved</string>
+    <string name="yes">Yes</string>
 
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
@@ -121,6 +123,11 @@
     <string name="import_data">Import data</string>
     <string name="export_description">Save all application data to a JSON file. This will allow you to restore your data if necessary or transfer it to another device.</string>
     <string name="import_description">Restore data from a previously created JSON file. Warning! Importing data will replace all existing data in the application.</string>
+    <string name="data_import_error">Error when importing data</string>
+    <string name="data_imported_success">Data successfully imported</string>
+    <string name="data_export_error">Error when exporting data</string>
+    <string name="data_exported_success">Data successfully exported to %1$s</string>
+    <string name="default_file_name">file</string>
 
     <string name="upcoming_payments">Upcoming payments</string>
     <string name="today">Today</string>

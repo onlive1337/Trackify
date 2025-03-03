@@ -29,13 +29,6 @@
             android:text="@string/category_group_description"
             android:textSize="14sp" />
 
-        <Button
-            android:id="@+id/buttonManageCategories"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/manage_categories" />
     </androidx.appcompat.widget.LinearLayoutCompat>
 
     <androidx.recyclerview.widget.RecyclerView

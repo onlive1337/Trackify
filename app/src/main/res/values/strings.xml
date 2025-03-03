@@ -5,6 +5,8 @@
     <string name="title_payments">Платежи</string>
     <string name="title_statistics">Статистика</string>
     <string name="title_settings">Настройки</string>
+    <string name="settings_saved">Настройки сохранены</string>
+    <string name="yes">Да</string>
 
     <string name="save">Сохранить</string>
     <string name="cancel">Отмена</string>
@@ -122,6 +124,11 @@
     <string name="import_data">Импортировать данные</string>
     <string name="export_description">Сохраните все данные приложения в JSON файл. Это позволит вам восстановить данные в случае необходимости или перенести их на другое устройство.</string>
     <string name="import_description">Восстановите данные из ранее созданного JSON файла. Внимание! Импорт данных заменит все существующие данные в приложении.</string>
+    <string name="data_import_error">Ошибка при импорте данных</string>
+    <string name="data_imported_success">Данные успешно импортированы</string>
+    <string name="data_export_error">Ошибка при экспорте данных</string>
+    <string name="data_exported_success">Данные успешно экспортированы в %1$s</string>
+    <string name="default_file_name">файл</string>
 
     <string name="upcoming_payments">Предстоящие платежи</string>
     <string name="today">Сегодня</string>

@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.android.material.chip.Chip
+import com.onlive.trackify.R
 import com.onlive.trackify.databinding.FragmentNotificationSettingsBinding
 import com.onlive.trackify.utils.NotificationFrequency
 import com.onlive.trackify.utils.NotificationScheduler
@@ -51,7 +52,7 @@ class NotificationSettingsFragment : Fragment() {
 
         binding.buttonSave.setOnClickListener {
             saveSettings()
-            Toast.makeText(requireContext(), "Настройки сохранены", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.settings_saved), Toast.LENGTH_SHORT).show()
             requireActivity().onBackPressed()
         }
     }

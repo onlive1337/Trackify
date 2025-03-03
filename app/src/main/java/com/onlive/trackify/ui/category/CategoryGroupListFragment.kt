@@ -8,7 +8,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.onlive.trackify.R
 import com.onlive.trackify.databinding.FragmentCategoryGroupListBinding
 import com.onlive.trackify.viewmodel.CategoryGroupViewModel
 
@@ -42,9 +41,6 @@ class CategoryGroupListFragment : Fragment() {
             findNavController().navigate(action)
         }
 
-        binding.buttonManageCategories.setOnClickListener {
-            findNavController().navigate(R.id.action_categoryGroupListFragment_to_categoryListFragment)
-        }
     }
 
     private fun setupRecyclerView() {
