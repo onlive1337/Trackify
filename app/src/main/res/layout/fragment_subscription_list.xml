@@ -58,9 +58,10 @@
                 android:layout_height="match_parent"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/toggle_view_mode"
-                android:src="@drawable/ic_view_list"
                 android:padding="12dp"
-                app:tint="?attr/colorOnSurface" />
+                android:src="@drawable/ic_view_list"
+                app:tint="?attr/colorOnSurface"
+                tools:ignore="TouchTargetSizeCheck" />
         </com.google.android.material.card.MaterialCardView>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
