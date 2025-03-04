@@ -41,9 +41,25 @@ class BulkPaymentActionsFragment : Fragment() {
         binding.textViewInstruction.text = getString(R.string.bulk_payment_instruction)
 
         setupRecyclerView()
+        setupBottomPadding()
         observeData()
         setupFilterChips()
         setupActionButtons()
+    }
+
+    private fun setupBottomPadding() {
+        binding.recyclerViewPayments.clipToPadding = false
+
+        val bottomNavHeight = resources.getDimensionPixelSize(R.dimen.bottom_nav_height)
+        val extraPadding = resources.getDimensionPixelSize(R.dimen.floating_nav_extra_padding)
+        val totalPadding = bottomNavHeight + extraPadding
+
+        binding.recyclerViewPayments.setPadding(
+            binding.recyclerViewPayments.paddingLeft,
+            binding.recyclerViewPayments.paddingTop,
+            binding.recyclerViewPayments.paddingRight,
+            totalPadding
+        )
     }
 
     private fun setupRecyclerView() {

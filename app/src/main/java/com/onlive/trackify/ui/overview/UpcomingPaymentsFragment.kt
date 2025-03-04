@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.onlive.trackify.R
 import com.onlive.trackify.data.model.BillingFrequency
 import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.databinding.FragmentUpcomingPaymentsBinding
@@ -37,6 +38,7 @@ class UpcomingPaymentsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupRecyclerView()
+        setupBottomPadding()
         observeData()
 
         binding.chipToday.setOnClickListener { filterByTimeRange(0) }
@@ -46,6 +48,21 @@ class UpcomingPaymentsFragment : Fragment() {
 
         binding.chipWeek.isChecked = true
         filterByTimeRange(7)
+    }
+
+    private fun setupBottomPadding() {
+        binding.recyclerViewUpcomingPayments.clipToPadding = false
+
+        val bottomNavHeight = resources.getDimensionPixelSize(R.dimen.bottom_nav_height)
+        val extraPadding = resources.getDimensionPixelSize(R.dimen.floating_nav_extra_padding)
+        val totalPadding = bottomNavHeight + extraPadding
+
+        binding.recyclerViewUpcomingPayments.setPadding(
+            binding.recyclerViewUpcomingPayments.paddingLeft,
+            binding.recyclerViewUpcomingPayments.paddingTop,
+            binding.recyclerViewUpcomingPayments.paddingRight,
+            totalPadding
+        )
     }
 
     private fun setupRecyclerView() {
