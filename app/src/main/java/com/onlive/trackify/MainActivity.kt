@@ -15,6 +15,7 @@ import com.onlive.trackify.databinding.ActivityMainBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.onlive.trackify.utils.LocaleHelper
 import com.onlive.trackify.utils.PreferenceManager
+import com.onlive.trackify.utils.setupWithAnimation
 
 class MainActivity : AppCompatActivity(), PreferenceManager.OnPreferenceChangedListener {
 
@@ -70,6 +71,8 @@ class MainActivity : AppCompatActivity(), PreferenceManager.OnPreferenceChangedL
 
         setupActionBarWithNavController(navController, appBarConfiguration)
         setupBottomNavigation(navView)
+
+        navView.setupWithAnimation()
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             title = destination.label

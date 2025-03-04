@@ -52,9 +52,25 @@ class StatisticsFragment : Fragment() {
         setupMonthlyBarChart()
         setupTypeChart()
         setupAdapters()
+        setupBottomPadding()
 
         showLoadingState(true)
         observeStatistics()
+    }
+
+    private fun setupBottomPadding() {
+        binding.root.clipToPadding = false
+
+        val bottomNavHeight = resources.getDimensionPixelSize(R.dimen.bottom_nav_height)
+        val extraPadding = resources.getDimensionPixelSize(R.dimen.floating_nav_extra_padding)
+        val totalPadding = bottomNavHeight + extraPadding
+
+        binding.root.setPadding(
+            binding.root.paddingLeft,
+            binding.root.paddingTop,
+            binding.root.paddingRight,
+            totalPadding
+        )
     }
 
     private fun setupAdapters() {

@@ -47,7 +47,23 @@ class PaymentListFragment : Fragment() {
         }
 
         setupRecyclerView()
+        setupBottomPadding()
         observeData()
+    }
+
+    private fun setupBottomPadding() {
+        binding.recyclerViewPayments.clipToPadding = false
+
+        val bottomNavHeight = resources.getDimensionPixelSize(R.dimen.bottom_nav_height)
+        val extraPadding = resources.getDimensionPixelSize(R.dimen.floating_nav_extra_padding)
+        val totalPadding = bottomNavHeight + extraPadding
+
+        binding.recyclerViewPayments.setPadding(
+            binding.recyclerViewPayments.paddingLeft,
+            binding.recyclerViewPayments.paddingTop,
+            binding.recyclerViewPayments.paddingRight,
+            totalPadding
+        )
     }
 
     private fun setupRecyclerView() {
@@ -56,19 +72,6 @@ class PaymentListFragment : Fragment() {
         binding.recyclerViewPayments.apply {
             adapter = paymentAdapter
             layoutManager = LinearLayoutManager(requireContext())
-
-            clipToPadding = false
-            val bottomPadding = getNavigationBarHeight()
-            setPadding(paddingLeft, paddingTop, paddingRight, bottomPadding)
-        }
-    }
-
-    private fun getNavigationBarHeight(): Int {
-        val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
-        return if (resourceId > 0) {
-            resources.getDimensionPixelSize(resourceId)
-        } else {
-            0
         }
     }
 

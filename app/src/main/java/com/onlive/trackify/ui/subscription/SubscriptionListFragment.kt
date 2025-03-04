@@ -63,9 +63,25 @@ class SubscriptionListFragment : Fragment(), MenuProvider {
         }
 
         setupRecyclerView()
+        setupBottomPadding()
         setupViewModeToggle()
         observeSubscriptions()
         setupSearchView()
+    }
+
+    private fun setupBottomPadding() {
+        binding.recyclerViewSubscriptions.clipToPadding = false
+
+        val bottomNavHeight = resources.getDimensionPixelSize(R.dimen.bottom_nav_height)
+        val extraPadding = resources.getDimensionPixelSize(R.dimen.floating_nav_extra_padding)
+        val totalPadding = bottomNavHeight + extraPadding
+
+        binding.recyclerViewSubscriptions.setPadding(
+            binding.recyclerViewSubscriptions.paddingLeft,
+            binding.recyclerViewSubscriptions.paddingTop,
+            binding.recyclerViewSubscriptions.paddingRight,
+            totalPadding
+        )
     }
 
     private fun setupSearchView() {
@@ -174,10 +190,6 @@ class SubscriptionListFragment : Fragment(), MenuProvider {
                 LinearLayoutManager(requireContext())
             }
 
-            clipToPadding = false
-            val bottomPadding = getNavigationBarHeight()
-            setPadding(paddingLeft, paddingTop, paddingRight, bottomPadding)
-
             setHasFixedSize(true)
             setItemViewCacheSize(20)
 
@@ -190,15 +202,6 @@ class SubscriptionListFragment : Fragment(), MenuProvider {
                     }
                 }
             })
-        }
-    }
-
-    private fun getNavigationBarHeight(): Int {
-        val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
-        return if (resourceId > 0) {
-            resources.getDimensionPixelSize(resourceId)
-        } else {
-            0
         }
     }
 

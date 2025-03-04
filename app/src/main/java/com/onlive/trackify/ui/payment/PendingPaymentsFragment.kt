@@ -39,7 +39,23 @@ class PendingPaymentsFragment : Fragment() {
         binding.textViewDescription.text = getString(R.string.payments_pending_confirmation)
 
         setupRecyclerView()
+        setupBottomPadding()
         observeData()
+    }
+
+    private fun setupBottomPadding() {
+        binding.recyclerViewPendingPayments.clipToPadding = false
+
+        val bottomNavHeight = resources.getDimensionPixelSize(R.dimen.bottom_nav_height)
+        val extraPadding = resources.getDimensionPixelSize(R.dimen.floating_nav_extra_padding)
+        val totalPadding = bottomNavHeight + extraPadding
+
+        binding.recyclerViewPendingPayments.setPadding(
+            binding.recyclerViewPendingPayments.paddingLeft,
+            binding.recyclerViewPendingPayments.paddingTop,
+            binding.recyclerViewPendingPayments.paddingRight,
+            totalPadding
+        )
     }
 
     private fun setupRecyclerView() {

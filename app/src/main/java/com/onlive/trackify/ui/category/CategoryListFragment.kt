@@ -42,6 +42,7 @@ class CategoryListFragment : Fragment(), MenuProvider {
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
         setupRecyclerView()
+        setupBottomPadding()
         observeCategories()
 
         binding.fabAddGroup.setOnClickListener {
@@ -50,6 +51,21 @@ class CategoryListFragment : Fragment(), MenuProvider {
             )
             findNavController().navigate(action)
         }
+    }
+
+    private fun setupBottomPadding() {
+        binding.recyclerViewGroups.clipToPadding = false
+
+        val bottomNavHeight = resources.getDimensionPixelSize(R.dimen.bottom_nav_height)
+        val extraPadding = resources.getDimensionPixelSize(R.dimen.floating_nav_extra_padding)
+        val totalPadding = bottomNavHeight + extraPadding
+
+        binding.recyclerViewGroups.setPadding(
+            binding.recyclerViewGroups.paddingLeft,
+            binding.recyclerViewGroups.paddingTop,
+            binding.recyclerViewGroups.paddingRight,
+            totalPadding
+        )
     }
 
     private fun setupRecyclerView() {
@@ -68,10 +84,6 @@ class CategoryListFragment : Fragment(), MenuProvider {
         binding.recyclerViewGroups.apply {
             adapter = categoryAdapter
             layoutManager = LinearLayoutManager(requireContext())
-
-            clipToPadding = false
-            val bottomPadding = resources.getDimensionPixelSize(R.dimen.fab_bottom_padding)
-            setPadding(paddingLeft, paddingTop, paddingRight, bottomPadding)
         }
     }
 
