@@ -34,7 +34,7 @@
             <androidx.appcompat.widget.SearchView
                 android:id="@+id/searchViewSubscriptions"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="24dp"
                 android:background="@android:color/transparent"
                 app:iconifiedByDefault="false"
                 app:queryBackground="@android:color/transparent"
