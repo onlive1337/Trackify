@@ -10,7 +10,6 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.color.DynamicColors
 import com.onlive.trackify.databinding.ActivityMainBinding
 import com.onlive.trackify.utils.LocaleHelper
@@ -23,6 +22,7 @@ class MainActivity : AppCompatActivity(), PreferenceManager.OnPreferenceChangedL
     private lateinit var navController: NavController
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var preferenceManager: PreferenceManager
+    private var currentNavItemId: Int = R.id.navigation_subscriptions
 
     override fun attachBaseContext(newBase: Context) {
         preferenceManager = PreferenceManager(newBase)
@@ -59,10 +59,30 @@ class MainActivity : AppCompatActivity(), PreferenceManager.OnPreferenceChangedL
 
         setupActionBarWithNavController(navController, appBarConfiguration)
 
-        binding.navView.setupWithNavController(navController)
+        binding.navView.setOnItemSelectedListener { item ->
+            val itemId = item.itemId
+
+            if (itemId == currentNavItemId) {
+                when (itemId) {
+                    R.id.navigation_subscriptions -> navController.popBackStack(R.id.navigation_subscriptions, false)
+                    R.id.navigation_payments -> navController.popBackStack(R.id.navigation_payments, false)
+                    R.id.navigation_statistics -> navController.popBackStack(R.id.navigation_statistics, false)
+                    R.id.navigation_settings -> navController.popBackStack(R.id.navigation_settings, false)
+                }
+            } else {
+                navController.navigate(itemId)
+                currentNavItemId = itemId
+            }
+
+            true
+        }
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             title = destination.label
+            if (appBarConfiguration.topLevelDestinations.contains(destination.id)) {
+                currentNavItemId = destination.id
+                binding.navView.menu.findItem(currentNavItemId)?.isChecked = true
+            }
         }
 
         preferenceManager.addOnPreferenceChangedListener(this)
