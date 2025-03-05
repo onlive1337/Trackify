@@ -1,10 +1,9 @@
 package com.onlive.trackify.utils
 
-import android.app.DatePickerDialog
 import android.content.Context
 import android.view.LayoutInflater
-import android.widget.Button
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.onlive.trackify.R
 import com.onlive.trackify.databinding.DialogAdvancedDatePickerBinding
 import java.text.SimpleDateFormat
@@ -25,78 +24,95 @@ class DatePickerHelper(private val context: Context) {
         val binding = DialogAdvancedDatePickerBinding.inflate(LayoutInflater.from(context))
 
         calendar.time = initialDate
-        updateCalendarDisplay(binding.textViewSelectedDate)
+        updateDateDisplay(binding)
 
         setupQuickDateButtons(binding)
 
-        val dialog = AlertDialog.Builder(context)
+        val dialogBuilder = MaterialAlertDialogBuilder(context)
             .setView(binding.root)
-            .setTitle(context.getString(R.string.select_date))
             .setPositiveButton(context.getString(R.string.done)) { _, _ ->
                 onDateSelected(calendar.time)
             }
-            .create()
 
         if (allowNullDate) {
-            dialog.setButton(AlertDialog.BUTTON_NEUTRAL, context.getString(R.string.indefinitely)) { _, _ ->
+            dialogBuilder.setNeutralButton(context.getString(R.string.indefinitely)) { _, _ ->
                 onDateSelected(null)
             }
         }
 
+        val dialog = dialogBuilder.create()
+
         binding.buttonSelectDate.setOnClickListener {
-            showStandardDatePicker { year, month, day ->
-                calendar.set(year, month, day)
-                updateCalendarDisplay(binding.textViewSelectedDate)
+            showMaterialDatePicker(calendar.time) { selectedDate ->
+                if (selectedDate != null) {
+                    calendar.time = selectedDate
+                    updateDateDisplay(binding)
+                }
             }
         }
 
         dialog.show()
     }
 
-    private fun setupQuickDateButtons(binding: DialogAdvancedDatePickerBinding) {
-        binding.buttonToday.setOnClickListener {
-            calendar.time = Date()
-            updateCalendarDisplay(binding.textViewSelectedDate)
+    private fun showMaterialDatePicker(initialDate: Date, onDateSelected: (Date?) -> Unit) {
+        val calendar = Calendar.getInstance()
+        calendar.time = initialDate
+
+        val datePicker = MaterialDatePicker.Builder.datePicker()
+            .setTitleText(context.getString(R.string.select_date))
+            .setSelection(calendar.timeInMillis)
+            .setTheme(R.style.ThemeOverlay_Material3_MaterialCalendar)
+            .build()
+
+        datePicker.addOnPositiveButtonClickListener { selection ->
+            val selectedCalendar = Calendar.getInstance()
+            selectedCalendar.timeInMillis = selection
+            onDateSelected(selectedCalendar.time)
         }
 
-        binding.buttonTomorrow.setOnClickListener {
+        datePicker.addOnCancelListener {
+            onDateSelected(null)
+        }
+
+        datePicker.addOnNegativeButtonClickListener {
+            onDateSelected(null)
+        }
+
+        datePicker.show((context as androidx.fragment.app.FragmentActivity).supportFragmentManager, "MATERIAL_DATE_PICKER")
+    }
+
+    private fun setupQuickDateButtons(binding: DialogAdvancedDatePickerBinding) {
+        binding.chipToday.setOnClickListener {
+            calendar.time = Date()
+            updateDateDisplay(binding)
+        }
+
+        binding.chipTomorrow.setOnClickListener {
             calendar.time = Date()
             calendar.add(Calendar.DAY_OF_YEAR, 1)
-            updateCalendarDisplay(binding.textViewSelectedDate)
+            updateDateDisplay(binding)
         }
 
-        binding.buttonOneWeek.setOnClickListener {
+        binding.chipOneWeek.setOnClickListener {
             calendar.time = Date()
             calendar.add(Calendar.WEEK_OF_YEAR, 1)
-            updateCalendarDisplay(binding.textViewSelectedDate)
+            updateDateDisplay(binding)
         }
 
-        binding.buttonOneMonth.setOnClickListener {
+        binding.chipOneMonth.setOnClickListener {
             calendar.time = Date()
             calendar.add(Calendar.MONTH, 1)
-            updateCalendarDisplay(binding.textViewSelectedDate)
+            updateDateDisplay(binding)
         }
 
-        binding.buttonOneYear.setOnClickListener {
+        binding.chipOneYear.setOnClickListener {
             calendar.time = Date()
             calendar.add(Calendar.YEAR, 1)
-            updateCalendarDisplay(binding.textViewSelectedDate)
+            updateDateDisplay(binding)
         }
     }
 
-    private fun updateCalendarDisplay(textView: Button) {
-        textView.text = dateFormat.format(calendar.time)
-    }
-
-    private fun showStandardDatePicker(onDateSet: (Int, Int, Int) -> Unit) {
-        DatePickerDialog(
-            context,
-            { _, year, month, dayOfMonth ->
-                onDateSet(year, month, dayOfMonth)
-            },
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH)
-        ).show()
+    private fun updateDateDisplay(binding: DialogAdvancedDatePickerBinding) {
+        binding.textViewSelectedDate.text = dateFormat.format(calendar.time)
     }
 }
