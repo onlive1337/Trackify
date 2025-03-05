@@ -7,6 +7,9 @@
     <string name="title_settings">Настройки</string>
     <string name="settings_saved">Настройки сохранены</string>
     <string name="yes">Да</string>
+    <string name="enter_name">Введите название</string>
+    <string name="enter_price">Введите цену</string>
+    <string name="enter_correct_price">Введите корректную цену</string>
 
     <string name="save">Сохранить</string>
     <string name="cancel">Отмена</string>

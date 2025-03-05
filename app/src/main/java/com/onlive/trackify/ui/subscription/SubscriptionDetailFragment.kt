@@ -223,13 +223,13 @@ class SubscriptionDetailFragment : Fragment() {
     private fun saveSubscription() {
         val name = binding.editTextName.text.toString().trim()
         if (name.isEmpty()) {
-            binding.editTextName.error = "Введите название"
+            binding.editTextName.error = getString(R.string.enter_name)
             return
         }
 
         val priceText = binding.editTextPrice.text.toString().trim()
         if (priceText.isEmpty()) {
-            binding.editTextPrice.error = "Введите цену"
+            binding.editTextPrice.error = getString(R.string.enter_price)
             return
         }
 
@@ -239,7 +239,7 @@ class SubscriptionDetailFragment : Fragment() {
 
         val price = priceText.toDoubleOrNull()
         if (price == null || price <= 0) {
-            binding.editTextPrice.error = "Введите корректную цену"
+            binding.editTextPrice.error = getString(R.string.enter_correct_price)
             return
         }
 
@@ -272,7 +272,7 @@ class SubscriptionDetailFragment : Fragment() {
 
             subscriptionViewModel.update(updatedSubscription)
 
-            Toast.makeText(requireContext(), "Подписка обновлена", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.subscription_updated), Toast.LENGTH_SHORT).show()
 
             findNavController().popBackStack()
         }
@@ -280,15 +280,15 @@ class SubscriptionDetailFragment : Fragment() {
 
     private fun showDeleteConfirmationDialog() {
         AlertDialog.Builder(requireContext())
-            .setTitle("Удаление подписки")
-            .setMessage("Вы уверены, что хотите удалить эту подписку? Это действие нельзя отменить.")
-            .setPositiveButton("Удалить") { _, _ ->
+            .setTitle(R.string.delete_subscription_confirmation)
+            .setMessage(R.string.delete_subscription_message)
+            .setPositiveButton(getString(R.string.delete)) { _, _ ->
                 subscription?.let {
                     subscriptionViewModel.delete(it)
                     findNavController().popBackStack()
                 }
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
 

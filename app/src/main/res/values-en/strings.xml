@@ -7,6 +7,9 @@
     <string name="title_settings">Settings</string>
     <string name="settings_saved">Settings saved</string>
     <string name="yes">Yes</string>
+    <string name="enter_name">Enter a name</string>
+    <string name="enter_price">Enter price</string>
+    <string name="enter_correct_price">Enter the correct price</string>
 
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>

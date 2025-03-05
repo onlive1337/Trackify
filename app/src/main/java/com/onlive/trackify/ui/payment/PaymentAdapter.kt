@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.data.model.PaymentStatus
 import com.onlive.trackify.databinding.ItemPaymentBinding
@@ -42,10 +43,10 @@ class PaymentAdapter : ListAdapter<PaymentWithSubscriptionName, PaymentAdapter.P
             )
             binding.textViewPaymentSubscription.text = paymentWithName.subscriptionName
 
-            val chipText = when(paymentWithName.payment.status) {
-                PaymentStatus.PENDING -> "Ожидает"
-                PaymentStatus.CONFIRMED -> "Подтвержден"
-                PaymentStatus.MANUAL -> "Ручной"
+            val chipText = when (paymentWithName.payment.status) {
+                PaymentStatus.PENDING -> binding.root.context.getString(R.string.payment_status_pending)
+                PaymentStatus.CONFIRMED -> binding.root.context.getString(R.string.payment_status_confirmed)
+                PaymentStatus.MANUAL -> binding.root.context.getString(R.string.payment_status_manual)
             }
 
             binding.chipPaymentStatus.text = chipText

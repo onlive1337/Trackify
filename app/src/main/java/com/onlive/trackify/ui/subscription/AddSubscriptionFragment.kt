@@ -119,13 +119,13 @@ class AddSubscriptionFragment : Fragment() {
     private fun saveSubscription() {
         val name = binding.editTextName.text.toString().trim()
         if (name.isEmpty()) {
-            binding.editTextName.error = "Введите название"
+            binding.editTextName.error = getString(R.string.enter_name)
             return
         }
 
         val priceText = binding.editTextPrice.text.toString().trim()
         if (priceText.isEmpty()) {
-            binding.editTextPrice.error = "Введите цену"
+            binding.editTextPrice.error = getString(R.string.enter_price)
             return
         }
 
@@ -135,7 +135,7 @@ class AddSubscriptionFragment : Fragment() {
 
         val price = priceText.toDoubleOrNull()
         if (price == null || price <= 0) {
-            binding.editTextPrice.error = "Введите корректную цену"
+            binding.editTextPrice.error = getString(R.string.enter_correct_price)
             return
         }
 
@@ -165,7 +165,7 @@ class AddSubscriptionFragment : Fragment() {
 
         subscriptionViewModel.insert(subscription)
 
-        Toast.makeText(requireContext(), "Подписка добавлена", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), getString(R.string.subscription_added), Toast.LENGTH_SHORT).show()
 
         findNavController().popBackStack()
     }
