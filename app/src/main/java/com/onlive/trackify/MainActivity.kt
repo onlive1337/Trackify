@@ -15,6 +15,11 @@ import com.onlive.trackify.databinding.ActivityMainBinding
 import com.onlive.trackify.utils.LocaleHelper
 import com.onlive.trackify.utils.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
+import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.AnimationUtils
 
 class MainActivity : AppCompatActivity(), PreferenceManager.OnPreferenceChangedListener {
 
@@ -59,8 +64,42 @@ class MainActivity : AppCompatActivity(), PreferenceManager.OnPreferenceChangedL
 
         setupActionBarWithNavController(navController, appBarConfiguration)
 
+        val itemAnimation = AnimationUtils.loadAnimation(this, R.anim.bottom_nav_item_animation)
+
         binding.navView.setOnItemSelectedListener { item ->
             val itemId = item.itemId
+
+            val menuView = binding.navView.findViewById<View>(itemId)
+            menuView?.startAnimation(itemAnimation)
+
+            val navContainer = binding.bottomNavContainer
+
+            val scaleDown = AnimatorSet().apply {
+                val scaleDownX = ObjectAnimator.ofFloat(navContainer, View.SCALE_X, 1f, 0.97f)
+                val scaleDownY = ObjectAnimator.ofFloat(navContainer, View.SCALE_Y, 1f, 0.97f)
+                playTogether(scaleDownX, scaleDownY)
+                duration = 100
+            }
+
+            val scaleUp = AnimatorSet().apply {
+                val scaleUpX = ObjectAnimator.ofFloat(navContainer, View.SCALE_X, 0.97f, 1.015f)
+                val scaleUpY = ObjectAnimator.ofFloat(navContainer, View.SCALE_Y, 0.97f, 1.015f)
+                playTogether(scaleUpX, scaleUpY)
+                duration = 100
+            }
+
+            val scaleNormal = AnimatorSet().apply {
+                val scaleNormalX = ObjectAnimator.ofFloat(navContainer, View.SCALE_X, 1.015f, 1f)
+                val scaleNormalY = ObjectAnimator.ofFloat(navContainer, View.SCALE_Y, 1.015f, 1f)
+                playTogether(scaleNormalX, scaleNormalY)
+                duration = 100
+            }
+
+            AnimatorSet().apply {
+                playSequentially(scaleDown, scaleUp, scaleNormal)
+                interpolator = AccelerateDecelerateInterpolator()
+                start()
+            }
 
             if (itemId == currentNavItemId) {
                 when (itemId) {
