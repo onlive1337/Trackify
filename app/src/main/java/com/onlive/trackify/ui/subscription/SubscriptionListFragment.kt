@@ -57,6 +57,12 @@ class SubscriptionListFragment : Fragment(), MenuProvider {
         viewModePreference = ViewModePreference(requireContext())
         isGridMode = viewModePreference.isGridModeEnabled()
 
+        val bottomNavHeight = resources.getDimensionPixelSize(R.dimen.bottom_nav_height)
+        val extraPadding = resources.getDimensionPixelSize(R.dimen.floating_nav_extra_padding)
+        val fabMarginParams = binding.fabAddSubscription.layoutParams as ViewGroup.MarginLayoutParams
+        fabMarginParams.bottomMargin = bottomNavHeight + extraPadding + 16
+        binding.fabAddSubscription.layoutParams = fabMarginParams
+
         binding.fabAddSubscription.setOnClickListener {
             AnimationUtils.pulseAnimation(it)
             findNavController().navigate(R.id.action_navigation_subscriptions_to_addSubscriptionFragment)
@@ -159,11 +165,9 @@ class SubscriptionListFragment : Fragment(), MenuProvider {
             binding.recyclerViewSubscriptions.visibility = View.GONE
 
             binding.textViewEmpty.text = if (isFiltered) {
-                getString(R.string
-                    .subscriptions_not_found)
+                getString(R.string.subscriptions_not_found)
             } else {
-                getString(R.string
-                    .no_subscriptions)
+                getString(R.string.no_subscriptions)
             }
         } else {
             binding.textViewEmpty.visibility = View.GONE

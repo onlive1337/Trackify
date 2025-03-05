@@ -15,6 +15,7 @@ import com.google.android.material.color.DynamicColors
 import com.onlive.trackify.databinding.ActivityMainBinding
 import com.onlive.trackify.utils.LocaleHelper
 import com.onlive.trackify.utils.PreferenceManager
+import androidx.recyclerview.widget.RecyclerView
 
 class MainActivity : AppCompatActivity(), PreferenceManager.OnPreferenceChangedListener {
 
@@ -80,5 +81,20 @@ class MainActivity : AppCompatActivity(), PreferenceManager.OnPreferenceChangedL
     override fun onDestroy() {
         preferenceManager.removeOnPreferenceChangedListener(this)
         super.onDestroy()
+    }
+
+    fun setupRecyclerViewBottomPadding(recyclerView: RecyclerView) {
+        recyclerView.clipToPadding = false
+
+        val bottomNavHeight = resources.getDimensionPixelSize(R.dimen.bottom_nav_height)
+        val extraPadding = resources.getDimensionPixelSize(R.dimen.floating_nav_extra_padding)
+        val totalPadding = bottomNavHeight + extraPadding
+
+        recyclerView.setPadding(
+            recyclerView.paddingLeft,
+            recyclerView.paddingTop,
+            recyclerView.paddingRight,
+            totalPadding
+        )
     }
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="fab_bottom_padding">80dp</dimen>
+    <dimen name="fab_bottom_padding">110dp</dimen>
     <dimen name="color_picker_border_width">1dp</dimen>
     <dimen name="color_picker_selected_border_width">3dp</dimen>
     <dimen name="bottom_nav_height">72dp</dimen>
