@@ -14,3 +14,5 @@
 .cxx
 local.properties
 /.idea/discord.xml
+keystore.properties
+trackify.keystore
