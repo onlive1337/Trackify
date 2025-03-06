@@ -60,6 +60,10 @@ class BulkPaymentActionsFragment : Fragment() {
             binding.recyclerViewPayments.paddingRight,
             totalPadding
         )
+
+        val layoutParams = binding.layoutActions.layoutParams as ViewGroup.MarginLayoutParams
+        layoutParams.bottomMargin = totalPadding
+        binding.layoutActions.layoutParams = layoutParams
     }
 
     private fun setupRecyclerView() {
