@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -109,7 +110,11 @@ class MainActivity : AppCompatActivity(), PreferenceManager.OnPreferenceChangedL
                     R.id.navigation_settings -> navController.popBackStack(R.id.navigation_settings, false)
                 }
             } else {
-                navController.navigate(itemId)
+                val navOptions = NavOptions.Builder()
+                    .setEnterAnim(R.anim.fade_in)
+                    .setExitAnim(R.anim.fade_out)
+                    .build()
+                navController.navigate(itemId, null, navOptions)
                 currentNavItemId = itemId
             }
 
