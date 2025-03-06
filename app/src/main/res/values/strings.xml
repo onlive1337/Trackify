@@ -244,4 +244,7 @@
     <string name="toggle_view_mode">Переключить режим просмотра</string>
     <string name="subscription_types_spending">Расходы по типам подписок</string>
     <string name="no_payments_selected">Не выбрано ни одного платежа</string>
+    <string name="enter_correct_amount">Введите корректную сумму</string>
+    <string name="enter_amount">Введите сумму</string>
+    <string name="select_subscription">Выберите подписку</string>
 </resources>

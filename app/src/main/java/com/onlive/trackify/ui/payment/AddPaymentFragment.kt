@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.databinding.FragmentAddPaymentBinding
@@ -117,19 +118,19 @@ class AddPaymentFragment : Fragment() {
 
     private fun savePayment() {
         if (subscriptions.isEmpty() || binding.spinnerSubscription.selectedItemPosition == -1) {
-            Toast.makeText(requireContext(), "Выберите подписку", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.select_subscription), Toast.LENGTH_SHORT).show()
             return
         }
 
         val amountText = binding.editTextAmount.text.toString().trim()
         if (amountText.isEmpty()) {
-            binding.editTextAmount.error = "Введите сумму"
+            binding.editTextAmount.error = getString(R.string.enter_amount)
             return
         }
 
         val amount = amountText.toDoubleOrNull()
         if (amount == null || amount <= 0) {
-            binding.editTextAmount.error = "Введите корректную сумму"
+            binding.editTextAmount.error = getString(R.string.enter_correct_amount)
             return
         }
 
@@ -149,7 +150,7 @@ class AddPaymentFragment : Fragment() {
 
         paymentViewModel.insert(payment)
 
-        Toast.makeText(requireContext(), "Платеж добавлен", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), getString(R.string.payment_added), Toast.LENGTH_SHORT).show()
 
         findNavController().popBackStack()
     }
