@@ -32,6 +32,12 @@ class CategoryGroupListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val bottomNavHeight = resources.getDimensionPixelSize(R.dimen.bottom_nav_height)
+        val extraPadding = resources.getDimensionPixelSize(R.dimen.floating_nav_extra_padding)
+        val fabMarginParams = binding.fabAddGroup.layoutParams as ViewGroup.MarginLayoutParams
+        fabMarginParams.bottomMargin = bottomNavHeight + extraPadding + 16
+        binding.fabAddGroup.layoutParams = fabMarginParams
+
         setupRecyclerView()
         setupBottomPadding()
         observeGroups()
