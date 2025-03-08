@@ -22,8 +22,8 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Chip
-import androidx.compose.material3.ChipDefaults
+import androidx.compose.material3.ElevatedFilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -46,6 +46,8 @@ import com.onlive.trackify.data.model.PaymentStatus
 import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.CurrencyFormatter
+import com.onlive.trackify.viewmodel.PaymentViewModel
+import com.onlive.trackify.viewmodel.SubscriptionViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
 

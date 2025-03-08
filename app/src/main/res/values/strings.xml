@@ -141,6 +141,7 @@
     <string name="days_until">Через %d дней</string>
     <string name="week">Неделя</string>
     <string name="month">Месяц</string>
+    <string name="year">Год</string>
     <string name="all">Все</string>
     <string name="no_upcoming_payments">Нет предстоящих платежей</string>
 

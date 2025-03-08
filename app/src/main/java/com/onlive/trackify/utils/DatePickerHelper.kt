@@ -1,118 +1,166 @@
 package com.onlive.trackify.utils
 
 import android.content.Context
-import android.view.LayoutInflater
-import com.google.android.material.datepicker.MaterialDatePicker
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.onlive.trackify.R
-import com.onlive.trackify.databinding.DialogAdvancedDatePickerBinding
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
-class DatePickerHelper(private val context: Context) {
+class DateUtility {
+    companion object {
+        private val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale("ru"))
 
-    private val calendar = Calendar.getInstance()
-    private val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale("ru"))
+        fun formatDate(date: Date): String {
+            return dateFormat.format(date)
+        }
 
-    fun showAdvancedDatePickerForSubscription(
-        initialDate: Date = Date(),
-        allowNullDate: Boolean = true,
-        onDateSelected: (Date?) -> Unit
+        fun getDateAfterDays(days: Int): Date {
+            val calendar = Calendar.getInstance()
+            calendar.add(Calendar.DAY_OF_YEAR, days)
+            return calendar.time
+        }
+
+        fun getDateAfterMonths(months: Int): Date {
+            val calendar = Calendar.getInstance()
+            calendar.add(Calendar.MONTH, months)
+            return calendar.time
+        }
+
+        fun getDateAfterYears(years: Int): Date {
+            val calendar = Calendar.getInstance()
+            calendar.add(Calendar.YEAR, years)
+            return calendar.time
+        }
+    }
+}
+
+@Composable
+fun DatePicker(
+    initialDate: Date = Date(),
+    onDateSelected: (Date?) -> Unit,
+    allowNullDate: Boolean = true,
+    modifier: Modifier = Modifier
+) {
+    var selectedDate by remember { mutableStateOf(initialDate) }
+
+    Column(
+        modifier = modifier
+            .padding(16.dp)
+            .fillMaxWidth()
     ) {
-        val binding = DialogAdvancedDatePickerBinding.inflate(LayoutInflater.from(context))
+        Text(
+            text = "Выберите дату",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
 
-        calendar.time = initialDate
-        updateDateDisplay(binding)
+        Text(
+            text = "Выбрано: ${DateUtility.formatDate(selectedDate)}",
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(bottom = 24.dp)
+        )
 
-        setupQuickDateButtons(binding)
+        Text(
+            text = "Быстрый выбор:",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
 
-        val dialogBuilder = MaterialAlertDialogBuilder(context)
-            .setView(binding.root)
-            .setPositiveButton(context.getString(R.string.done)) { _, _ ->
-                onDateSelected(calendar.time)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            OutlinedButton(
+                onClick = {
+                    selectedDate = Date()
+                    onDateSelected(selectedDate)
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Сегодня")
             }
 
-        if (allowNullDate) {
-            dialogBuilder.setNeutralButton(context.getString(R.string.indefinitely)) { _, _ ->
-                onDateSelected(null)
+            OutlinedButton(
+                onClick = {
+                    selectedDate = DateUtility.getDateAfterDays(1)
+                    onDateSelected(selectedDate)
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Завтра")
             }
         }
 
-        val dialog = dialogBuilder.create()
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            OutlinedButton(
+                onClick = {
+                    selectedDate = DateUtility.getDateAfterDays(7)
+                    onDateSelected(selectedDate)
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Через неделю")
+            }
 
-        binding.buttonSelectDate.setOnClickListener {
-            showMaterialDatePicker(calendar.time) { selectedDate ->
-                if (selectedDate != null) {
-                    calendar.time = selectedDate
-                    updateDateDisplay(binding)
+            OutlinedButton(
+                onClick = {
+                    selectedDate = DateUtility.getDateAfterMonths(1)
+                    onDateSelected(selectedDate)
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Через месяц")
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp, bottom = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            OutlinedButton(
+                onClick = {
+                    selectedDate = DateUtility.getDateAfterYears(1)
+                    onDateSelected(selectedDate)
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Через год")
+            }
+
+            if (allowNullDate) {
+                OutlinedButton(
+                    onClick = { onDateSelected(null) },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Бессрочно")
                 }
             }
         }
 
-        dialog.show()
-    }
-
-    private fun showMaterialDatePicker(initialDate: Date, onDateSelected: (Date?) -> Unit) {
-        val calendar = Calendar.getInstance()
-        calendar.time = initialDate
-
-        val datePicker = MaterialDatePicker.Builder.datePicker()
-            .setTitleText(context.getString(R.string.select_date))
-            .setSelection(calendar.timeInMillis)
-            .setTheme(R.style.ThemeOverlay_Material3_MaterialCalendar)
-            .build()
-
-        datePicker.addOnPositiveButtonClickListener { selection ->
-            val selectedCalendar = Calendar.getInstance()
-            selectedCalendar.timeInMillis = selection
-            onDateSelected(selectedCalendar.time)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Button(
+                onClick = { onDateSelected(selectedDate) }
+            ) {
+                Text("Выбрать")
+            }
         }
-
-        datePicker.addOnCancelListener {
-            onDateSelected(null)
-        }
-
-        datePicker.addOnNegativeButtonClickListener {
-            onDateSelected(null)
-        }
-
-        datePicker.show((context as androidx.fragment.app.FragmentActivity).supportFragmentManager, "MATERIAL_DATE_PICKER")
-    }
-
-    private fun setupQuickDateButtons(binding: DialogAdvancedDatePickerBinding) {
-        binding.chipToday.setOnClickListener {
-            calendar.time = Date()
-            updateDateDisplay(binding)
-        }
-
-        binding.chipTomorrow.setOnClickListener {
-            calendar.time = Date()
-            calendar.add(Calendar.DAY_OF_YEAR, 1)
-            updateDateDisplay(binding)
-        }
-
-        binding.chipOneWeek.setOnClickListener {
-            calendar.time = Date()
-            calendar.add(Calendar.WEEK_OF_YEAR, 1)
-            updateDateDisplay(binding)
-        }
-
-        binding.chipOneMonth.setOnClickListener {
-            calendar.time = Date()
-            calendar.add(Calendar.MONTH, 1)
-            updateDateDisplay(binding)
-        }
-
-        binding.chipOneYear.setOnClickListener {
-            calendar.time = Date()
-            calendar.add(Calendar.YEAR, 1)
-            updateDateDisplay(binding)
-        }
-    }
-
-    private fun updateDateDisplay(binding: DialogAdvancedDatePickerBinding) {
-        binding.textViewSelectedDate.text = dateFormat.format(calendar.time)
     }
 }

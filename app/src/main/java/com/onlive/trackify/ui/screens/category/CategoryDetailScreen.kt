@@ -61,27 +61,22 @@ fun CategoryDetailScreen(
     modifier: Modifier = Modifier,
     categoryViewModel: CategoryViewModel = viewModel()
 ) {
-    // Предопределенные цвета для выбора
     val predefinedColors = listOf(
         "#FF5252", "#FF4081", "#E040FB", "#7C4DFF", "#536DFE", "#448AFF", "#40C4FF", "#18FFFF",
         "#64FFDA", "#69F0AE", "#B2FF59", "#EEFF41", "#FFFF00", "#FFD740", "#FFAB40", "#FF6E40",
         "#8D6E63", "#BDBDBD", "#212121"
     )
 
-    // Состояние для новой или существующей категории
     var categoryName by remember { mutableStateOf("") }
     var categoryColor by remember { mutableStateOf(predefinedColors[0]) }
 
-    // Загружаем категорию, если редактируем существующую
     val existingCategory by categoryViewModel.getCategoryById(categoryId).observeAsState()
 
-    // Заполняем поля, если это редактирование
     existingCategory?.let {
         categoryName = it.name
         categoryColor = it.colorCode
     }
 
-    // Состояние для диалога подтверждения удаления
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -102,7 +97,6 @@ fun CategoryDetailScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Название категории
             OutlinedTextField(
                 value = categoryName,
                 onValueChange = { categoryName = it },
@@ -123,19 +117,16 @@ fun CategoryDetailScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Выбор цвета категории
             Text(
                 text = stringResource(R.string.category_color),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            // Отображение текущего выбранного цвета
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
-                // Превью цвета
                 Box(
                     modifier = Modifier
                         .size(48.dp)
@@ -163,7 +154,6 @@ fun CategoryDetailScreen(
                 )
             }
 
-            // Сетка для выбора цвета
             LazyVerticalGrid(
                 columns = GridCells.Fixed(5),
                 contentPadding = PaddingValues(bottom = 16.dp),
@@ -182,12 +172,10 @@ fun CategoryDetailScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Кнопки действий
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Кнопка удаления (только для существующих категорий)
                 if (categoryId != -1L) {
                     Button(
                         onClick = { showDeleteDialog = true },
@@ -208,19 +196,16 @@ fun CategoryDetailScreen(
                     Spacer(modifier = Modifier.width(16.dp))
                 }
 
-                // Кнопка сохранения
                 Button(
                     onClick = {
                         if (categoryName.isNotEmpty()) {
                             if (categoryId == -1L) {
-                                // Создаем новую категорию
                                 val newCategory = Category(
                                     name = categoryName,
                                     colorCode = categoryColor
                                 )
                                 categoryViewModel.insert(newCategory)
                             } else {
-                                // Обновляем существующую категорию
                                 existingCategory?.let {
                                     val updatedCategory = it.copy(
                                         name = categoryName,
@@ -241,7 +226,6 @@ fun CategoryDetailScreen(
             Spacer(modifier = Modifier.height(32.dp))
         }
 
-        // Диалог подтверждения удаления
         if (showDeleteDialog) {
             AlertDialog(
                 onDismissRequest = { showDeleteDialog = false },

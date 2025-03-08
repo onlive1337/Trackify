@@ -82,6 +82,8 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
 
+    implementation("com.google.android.material:material:1.11.0")
+
     // Compose
     implementation(platform("androidx.compose:compose-bom:2023.10.01"))
     implementation("androidx.compose.ui:ui")
@@ -119,7 +121,6 @@ dependencies {
     // Charts для Compose
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0") // Временно оставляем
     implementation("com.github.tehras:charts:0.2.4-alpha") // Добавляем библиотеку для графиков в Compose
-    implementation("com.github.madrapps:plot:0.1.6") // Альтернативный вариант для графиков
 
     // Сопутствующие библиотеки для Compose
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.32.0")

@@ -3,6 +3,7 @@ package com.onlive.trackify.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -187,11 +188,10 @@ fun TrackifyNavGraph(
                 onNavigateToCurrencySettings = navigationActions.navigateToCurrencySettings,
                 onNavigateToLanguageSettings = navigationActions.navigateToLanguageSettings,
                 onNavigateToDataManagement = navigationActions.navigateToDataManagement,
-                themeManager = themeManager ?: ThemeManager(null)
+                themeManager = themeManager ?: ThemeManager(LocalContext.current)
             )
         }
 
-        // Экран деталей подписки
         composable(
             route = Screen.SubscriptionDetail.route,
             arguments = listOf(
@@ -206,7 +206,6 @@ fun TrackifyNavGraph(
             )
         }
 
-        // Экран добавления подписки
         composable(Screen.AddSubscription.route) {
             SubscriptionDetailScreen(
                 subscriptionId = -1L,
@@ -215,7 +214,6 @@ fun TrackifyNavGraph(
             )
         }
 
-        // Экран добавления платежа
         composable(
             route = Screen.AddPayment.route,
             arguments = listOf(
@@ -232,7 +230,6 @@ fun TrackifyNavGraph(
             )
         }
 
-        // Управление категориями
         composable(Screen.CategoryManagement.route) {
             CategoryManagementScreen(
                 onNavigateBack = navigationActions.navigateBack,
@@ -243,7 +240,6 @@ fun TrackifyNavGraph(
             )
         }
 
-        // Детали категории
         composable(
             route = Screen.CategoryDetail.route,
             arguments = listOf(
@@ -257,7 +253,6 @@ fun TrackifyNavGraph(
             )
         }
 
-        // Детали группы категорий
         composable(
             route = Screen.CategoryGroupDetail.route,
             arguments = listOf(
@@ -272,7 +267,6 @@ fun TrackifyNavGraph(
             )
         }
 
-        // Настройки валюты
         composable(Screen.CurrencySettings.route) {
             // TODO: Реализовать экран настроек валюты
             SettingsScreen(
@@ -281,11 +275,10 @@ fun TrackifyNavGraph(
                 onNavigateToCurrencySettings = navigationActions.navigateToCurrencySettings,
                 onNavigateToLanguageSettings = navigationActions.navigateToLanguageSettings,
                 onNavigateToDataManagement = navigationActions.navigateToDataManagement,
-                themeManager = themeManager ?: ThemeManager(null)
+                themeManager = themeManager ?: ThemeManager(LocalContext.current)
             )
         }
 
-        // Настройки языка
         composable(Screen.LanguageSettings.route) {
             // TODO: Реализовать экран настроек языка
             SettingsScreen(
@@ -294,11 +287,10 @@ fun TrackifyNavGraph(
                 onNavigateToCurrencySettings = navigationActions.navigateToCurrencySettings,
                 onNavigateToLanguageSettings = navigationActions.navigateToLanguageSettings,
                 onNavigateToDataManagement = navigationActions.navigateToDataManagement,
-                themeManager = themeManager ?: ThemeManager(null)
+                themeManager = themeManager ?: ThemeManager(LocalContext.current)
             )
         }
 
-        // Настройки уведомлений
         composable(Screen.NotificationSettings.route) {
             // TODO: Реализовать экран настроек уведомлений
             SettingsScreen(
@@ -307,11 +299,10 @@ fun TrackifyNavGraph(
                 onNavigateToCurrencySettings = navigationActions.navigateToCurrencySettings,
                 onNavigateToLanguageSettings = navigationActions.navigateToLanguageSettings,
                 onNavigateToDataManagement = navigationActions.navigateToDataManagement,
-                themeManager = themeManager ?: ThemeManager(null)
+                themeManager = themeManager ?: ThemeManager(LocalContext.current)
             )
         }
 
-        // Управление данными
         composable(Screen.DataManagement.route) {
             // TODO: Реализовать экран управления данными
             SettingsScreen(
@@ -320,11 +311,10 @@ fun TrackifyNavGraph(
                 onNavigateToCurrencySettings = navigationActions.navigateToCurrencySettings,
                 onNavigateToLanguageSettings = navigationActions.navigateToLanguageSettings,
                 onNavigateToDataManagement = navigationActions.navigateToDataManagement,
-                themeManager = themeManager ?: ThemeManager(null)
+                themeManager = themeManager ?: ThemeManager(LocalContext.current)
             )
         }
 
-        // Ожидающие платежи
         composable(Screen.PendingPayments.route) {
             // TODO: Реализовать экран ожидающих платежей
             PaymentsScreen(
@@ -334,7 +324,6 @@ fun TrackifyNavGraph(
             )
         }
 
-        // Групповые операции с платежами
         composable(Screen.BulkPaymentActions.route) {
             // TODO: Реализовать экран групповых операций с платежами
             PaymentsScreen(
