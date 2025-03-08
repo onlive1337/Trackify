@@ -1,34 +1,28 @@
 package com.onlive.trackify
 
 import android.content.Context
-import android.os.Build
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.WindowCompat
-import androidx.navigation.NavController
-import androidx.navigation.NavOptions
-import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
-import com.google.android.material.color.DynamicColors
-import com.onlive.trackify.databinding.ActivityMainBinding
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.onlive.trackify.ui.components.TrackifyBottomBar
+import com.onlive.trackify.ui.navigation.Screen
+import com.onlive.trackify.ui.navigation.TrackifyNavGraph
+import com.onlive.trackify.ui.theme.TrackifyTheme
 import com.onlive.trackify.utils.LocaleHelper
 import com.onlive.trackify.utils.PreferenceManager
-import androidx.recyclerview.widget.RecyclerView
-import android.animation.AnimatorSet
-import android.animation.ObjectAnimator
-import android.view.View
-import android.view.animation.AccelerateDecelerateInterpolator
-import android.view.animation.AnimationUtils
+import com.onlive.trackify.utils.ThemeManager
 
-class MainActivity : AppCompatActivity(), PreferenceManager.OnPreferenceChangedListener {
+class MainActivity : ComponentActivity(), PreferenceManager.OnPreferenceChangedListener {
 
-    private lateinit var binding: ActivityMainBinding
-    private lateinit var navController: NavController
-    private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var preferenceManager: PreferenceManager
-    private var currentNavItemId: Int = R.id.navigation_subscriptions
+    private lateinit var themeManager: ThemeManager
 
     override fun attachBaseContext(newBase: Context) {
         preferenceManager = PreferenceManager(newBase)
@@ -37,97 +31,14 @@ class MainActivity : AppCompatActivity(), PreferenceManager.OnPreferenceChangedL
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            DynamicColors.applyToActivityIfAvailable(this)
-        }
-
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-
         super.onCreate(savedInstanceState)
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        setSupportActionBar(binding.toolbar)
-
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        navController = navHostFragment.navController
-
-        appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.navigation_subscriptions,
-                R.id.navigation_payments,
-                R.id.navigation_statistics,
-                R.id.navigation_settings
-            )
-        )
-
-        setupActionBarWithNavController(navController, appBarConfiguration)
-
-        val itemAnimation = AnimationUtils.loadAnimation(this, R.anim.bottom_nav_item_animation)
-
-        binding.navView.setOnItemSelectedListener { item ->
-            val itemId = item.itemId
-
-            val menuView = binding.navView.findViewById<View>(itemId)
-            menuView?.startAnimation(itemAnimation)
-
-            val navContainer = binding.bottomNavContainer
-
-            val scale = AnimatorSet().apply {
-                val scaleDownX = ObjectAnimator.ofFloat(navContainer, View.SCALE_X, 1f, 0.98f)
-                val scaleDownY = ObjectAnimator.ofFloat(navContainer, View.SCALE_Y, 1f, 0.98f)
-                val scaleUpX = ObjectAnimator.ofFloat(navContainer, View.SCALE_X, 0.98f, 1f)
-                val scaleUpY = ObjectAnimator.ofFloat(navContainer, View.SCALE_Y, 0.98f, 1f)
-
-                playSequentially(
-                    AnimatorSet().apply {
-                        playTogether(scaleDownX, scaleDownY)
-                        duration = 50
-                    },
-                    AnimatorSet().apply {
-                        playTogether(scaleUpX, scaleUpY)
-                        duration = 100
-                    }
-                )
-
-                interpolator = AccelerateDecelerateInterpolator()
-                start()
-            }
-
-            if (itemId == currentNavItemId) {
-                when (itemId) {
-                    R.id.navigation_subscriptions -> navController.popBackStack(R.id.navigation_subscriptions, false)
-                    R.id.navigation_payments -> navController.popBackStack(R.id.navigation_payments, false)
-                    R.id.navigation_statistics -> navController.popBackStack(R.id.navigation_statistics, false)
-                    R.id.navigation_settings -> navController.popBackStack(R.id.navigation_settings, false)
-                }
-            } else {
-                val navOptions = NavOptions.Builder()
-                    .setEnterAnim(R.anim.fade_in)
-                    .setExitAnim(R.anim.fade_out)
-                    .build()
-                navController.navigate(itemId, null, navOptions)
-                currentNavItemId = itemId
-            }
-
-            true
-        }
-
-        navController.addOnDestinationChangedListener { _, destination, _ ->
-            title = destination.label
-            if (appBarConfiguration.topLevelDestinations.contains(destination.id)) {
-                currentNavItemId = destination.id
-                binding.navView.menu.findItem(currentNavItemId)?.isChecked = true
-            }
-        }
-
+        themeManager = ThemeManager(this)
         preferenceManager.addOnPreferenceChangedListener(this)
-    }
 
-    override fun onSupportNavigateUp(): Boolean {
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+        setContent {
+            TrackifyApp(themeManager)
+        }
     }
 
     override fun onPreferenceChanged(key: String, value: Any?) {
@@ -140,19 +51,37 @@ class MainActivity : AppCompatActivity(), PreferenceManager.OnPreferenceChangedL
         preferenceManager.removeOnPreferenceChangedListener(this)
         super.onDestroy()
     }
+}
 
-    fun setupRecyclerViewBottomPadding(recyclerView: RecyclerView) {
-        recyclerView.clipToPadding = false
+@Composable
+fun TrackifyApp(themeManager: ThemeManager) {
+    TrackifyTheme(themeManager = themeManager) {
+        val navController = rememberNavController()
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = navBackStackEntry?.destination?.route
 
-        val bottomNavHeight = resources.getDimensionPixelSize(R.dimen.bottom_nav_height)
-        val extraPadding = resources.getDimensionPixelSize(R.dimen.floating_nav_extra_padding)
-        val totalPadding = bottomNavHeight + extraPadding
+        val showBottomBar = when {
+            currentRoute == Screen.Home.route -> true
+            currentRoute == Screen.Payments.route -> true
+            currentRoute == Screen.Statistics.route -> true
+            currentRoute == Screen.Settings.route -> true
+            else -> false
+        }
 
-        recyclerView.setPadding(
-            recyclerView.paddingLeft,
-            recyclerView.paddingTop,
-            recyclerView.paddingRight,
-            totalPadding
-        )
+        Scaffold(
+            bottomBar = {
+                if (showBottomBar) {
+                    TrackifyBottomBar(
+                        navController = navController,
+                        currentRoute = currentRoute.orEmpty()
+                    )
+                }
+            }
+        ) { paddingValues ->
+            TrackifyNavGraph(
+                navController = navController,
+                modifier = Modifier.padding(paddingValues)
+            )
+        }
     }
 }
