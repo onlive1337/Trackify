@@ -1,5 +1,6 @@
 package com.onlive.trackify.ui.screens.payments
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,7 +24,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Chip
 import androidx.compose.material3.ChipDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -43,20 +43,18 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.data.model.PaymentStatus
+import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
-import com.onlive.trackify.ui.screens.payments.components.formatDate
-import com.onlive.trackify.ui.screens.payments.components.formatPaymentStatus
-import com.onlive.trackify.viewmodel.PaymentViewModel
-import com.onlive.trackify.viewmodel.SubscriptionViewModel
+import com.onlive.trackify.utils.CurrencyFormatter
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 @Composable
 fun PaymentsScreen(
     onAddPayment: (Long) -> Unit,
-    onNavigateBack: () -> Unit,
     onNavigateToBulkActions: () -> Unit = {},
     onNavigateToPendingPayments: () -> Unit = {},
+    modifier: Modifier = Modifier,
     paymentViewModel: PaymentViewModel = viewModel(),
     subscriptionViewModel: SubscriptionViewModel = viewModel()
 ) {
@@ -113,7 +111,7 @@ fun PaymentsScreen(
                 PaymentsList(
                     payments = payments,
                     subscriptions = subscriptions,
-                    onPaymentClick = { /* TODO: Подробнее о платеже */ }
+                    onPaymentClick = { /* Пока ничего не делаем */ }
                 )
             }
         }
@@ -232,7 +230,7 @@ fun PaymentItem(
                 Spacer(modifier = Modifier.weight(1f))
 
                 Text(
-                    text = "₽%.0f".format(payment.amount),
+                    text = CurrencyFormatter.formatAmount(android.content.ContextWrapper(null).baseContext, payment.amount),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -307,4 +305,18 @@ fun PaymentStatusChip(status: PaymentStatus) {
             style = MaterialTheme.typography.labelMedium
         )
     }
+}
+
+@Composable
+fun formatPaymentStatus(status: PaymentStatus): String {
+    return when (status) {
+        PaymentStatus.PENDING -> stringResource(R.string.payment_status_pending)
+        PaymentStatus.CONFIRMED -> stringResource(R.string.payment_status_confirmed)
+        PaymentStatus.MANUAL -> stringResource(R.string.payment_status_manual)
+    }
+}
+
+private fun formatDate(date: java.util.Date): String {
+    val dateFormat = SimpleDateFormat("d MMMM yyyy", Locale.getDefault())
+    return dateFormat.format(date)
 }
