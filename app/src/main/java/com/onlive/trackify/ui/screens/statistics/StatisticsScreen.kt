@@ -30,7 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -83,7 +83,6 @@ fun StatisticsScreen(
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Общая статистика
                 TotalSpendingCard(
                     monthlySpending = totalMonthlySpending,
                     yearlySpending = totalYearlySpending
@@ -91,19 +90,16 @@ fun StatisticsScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Расходы по категориям
                 if (spendingByCategory.isNotEmpty()) {
                     CategorySpendingCard(categories = spendingByCategory)
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                // Расходы по типам подписок
                 if (subscriptionTypeSpending.isNotEmpty()) {
                     SubscriptionTypeSpendingCard(subscriptionTypes = subscriptionTypeSpending)
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                // История расходов по месяцам
                 if (monthlySpendingHistory.isNotEmpty()) {
                     MonthlySpendingCard(monthlySpending = monthlySpendingHistory)
                     Spacer(modifier = Modifier.height(32.dp))
@@ -138,9 +134,8 @@ fun TotalSpendingCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                val context = LocalContext.current
                 Text(
-                    text = CurrencyFormatter.formatAmount(context, monthlySpending),
+                    text = formatCurrency(monthlySpending),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -155,9 +150,8 @@ fun TotalSpendingCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                val context = LocalContext.current
                 Text(
-                    text = CurrencyFormatter.formatAmount(context, yearlySpending),
+                    text = formatCurrency(yearlySpending),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -182,7 +176,6 @@ fun CategorySpendingCard(
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
         ) {
-            // Круговая диаграмма
             Box(
                 modifier = Modifier
                     .weight(0.4f)
@@ -190,13 +183,12 @@ fun CategorySpendingCard(
                     .padding(8.dp),
                 contentAlignment = Alignment.Center
             ) {
-                PieChartView(
+                CategoryPieChart(
                     categories = categories,
                     totalAmount = totalSpending
                 )
             }
 
-            // Список категорий
             Column(
                 modifier = Modifier
                     .weight(0.6f)
@@ -227,7 +219,7 @@ fun CategorySpendingCard(
 }
 
 @Composable
-fun PieChartView(
+fun CategoryPieChart(
     categories: List<StatisticsViewModel.CategorySpending>,
     totalAmount: Double
 ) {
@@ -264,7 +256,6 @@ fun PieChartView(
                 startAngle += sweepAngle
             }
 
-            // Внутренний круг для эффекта пончика
             drawCircle(
                 color = MaterialTheme.colorScheme.surface,
                 radius = radius * 0.6f,
@@ -275,9 +266,8 @@ fun PieChartView(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            val context = LocalContext.current
             Text(
-                text = CurrencyFormatter.formatAmount(context, totalAmount),
+                text = formatCurrency(totalAmount),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -298,36 +288,31 @@ fun CategorySpendingItem(
     percentage: Int,
     colorCode: String
 ) {
-    val categoryColor = remember {
-        try {
-            Color(android.graphics.Color.parseColor(colorCode))
-        } catch (e: Exception) {
-            Color.Gray
-        }
-    }
-
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
-        // Цветной индикатор категории
         Box(
             modifier = Modifier
                 .size(16.dp)
                 .clip(CircleShape)
-                .background(categoryColor)
+                .background(
+                    try {
+                        Color(android.graphics.Color.parseColor(colorCode))
+                    } catch (e: Exception) {
+                        Color.Gray
+                    }
+                )
         )
 
         Spacer(modifier = Modifier.size(8.dp))
 
-        // Название категории
         Text(
             text = categoryName,
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.weight(1f)
         )
 
-        // Процент от общих расходов
         Text(
             text = "$percentage%",
             style = MaterialTheme.typography.bodySmall,
@@ -336,10 +321,8 @@ fun CategorySpendingItem(
 
         Spacer(modifier = Modifier.size(8.dp))
 
-        // Сумма
-        val context = LocalContext.current
         Text(
-            text = CurrencyFormatter.formatAmount(context, amount),
+            text = formatCurrency(amount),
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold
         )
@@ -383,37 +366,32 @@ fun SubscriptionTypeItem(
     percentage: Int,
     colorCode: String
 ) {
-    val typeColor = remember {
-        try {
-            Color(android.graphics.Color.parseColor(colorCode))
-        } catch (e: Exception) {
-            Color.Gray
-        }
-    }
-
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            // Цветной индикатор типа
             Box(
                 modifier = Modifier
                     .size(16.dp)
                     .clip(CircleShape)
-                    .background(typeColor)
+                    .background(
+                        try {
+                            Color(android.graphics.Color.parseColor(colorCode))
+                        } catch (e: Exception) {
+                            Color.Gray
+                        }
+                    )
             )
 
             Spacer(modifier = Modifier.size(8.dp))
 
-            // Название типа
             Text(
                 text = typeName,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.weight(1f)
             )
 
-            // Процент от общих расходов
             Text(
                 text = "$percentage%",
                 style = MaterialTheme.typography.bodySmall,
@@ -422,10 +400,8 @@ fun SubscriptionTypeItem(
 
             Spacer(modifier = Modifier.size(8.dp))
 
-            // Сумма
-            val context = LocalContext.current
             Text(
-                text = CurrencyFormatter.formatAmount(context, amount),
+                text = formatCurrency(amount),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -433,7 +409,6 @@ fun SubscriptionTypeItem(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Прогресс-бар для наглядности
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -444,7 +419,13 @@ fun SubscriptionTypeItem(
                 modifier = Modifier
                     .fillMaxWidth(percentage / 100f)
                     .height(4.dp)
-                    .background(typeColor)
+                    .background(
+                        try {
+                            Color(android.graphics.Color.parseColor(colorCode))
+                        } catch (e: Exception) {
+                            Color.Gray
+                        }
+                    )
             )
         }
     }
@@ -466,30 +447,30 @@ fun MonthlySpendingCard(
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
         ) {
-            // Гистограмма
-            Box(
+            MonthlyBarChart(
+                data = monthlySpending,
+                maxAmount = maxAmount,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
                     .padding(top = 16.dp, bottom = 32.dp)
-            ) {
-                BarChart(monthlySpending, maxAmount)
-            }
+            )
         }
     }
 }
 
 @Composable
-fun BarChart(
+fun MonthlyBarChart(
     data: List<StatisticsViewModel.MonthlySpending>,
-    maxAmount: Double
+    maxAmount: Double,
+    modifier: Modifier = Modifier
 ) {
-    Canvas(modifier = Modifier.fillMaxSize()) {
+    Canvas(modifier = modifier) {
         val canvasWidth = size.width
         val canvasHeight = size.height
         val barWidth = canvasWidth / data.size * 0.6f
         val spacing = canvasWidth / data.size * 0.4f / 2
-        val bottomPadding = 30f // Место для подписей
+        val bottomPadding = 30f
         val heightRatio = (canvasHeight - bottomPadding) / (maxAmount * 1.1f).toFloat()
 
         drawLine(
@@ -499,8 +480,8 @@ fun BarChart(
             strokeWidth = 1.5f
         )
 
-        data.forEachIndexed { index, monthData ->
-            val barHeight = (monthData.amount * heightRatio).toFloat()
+        data.forEachIndexed { index, item ->
+            val barHeight = (item.amount * heightRatio).toFloat()
             val left = index * (barWidth + spacing * 2) + spacing
 
             drawRoundRect(
@@ -509,43 +490,11 @@ fun BarChart(
                 size = Size(barWidth, barHeight),
                 cornerRadius = androidx.compose.ui.geometry.CornerRadius(4f, 4f)
             )
-
-            val paint = android.graphics.Paint().apply {
-                color = android.graphics.Color.rgb(
-                    MaterialTheme.colorScheme.onSurface.red.times(255).toInt(),
-                    MaterialTheme.colorScheme.onSurface.green.times(255).toInt(),
-                    MaterialTheme.colorScheme.onSurface.blue.times(255).toInt()
-                )
-                textSize = 12.sp.toPx()
-                textAlign = android.graphics.Paint.Align.CENTER
-            }
-
-            drawContext.canvas.nativeCanvas.drawText(
-                monthData.month,
-                left + barWidth / 2,
-                canvasHeight - 10f,
-                paint
-            )
-
-            val context = LocalContext.current
-            val amountText = CurrencyFormatter.formatAmount(context, monthData.amount, false)
-
-            val amountPaint = android.graphics.Paint().apply {
-                color = android.graphics.Color.rgb(
-                    MaterialTheme.colorScheme.onSurface.red.times(255).toInt(),
-                    MaterialTheme.colorScheme.onSurface.green.times(255).toInt(),
-                    MaterialTheme.colorScheme.onSurface.blue.times(255).toInt()
-                )
-                textSize = 10.sp.toPx()
-                textAlign = android.graphics.Paint.Align.CENTER
-            }
-
-            drawContext.canvas.nativeCanvas.drawText(
-                amountText,
-                left + barWidth / 2,
-                canvasHeight - bottomPadding - barHeight - 10f,
-                amountPaint
-            )
         }
     }
+}
+
+@Composable
+private fun formatCurrency(amount: Double, includeSymbol: Boolean = true): String {
+    return CurrencyFormatter.formatAmount(LocalContext.current, amount, includeSymbol)
 }
