@@ -36,6 +36,7 @@ import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.data.model.PaymentStatus
 import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
+import com.onlive.trackify.utils.DateUtils
 import com.onlive.trackify.viewmodel.PaymentViewModel
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
 import java.util.Date
@@ -59,7 +60,6 @@ fun AddPaymentScreen(
     var isSubscriptionError by remember { mutableStateOf(false) }
     var isAmountError by remember { mutableStateOf(false) }
 
-    // Если был передан subscriptionId, выберем его автоматически
     LaunchedEffect(subscriptionId, subscriptions) {
         if (subscriptionId != -1L && subscriptions.any { it.subscriptionId == subscriptionId }) {
             selectedSubscriptionId = subscriptionId
@@ -137,7 +137,7 @@ fun AddPaymentScreen(
             OutlinedTextField(
                 value = amount,
                 onValueChange = {
-                    amount = it
+                    amount = it.replace(",", ".")
                     isAmountError = false
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -163,7 +163,7 @@ fun AddPaymentScreen(
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = formatDate(paymentDate))
+                Text(text = DateUtils.formatDate(paymentDate))
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -186,7 +186,6 @@ fun AddPaymentScreen(
 
             Button(
                 onClick = {
-                    // Валидация полей
                     if (selectedSubscriptionId == -1L) {
                         isSubscriptionError = true
                         return@Button
@@ -198,7 +197,6 @@ fun AddPaymentScreen(
                         return@Button
                     }
 
-                    // Создаем объект платежа
                     val payment = Payment(
                         subscriptionId = selectedSubscriptionId,
                         amount = amountValue,
@@ -207,10 +205,8 @@ fun AddPaymentScreen(
                         status = PaymentStatus.MANUAL
                     )
 
-                    // Сохраняем платеж
                     paymentViewModel.insert(payment)
 
-                    // Возвращаемся назад
                     onNavigateBack()
                 },
                 modifier = Modifier.fillMaxWidth()

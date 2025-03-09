@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,20 +23,21 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedFilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -46,10 +48,9 @@ import com.onlive.trackify.data.model.PaymentStatus
 import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.CurrencyFormatter
+import com.onlive.trackify.utils.DateUtils
 import com.onlive.trackify.viewmodel.PaymentViewModel
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 @Composable
 fun PaymentsScreen(
@@ -224,7 +225,7 @@ fun PaymentItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = formatDate(payment.date),
+                    text = DateUtils.formatDate(payment.date),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -232,7 +233,7 @@ fun PaymentItem(
                 Spacer(modifier = Modifier.weight(1f))
 
                 Text(
-                    text = CurrencyFormatter.formatAmount(android.content.ContextWrapper(null).baseContext, payment.amount),
+                    text = CurrencyFormatter.formatAmount(LocalContext.current, payment.amount),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -249,7 +250,8 @@ fun PaymentItem(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            PaymentStatusChip(status = payment.status)
+            // Заменяем проблемный Chip на простую Surface
+            PaymentStatusIndicator(status = payment.status)
 
             if (!payment.notes.isNullOrEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
@@ -267,7 +269,7 @@ fun PaymentItem(
 }
 
 @Composable
-fun PaymentStatusChip(status: PaymentStatus) {
+fun PaymentStatusIndicator(status: PaymentStatus) {
     val (backgroundColor, contentColor, icon) = when (status) {
         PaymentStatus.PENDING -> Triple(
             MaterialTheme.colorScheme.errorContainer,
@@ -286,26 +288,33 @@ fun PaymentStatusChip(status: PaymentStatus) {
         )
     }
 
-    Chip(
-        onClick = { },
-        colors = ChipDefaults.chipColors(
-            containerColor = backgroundColor,
-            labelColor = contentColor
-        ),
-        leadingIcon = {
+    // Используем простую Surface вместо экспериментального Chip
+    Surface(
+        modifier = Modifier
+            .background(Color.Transparent)
+            .padding(4.dp),
+        shape = MaterialTheme.shapes.small,
+        color = backgroundColor,
+        contentColor = contentColor
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             if (icon != null) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = contentColor
+                    modifier = Modifier.size(16.dp)
                 )
+                Spacer(modifier = Modifier.width(4.dp))
             }
+
+            Text(
+                text = formatPaymentStatus(status),
+                style = MaterialTheme.typography.labelMedium
+            )
         }
-    ) {
-        Text(
-            text = formatPaymentStatus(status),
-            style = MaterialTheme.typography.labelMedium
-        )
     }
 }
 
@@ -316,9 +325,4 @@ fun formatPaymentStatus(status: PaymentStatus): String {
         PaymentStatus.CONFIRMED -> stringResource(R.string.payment_status_confirmed)
         PaymentStatus.MANUAL -> stringResource(R.string.payment_status_manual)
     }
-}
-
-private fun formatDate(date: java.util.Date): String {
-    val dateFormat = SimpleDateFormat("d MMMM yyyy", Locale.getDefault())
-    return dateFormat.format(date)
 }

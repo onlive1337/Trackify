@@ -106,7 +106,6 @@ fun CategoryManagementScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Вкладки для переключения между категориями и группами
             TabRow(
                 selectedTabIndex = selectedTab.ordinal
             ) {
@@ -194,28 +193,38 @@ fun CategoriesList(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(categories) { category ->
-            CategoryItem(
+            CategoryItemWithDialog(
                 category = category,
                 onEditClick = { onEditCategory(category.categoryId) },
-                onDeleteClick = {
-                    // Показываем диалог подтверждения удаления
-                    var showDeleteDialog by remember { mutableStateOf(false) }
-
-                    if (showDeleteDialog) {
-                        DeleteCategoryDialog(
-                            categoryName = category.name,
-                            onConfirm = {
-                                onDeleteCategory(category)
-                                showDeleteDialog = false
-                            },
-                            onDismiss = { showDeleteDialog = false }
-                        )
-                    }
-
-                    showDeleteDialog = true
-                }
+                onDeleteClick = { onDeleteCategory(category) }
             )
         }
+    }
+}
+
+@Composable
+fun CategoryItemWithDialog(
+    category: Category,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit
+) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    CategoryItem(
+        category = category,
+        onEditClick = onEditClick,
+        onDeleteClick = { showDeleteDialog = true }
+    )
+
+    if (showDeleteDialog) {
+        DeleteCategoryDialog(
+            categoryName = category.name,
+            onConfirm = {
+                onDeleteClick()
+                showDeleteDialog = false
+            },
+            onDismiss = { showDeleteDialog = false }
+        )
     }
 }
 
@@ -236,7 +245,6 @@ fun CategoryItem(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Цветной индикатор категории
             Box(
                 modifier = Modifier
                     .size(32.dp)
@@ -252,14 +260,12 @@ fun CategoryItem(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Название категории
             Text(
                 text = category.name,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f)
             )
 
-            // Кнопки действий
             IconButton(onClick = onEditClick) {
                 Icon(
                     imageVector = Icons.Default.Edit,
@@ -318,28 +324,38 @@ fun CategoryGroupsList(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(groups) { group ->
-            CategoryGroupItem(
+            CategoryGroupItemWithDialog(
                 group = group,
                 onEditClick = { onEditGroup(group.groupId) },
-                onDeleteClick = {
-                    // Показываем диалог подтверждения удаления
-                    var showDeleteDialog by remember { mutableStateOf(false) }
-
-                    if (showDeleteDialog) {
-                        DeleteGroupDialog(
-                            groupName = group.name,
-                            onConfirm = {
-                                onDeleteGroup(group)
-                                showDeleteDialog = false
-                            },
-                            onDismiss = { showDeleteDialog = false }
-                        )
-                    }
-
-                    showDeleteDialog = true
-                }
+                onDeleteClick = { onDeleteGroup(group) }
             )
         }
+    }
+}
+
+@Composable
+fun CategoryGroupItemWithDialog(
+    group: CategoryGroup,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit
+) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    CategoryGroupItem(
+        group = group,
+        onEditClick = onEditClick,
+        onDeleteClick = { showDeleteDialog = true }
+    )
+
+    if (showDeleteDialog) {
+        DeleteGroupDialog(
+            groupName = group.name,
+            onConfirm = {
+                onDeleteClick()
+                showDeleteDialog = false
+            },
+            onDismiss = { showDeleteDialog = false }
+        )
     }
 }
 
@@ -363,7 +379,6 @@ fun CategoryGroupItem(
                 modifier = Modifier.padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Цветной индикатор группы
                 Box(
                     modifier = Modifier
                         .size(32.dp)
@@ -379,7 +394,6 @@ fun CategoryGroupItem(
 
                 Spacer(modifier = Modifier.width(16.dp))
 
-                // Название группы
                 Column(
                     modifier = Modifier.weight(1f)
                 ) {
@@ -399,7 +413,6 @@ fun CategoryGroupItem(
                     }
                 }
 
-                // Кнопки действий
                 IconButton(onClick = onEditClick) {
                     Icon(
                         imageVector = Icons.Default.Edit,

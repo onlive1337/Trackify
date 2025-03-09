@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -76,17 +77,14 @@ fun SubscriptionDetailScreen(
 ) {
     val context = LocalContext.current
 
-    // Если ID равен -1, то это создание новой подписки
     val isNewSubscription = subscriptionId == -1L
 
-    // Получаем существующую подписку, если это редактирование
     val existingSubscription by if (!isNewSubscription) {
         subscriptionViewModel.getSubscriptionById(subscriptionId).observeAsState()
     } else {
         remember { mutableStateOf<Subscription?>(null) }
     }
 
-    // Состояния для полей формы
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
@@ -96,23 +94,18 @@ fun SubscriptionDetailScreen(
     var isActive by remember { mutableStateOf(true) }
     var selectedCategoryId by remember { mutableStateOf<Long?>(null) }
 
-    // Состояние для диалога подтверждения удаления
     var showDeleteDialog by remember { mutableStateOf(false) }
 
-    // Состояние для выпадающего списка категорий
     var isCategoryDropdownExpanded by remember { mutableStateOf(false) }
 
-    // Получаем список категорий
     val categories by categoryViewModel.allCategories.observeAsState(emptyList())
 
-    // Получаем платежи для данной подписки
     val payments by if (!isNewSubscription) {
         paymentViewModel.getPaymentsBySubscription(subscriptionId).observeAsState(emptyList())
     } else {
         remember { mutableStateOf<List<Payment>>(emptyList()) }
     }
 
-    // Заполняем поля, если это редактирование
     LaunchedEffect(existingSubscription) {
         existingSubscription?.let {
             name = it.name
@@ -126,7 +119,6 @@ fun SubscriptionDetailScreen(
         }
     }
 
-    // Форматтер дат
     val dateFormatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
 
     Scaffold(
@@ -161,7 +153,6 @@ fun SubscriptionDetailScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Форма ввода/редактирования
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
@@ -189,7 +180,7 @@ fun SubscriptionDetailScreen(
                 label = { Text(stringResource(R.string.subscription_price)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                keyboardOptions = androidx.compose.ui.text.input.KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 isError = price.isEmpty() || price.toDoubleOrNull() == null || price.toDoubleOrNull()!! <= 0
             )
 
@@ -204,7 +195,6 @@ fun SubscriptionDetailScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Выпадающий список категорий
             Text(
                 text = stringResource(R.string.subscription_category),
                 style = MaterialTheme.typography.titleMedium
@@ -230,7 +220,6 @@ fun SubscriptionDetailScreen(
                     expanded = isCategoryDropdownExpanded,
                     onDismissRequest = { isCategoryDropdownExpanded = false }
                 ) {
-                    // Опция "Без категории"
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.without_category)) },
                         onClick = {
@@ -239,7 +228,6 @@ fun SubscriptionDetailScreen(
                         }
                     )
 
-                    // Все доступные категории
                     categories.forEach { category ->
                         DropdownMenuItem(
                             text = { Text(category.name) },
@@ -254,7 +242,6 @@ fun SubscriptionDetailScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Частота оплаты
             Text(
                 text = stringResource(R.string.subscription_billing_frequency),
                 style = MaterialTheme.typography.titleMedium
@@ -291,7 +278,6 @@ fun SubscriptionDetailScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Дата начала и окончания
             Column {
                 Text(
                     text = stringResource(R.string.subscription_start_date),
@@ -338,7 +324,6 @@ fun SubscriptionDetailScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Переключатель активности
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -357,12 +342,10 @@ fun SubscriptionDetailScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Кнопки действий
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Кнопка удаления (только для существующих подписок)
                 if (!isNewSubscription) {
                     Button(
                         onClick = { showDeleteDialog = true },
@@ -382,12 +365,10 @@ fun SubscriptionDetailScreen(
                     Spacer(modifier = Modifier.width(16.dp))
                 }
 
-                // Кнопка сохранения
                 Button(
                     onClick = {
                         if (name.isNotEmpty() && price.toDoubleOrNull() != null && price.toDoubleOrNull()!! > 0) {
                             if (isNewSubscription) {
-                                // Создаем новую подписку
                                 val newSubscription = Subscription(
                                     name = name,
                                     description = if (description.isEmpty()) null else description,
@@ -400,7 +381,6 @@ fun SubscriptionDetailScreen(
                                 )
                                 subscriptionViewModel.insert(newSubscription)
                             } else {
-                                // Обновляем существующую подписку
                                 existingSubscription?.let {
                                     val updatedSubscription = it.copy(
                                         name = name,
@@ -424,7 +404,6 @@ fun SubscriptionDetailScreen(
                 }
             }
 
-            // Отображаем историю платежей только для существующей подписки
             if (!isNewSubscription && payments.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(32.dp))
 
@@ -463,7 +442,6 @@ fun SubscriptionDetailScreen(
             Spacer(modifier = Modifier.height(32.dp))
         }
 
-        // Диалог подтверждения удаления
         if (showDeleteDialog) {
             AlertDialog(
                 onDismissRequest = { showDeleteDialog = false },
@@ -515,7 +493,6 @@ fun PaymentHistoryList(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Дата платежа
                         val dateFormatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
                         Text(
                             text = dateFormatter.format(payment.date),
@@ -525,7 +502,6 @@ fun PaymentHistoryList(
 
                         Spacer(modifier = Modifier.weight(1f))
 
-                        // Сумма платежа
                         Text(
                             text = CurrencyFormatter.formatAmount(LocalContext.current, payment.amount),
                             style = MaterialTheme.typography.titleMedium,
@@ -534,7 +510,6 @@ fun PaymentHistoryList(
                         )
                     }
 
-                    // Примечания к платежу (если есть)
                     if (!payment.notes.isNullOrEmpty()) {
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
@@ -549,7 +524,6 @@ fun PaymentHistoryList(
             }
         }
 
-        // Если платежей больше 5, показываем "и еще..."
         if (payments.size > 5) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(

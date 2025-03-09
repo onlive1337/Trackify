@@ -1,12 +1,9 @@
 package com.onlive.trackify.ui.screens.home
 
-
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.background
-import androidx.compose.ui.Alignment
-import com.onlive.trackify.data.model.BillingFrequency
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -15,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -45,6 +41,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -52,6 +49,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
+import com.onlive.trackify.data.model.BillingFrequency
 import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
@@ -68,6 +66,7 @@ fun HomeScreen(
 
     var query by remember { mutableStateOf("") }
     var isGridMode by remember { mutableStateOf(false) }
+    var errorState by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         topBar = {
@@ -103,7 +102,6 @@ fun HomeScreen(
                 onQueryChange = { newQuery ->
                     query = newQuery
                     if (newQuery.isEmpty()) {
-                        // Reset to show all subscriptions
                     } else {
                         viewModel.searchSubscriptions(newQuery)
                     }
@@ -128,11 +126,25 @@ fun HomeScreen(
             } else if (subscriptions.isEmpty()) {
                 EmptySubscriptionsView()
             } else {
-                SubscriptionsList(
-                    subscriptions = subscriptions,
-                    isGridMode = isGridMode,
-                    onSubscriptionClick = onSubscriptionClick
-                )
+                errorState?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+
+                if (isGridMode) {
+                    SubscriptionsGrid(
+                        subscriptions = subscriptions,
+                        onSubscriptionClick = onSubscriptionClick
+                    )
+                } else {
+                    SubscriptionsList(
+                        subscriptions = subscriptions,
+                        onSubscriptionClick = onSubscriptionClick
+                    )
+                }
             }
         }
     }
@@ -156,36 +168,39 @@ fun EmptySubscriptionsView() {
 }
 
 @Composable
-fun SubscriptionsList(
+fun SubscriptionsGrid(
     subscriptions: List<Subscription>,
-    isGridMode: Boolean,
     onSubscriptionClick: (Long) -> Unit
 ) {
-    if (isGridMode) {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(subscriptions) { subscription ->
-                SubscriptionGridItem(
-                    subscription = subscription,
-                    onClick = { onSubscriptionClick(subscription.subscriptionId) }
-                )
-            }
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        contentPadding = PaddingValues(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(subscriptions) { subscription ->
+            SubscriptionGridItem(
+                subscription = subscription,
+                onClick = { onSubscriptionClick(subscription.subscriptionId) }
+            )
         }
-    } else {
-        LazyColumn(
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(subscriptions) { subscription ->
-                SubscriptionListItem(
-                    subscription = subscription,
-                    onClick = { onSubscriptionClick(subscription.subscriptionId) }
-                )
-            }
+    }
+}
+
+@Composable
+fun SubscriptionsList(
+    subscriptions: List<Subscription>,
+    onSubscriptionClick: (Long) -> Unit
+) {
+    LazyColumn(
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(subscriptions) { subscription ->
+            SubscriptionListItem(
+                subscription = subscription,
+                onClick = { onSubscriptionClick(subscription.subscriptionId) }
+            )
         }
     }
 }
@@ -206,20 +221,24 @@ fun SubscriptionListItem(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Цветовая полоска категории
-            subscription.categoryColor?.let { colorCode ->
-                try {
-                    val color = Color(android.graphics.Color.parseColor(colorCode))
-                    Box(
-                        modifier = Modifier
-                            .width(4.dp)
-                            .height(48.dp)
-                            .background(color)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                } catch (e: Exception) {
-                    // Игнорируем ошибку парсинга цвета
+            val categoryColor = remember {
+                subscription.categoryColor?.let { colorCode ->
+                    try {
+                        Color(android.graphics.Color.parseColor(colorCode))
+                    } catch (e: Exception) {
+                        null
+                    }
                 }
+            }
+
+            if (categoryColor != null) {
+                Box(
+                    modifier = Modifier
+                        .width(4.dp)
+                        .height(48.dp)
+                        .background(categoryColor)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
             }
 
             Column(
@@ -269,20 +288,24 @@ fun SubscriptionGridItem(
             modifier = Modifier.padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Цветовая полоска категории вверху карточки
-            subscription.categoryColor?.let { colorCode ->
-                try {
-                    val color = Color(android.graphics.Color.parseColor(colorCode))
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(4.dp)
-                            .background(color)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                } catch (e: Exception) {
-                    // Игнорируем ошибку парсинга цвета
+            val categoryColor = remember {
+                subscription.categoryColor?.let { colorCode ->
+                    try {
+                        Color(android.graphics.Color.parseColor(colorCode))
+                    } catch (e: Exception) {
+                        null
+                    }
                 }
+            }
+
+            if (categoryColor != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(4.dp)
+                        .background(categoryColor)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
             }
 
             Text(
