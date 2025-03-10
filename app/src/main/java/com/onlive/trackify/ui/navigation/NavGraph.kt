@@ -20,14 +20,12 @@ import com.onlive.trackify.ui.screens.statistics.StatisticsScreen
 import com.onlive.trackify.ui.screens.subscription.SubscriptionDetailScreen
 import com.onlive.trackify.utils.ThemeManager
 
-// Определение всех экранов приложения
 sealed class Screen(val route: String) {
     object Home : Screen("home")
     object Payments : Screen("payments")
     object Statistics : Screen("statistics")
     object Settings : Screen("settings")
 
-    // Детальные экраны
     object SubscriptionDetail : Screen("subscription_detail/{subscriptionId}") {
         fun createRoute(subscriptionId: Long) = "subscription_detail/$subscriptionId"
     }
@@ -58,7 +56,6 @@ sealed class Screen(val route: String) {
     object BulkPaymentActions : Screen("bulk_payment_actions")
 }
 
-// Класс для действий навигации
 class NavigationActions(navController: NavHostController) {
     val navigateToHome: () -> Unit = {
         navController.navigate(Screen.Home.route) {
@@ -161,7 +158,6 @@ fun TrackifyNavGraph(
         startDestination = startDestination,
         modifier = modifier
     ) {
-        // Основные экраны нижней навигации
         composable(Screen.Home.route) {
             HomeScreen(
                 onAddSubscription = navigationActions.navigateToAddSubscription,
@@ -260,7 +256,6 @@ fun TrackifyNavGraph(
             )
         ) { entry ->
             val groupId = entry.arguments?.getLong("groupId") ?: -1L
-            // Временно используем обычный экран категории, пока не реализуем экран группы
             CategoryDetailScreen(
                 categoryId = groupId,
                 onNavigateBack = navigationActions.navigateBack

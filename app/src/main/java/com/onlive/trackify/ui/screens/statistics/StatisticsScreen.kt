@@ -30,13 +30,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
 import com.onlive.trackify.ui.components.TrackifyCard
@@ -56,6 +54,13 @@ fun StatisticsScreen(
     val subscriptionTypeSpending by statisticsViewModel.subscriptionTypeSpending.observeAsState(emptyList())
 
     val isLoading = remember { false }
+    val context = LocalContext.current
+
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    val surfaceVariantColor = MaterialTheme.colorScheme.surfaceVariant
+    val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+    val onSurfaceVariantColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val primaryColor = MaterialTheme.colorScheme.primary
 
     Scaffold(
         topBar = {
@@ -85,23 +90,52 @@ fun StatisticsScreen(
 
                 TotalSpendingCard(
                     monthlySpending = totalMonthlySpending,
-                    yearlySpending = totalYearlySpending
+                    yearlySpending = totalYearlySpending,
+                    formattedMonthlySpending = CurrencyFormatter.formatAmount(context, totalMonthlySpending),
+                    formattedYearlySpending = CurrencyFormatter.formatAmount(context, totalYearlySpending),
+                    surfaceVariantColor = surfaceVariantColor,
+                    onSurfaceColor = onSurfaceColor,
+                    onSurfaceVariantColor = onSurfaceVariantColor,
+                    primaryColor = primaryColor
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 if (spendingByCategory.isNotEmpty()) {
-                    CategorySpendingCard(categories = spendingByCategory)
+                    CategorySpendingCard(
+                        categories = spendingByCategory,
+                        totalAmount = spendingByCategory.sumOf { it.amount },
+                        formattedTotalAmount = CurrencyFormatter.formatAmount(context, spendingByCategory.sumOf { it.amount }),
+                        perMonthText = stringResource(R.string.per_month),
+                        formatAmount = { amount -> CurrencyFormatter.formatAmount(context, amount) },
+                        surfaceColor = surfaceColor,
+                        onSurfaceColor = onSurfaceColor,
+                        onSurfaceVariantColor = onSurfaceVariantColor
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
                 if (subscriptionTypeSpending.isNotEmpty()) {
-                    SubscriptionTypeSpendingCard(subscriptionTypes = subscriptionTypeSpending)
+                    SubscriptionTypeSpendingCard(
+                        subscriptionTypes = subscriptionTypeSpending,
+                        totalAmount = subscriptionTypeSpending.sumOf { it.amount },
+                        formatAmount = { amount -> CurrencyFormatter.formatAmount(context, amount) },
+                        surfaceColor = surfaceColor,
+                        onSurfaceColor = onSurfaceColor,
+                        onSurfaceVariantColor = onSurfaceVariantColor,
+                        surfaceVariantColor = surfaceVariantColor
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
                 if (monthlySpendingHistory.isNotEmpty()) {
-                    MonthlySpendingCard(monthlySpending = monthlySpendingHistory)
+                    MonthlySpendingCard(
+                        monthlySpending = monthlySpendingHistory,
+                        surfaceColor = surfaceColor,
+                        onSurfaceColor = onSurfaceColor,
+                        onSurfaceVariantColor = onSurfaceVariantColor,
+                        primaryColor = primaryColor
+                    )
                     Spacer(modifier = Modifier.height(32.dp))
                 }
             }
@@ -112,12 +146,18 @@ fun StatisticsScreen(
 @Composable
 fun TotalSpendingCard(
     monthlySpending: Double,
-    yearlySpending: Double
+    yearlySpending: Double,
+    formattedMonthlySpending: String,
+    formattedYearlySpending: String,
+    surfaceVariantColor: Color,
+    onSurfaceColor: Color,
+    onSurfaceVariantColor: Color,
+    primaryColor: Color
 ) {
     TrackifyCard(
         title = stringResource(R.string.total),
-        backgroundColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-        contentColor = MaterialTheme.colorScheme.onSurface
+        backgroundColor = surfaceVariantColor.copy(alpha = 0.3f),
+        contentColor = onSurfaceColor
     ) {
         Row(
             modifier = Modifier
@@ -131,13 +171,13 @@ fun TotalSpendingCard(
                 Text(
                     text = stringResource(R.string.monthly_spending),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = onSurfaceVariantColor
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = formatCurrency(monthlySpending),
+                    text = formattedMonthlySpending,
                     style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.primary
+                    color = primaryColor
                 )
             }
 
@@ -147,13 +187,13 @@ fun TotalSpendingCard(
                 Text(
                     text = stringResource(R.string.yearly_spending),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = onSurfaceVariantColor
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = formatCurrency(yearlySpending),
+                    text = formattedYearlySpending,
                     style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.primary
+                    color = primaryColor
                 )
             }
         }
@@ -162,14 +202,19 @@ fun TotalSpendingCard(
 
 @Composable
 fun CategorySpendingCard(
-    categories: List<StatisticsViewModel.CategorySpending>
+    categories: List<StatisticsViewModel.CategorySpending>,
+    totalAmount: Double,
+    formattedTotalAmount: String,
+    perMonthText: String,
+    formatAmount: (Double) -> String,
+    surfaceColor: Color,
+    onSurfaceColor: Color,
+    onSurfaceVariantColor: Color
 ) {
-    val totalSpending = categories.sumOf { it.amount }
-
     TrackifyCard(
         title = stringResource(R.string.spending_by_category),
-        backgroundColor = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.onSurface
+        backgroundColor = surfaceColor,
+        contentColor = onSurfaceColor
     ) {
         Row(
             modifier = Modifier
@@ -185,7 +230,11 @@ fun CategorySpendingCard(
             ) {
                 CategoryPieChart(
                     categories = categories,
-                    totalAmount = totalSpending
+                    totalAmount = totalAmount,
+                    formattedTotalAmount = formattedTotalAmount,
+                    perMonthText = perMonthText,
+                    surfaceColor = surfaceColor,
+                    onSurfaceVariantColor = onSurfaceVariantColor
                 )
             }
 
@@ -198,8 +247,10 @@ fun CategorySpendingCard(
                     CategorySpendingItem(
                         categoryName = category.categoryName,
                         amount = category.amount,
-                        percentage = (category.amount / totalSpending * 100).toInt(),
-                        colorCode = category.colorCode
+                        percentage = (category.amount / totalAmount * 100).toInt(),
+                        colorCode = category.colorCode,
+                        formattedAmount = formatAmount(category.amount),
+                        onSurfaceVariantColor = onSurfaceVariantColor
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
@@ -208,7 +259,7 @@ fun CategorySpendingCard(
                     Text(
                         text = "... и ещё ${categories.size - 5}",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = onSurfaceVariantColor,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -221,7 +272,11 @@ fun CategorySpendingCard(
 @Composable
 fun CategoryPieChart(
     categories: List<StatisticsViewModel.CategorySpending>,
-    totalAmount: Double
+    totalAmount: Double,
+    formattedTotalAmount: String,
+    perMonthText: String,
+    surfaceColor: Color,
+    onSurfaceVariantColor: Color
 ) {
     Box(
         contentAlignment = Alignment.Center
@@ -257,7 +312,7 @@ fun CategoryPieChart(
             }
 
             drawCircle(
-                color = MaterialTheme.colorScheme.surface,
+                color = surfaceColor,
                 radius = radius * 0.6f,
                 center = center
             )
@@ -267,15 +322,15 @@ fun CategoryPieChart(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = formatCurrency(totalAmount),
+                text = formattedTotalAmount,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
 
             Text(
-                text = stringResource(R.string.per_month),
+                text = perMonthText,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = onSurfaceVariantColor
             )
         }
     }
@@ -286,7 +341,9 @@ fun CategorySpendingItem(
     categoryName: String,
     amount: Double,
     percentage: Int,
-    colorCode: String
+    colorCode: String,
+    formattedAmount: String,
+    onSurfaceVariantColor: Color
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -316,13 +373,13 @@ fun CategorySpendingItem(
         Text(
             text = "$percentage%",
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = onSurfaceVariantColor
         )
 
         Spacer(modifier = Modifier.size(8.dp))
 
         Text(
-            text = formatCurrency(amount),
+            text = formattedAmount,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold
         )
@@ -331,14 +388,18 @@ fun CategorySpendingItem(
 
 @Composable
 fun SubscriptionTypeSpendingCard(
-    subscriptionTypes: List<StatisticsViewModel.SubscriptionTypeSpending>
+    subscriptionTypes: List<StatisticsViewModel.SubscriptionTypeSpending>,
+    totalAmount: Double,
+    formatAmount: (Double) -> String,
+    surfaceColor: Color,
+    onSurfaceColor: Color,
+    onSurfaceVariantColor: Color,
+    surfaceVariantColor: Color
 ) {
-    val totalAmount = subscriptionTypes.sumOf { it.amount }
-
     TrackifyCard(
         title = stringResource(R.string.subscription_types),
-        backgroundColor = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.onSurface
+        backgroundColor = surfaceColor,
+        contentColor = onSurfaceColor
     ) {
         Column(
             modifier = Modifier
@@ -350,7 +411,10 @@ fun SubscriptionTypeSpendingCard(
                     typeName = type.type,
                     amount = type.amount,
                     percentage = (type.amount / totalAmount * 100).toInt(),
-                    colorCode = type.colorCode
+                    colorCode = type.colorCode,
+                    formattedAmount = formatAmount(type.amount),
+                    onSurfaceVariantColor = onSurfaceVariantColor,
+                    surfaceVariantColor = surfaceVariantColor
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -364,7 +428,10 @@ fun SubscriptionTypeItem(
     typeName: String,
     amount: Double,
     percentage: Int,
-    colorCode: String
+    colorCode: String,
+    formattedAmount: String,
+    onSurfaceVariantColor: Color,
+    surfaceVariantColor: Color
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -395,13 +462,13 @@ fun SubscriptionTypeItem(
             Text(
                 text = "$percentage%",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = onSurfaceVariantColor
             )
 
             Spacer(modifier = Modifier.size(8.dp))
 
             Text(
-                text = formatCurrency(amount),
+                text = formattedAmount,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -413,7 +480,7 @@ fun SubscriptionTypeItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(4.dp)
-                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .background(surfaceVariantColor)
         ) {
             Box(
                 modifier = Modifier
@@ -433,14 +500,18 @@ fun SubscriptionTypeItem(
 
 @Composable
 fun MonthlySpendingCard(
-    monthlySpending: List<StatisticsViewModel.MonthlySpending>
+    monthlySpending: List<StatisticsViewModel.MonthlySpending>,
+    surfaceColor: Color,
+    onSurfaceColor: Color,
+    onSurfaceVariantColor: Color,
+    primaryColor: Color
 ) {
     val maxAmount = monthlySpending.maxOfOrNull { it.amount } ?: 0.0
 
     TrackifyCard(
         title = stringResource(R.string.spending_over_time),
-        backgroundColor = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.onSurface
+        backgroundColor = surfaceColor,
+        contentColor = onSurfaceColor
     ) {
         Column(
             modifier = Modifier
@@ -453,7 +524,9 @@ fun MonthlySpendingCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
-                    .padding(top = 16.dp, bottom = 32.dp)
+                    .padding(top = 16.dp, bottom = 32.dp),
+                onSurfaceVariantColor = onSurfaceVariantColor,
+                primaryColor = primaryColor
             )
         }
     }
@@ -463,7 +536,9 @@ fun MonthlySpendingCard(
 fun MonthlyBarChart(
     data: List<StatisticsViewModel.MonthlySpending>,
     maxAmount: Double,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onSurfaceVariantColor: Color,
+    primaryColor: Color
 ) {
     Canvas(modifier = modifier) {
         val canvasWidth = size.width
@@ -474,7 +549,7 @@ fun MonthlyBarChart(
         val heightRatio = (canvasHeight - bottomPadding) / (maxAmount * 1.1f).toFloat()
 
         drawLine(
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+            color = onSurfaceVariantColor.copy(alpha = 0.3f),
             start = Offset(0f, canvasHeight - bottomPadding),
             end = Offset(canvasWidth, canvasHeight - bottomPadding),
             strokeWidth = 1.5f
@@ -485,16 +560,11 @@ fun MonthlyBarChart(
             val left = index * (barWidth + spacing * 2) + spacing
 
             drawRoundRect(
-                color = MaterialTheme.colorScheme.primary,
+                color = primaryColor,
                 topLeft = Offset(left, canvasHeight - bottomPadding - barHeight),
                 size = Size(barWidth, barHeight),
                 cornerRadius = androidx.compose.ui.geometry.CornerRadius(4f, 4f)
             )
         }
     }
-}
-
-@Composable
-private fun formatCurrency(amount: Double, includeSymbol: Boolean = true): String {
-    return CurrencyFormatter.formatAmount(LocalContext.current, amount, includeSymbol)
 }

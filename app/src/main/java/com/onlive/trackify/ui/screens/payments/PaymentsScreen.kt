@@ -24,6 +24,7 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -121,6 +122,7 @@ fun PaymentsScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PendingPaymentsCard(
     pendingCount: Int,
@@ -250,7 +252,6 @@ fun PaymentItem(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Заменяем проблемный Chip на простую Surface
             PaymentStatusIndicator(status = payment.status)
 
             if (!payment.notes.isNullOrEmpty()) {
@@ -268,6 +269,7 @@ fun PaymentItem(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PaymentStatusIndicator(status: PaymentStatus) {
     val (backgroundColor, contentColor, icon) = when (status) {
@@ -288,7 +290,6 @@ fun PaymentStatusIndicator(status: PaymentStatus) {
         )
     }
 
-    // Используем простую Surface вместо экспериментального Chip
     Surface(
         modifier = Modifier
             .background(Color.Transparent)

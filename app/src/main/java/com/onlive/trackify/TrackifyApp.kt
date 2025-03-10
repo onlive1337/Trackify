@@ -37,7 +37,6 @@ fun TrackifyApp(themeManager: ThemeManager) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    // Определяем, когда показывать нижнюю навигацию
     val showBottomBar = when {
         currentDestination?.route == Screen.Home.route -> true
         currentDestination?.route == Screen.Payments.route -> true
@@ -46,7 +45,6 @@ fun TrackifyApp(themeManager: ThemeManager) {
         else -> false
     }
 
-    // Список элементов нижней навигации
     val bottomNavItems = listOf(
         BottomNavItem(
             title = stringResource(R.string.title_subscriptions),
@@ -92,13 +90,10 @@ fun TrackifyApp(themeManager: ThemeManager) {
                             selected = selected,
                             onClick = {
                                 navController.navigate(item.route) {
-                                    // Избегаем создания множества копий экранов в стеке навигации
                                     popUpTo(navController.graph.findStartDestination().id) {
                                         saveState = true
                                     }
-                                    // Избегаем создания нескольких копий одного экрана
                                     launchSingleTop = true
-                                    // Восстанавливаем состояние экрана, если оно было сохранено
                                     restoreState = true
                                 }
                             },
@@ -129,7 +124,6 @@ fun TrackifyApp(themeManager: ThemeManager) {
     }
 }
 
-// Модель данных для элементов нижней навигации
 data class BottomNavItem(
     val title: String,
     val icon: ImageVector,
