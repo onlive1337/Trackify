@@ -2,17 +2,7 @@ package com.onlive.trackify.ui.screens.category
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -20,31 +10,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
@@ -54,10 +27,7 @@ import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.viewmodel.CategoryGroupViewModel
 import com.onlive.trackify.viewmodel.CategoryViewModel
 
-enum class CategoryTab {
-    CATEGORIES, GROUPS
-}
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryManagementScreen(
     onNavigateBack: () -> Unit,
@@ -72,7 +42,9 @@ fun CategoryManagementScreen(
     val categories by categoryViewModel.allCategories.observeAsState(emptyList())
     val categoryGroups by categoryGroupViewModel.allGroups.observeAsState(emptyList())
 
-    var selectedTab by remember { mutableStateOf(CategoryTab.CATEGORIES) }
+    var selectedTab by remember { mutableStateOf(0) }
+    var showDeleteCategoryDialog by remember { mutableStateOf<Category?>(null) }
+    var showDeleteGroupDialog by remember { mutableStateOf<CategoryGroup?>(null) }
 
     Scaffold(
         topBar = {
@@ -85,7 +57,7 @@ fun CategoryManagementScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    if (selectedTab == CategoryTab.CATEGORIES) {
+                    if (selectedTab == 0) {
                         onAddCategory()
                     } else {
                         onAddCategoryGroup()
@@ -104,23 +76,23 @@ fun CategoryManagementScreen(
                 .padding(paddingValues)
         ) {
             TabRow(
-                selectedTabIndex = selectedTab.ordinal
+                selectedTabIndex = selectedTab
             ) {
                 Tab(
-                    selected = selectedTab == CategoryTab.CATEGORIES,
-                    onClick = { selectedTab = CategoryTab.CATEGORIES },
+                    selected = selectedTab == 0,
+                    onClick = { selectedTab = 0 },
                     text = { Text(stringResource(R.string.categories)) }
                 )
 
                 Tab(
-                    selected = selectedTab == CategoryTab.GROUPS,
-                    onClick = { selectedTab = CategoryTab.GROUPS },
+                    selected = selectedTab == 1,
+                    onClick = { selectedTab = 1 },
                     text = { Text(stringResource(R.string.category_groups)) }
                 )
             }
 
             when (selectedTab) {
-                CategoryTab.CATEGORIES -> {
+                0 -> {
                     if (categories.isEmpty()) {
                         EmptyCategoriesView()
                     } else {
@@ -128,12 +100,12 @@ fun CategoryManagementScreen(
                             categories = categories,
                             onEditCategory = onEditCategory,
                             onDeleteCategory = { category ->
-                                categoryViewModel.delete(category)
+                                showDeleteCategoryDialog = category
                             }
                         )
                     }
                 }
-                CategoryTab.GROUPS -> {
+                1 -> {
                     if (categoryGroups.isEmpty()) {
                         EmptyGroupsView()
                     } else {
@@ -141,13 +113,65 @@ fun CategoryManagementScreen(
                             groups = categoryGroups,
                             onEditGroup = onEditCategoryGroup,
                             onDeleteGroup = { group ->
-                                categoryGroupViewModel.delete(group)
+                                showDeleteGroupDialog = group
                             }
                         )
                     }
                 }
             }
         }
+    }
+
+    showDeleteCategoryDialog?.let { category ->
+        AlertDialog(
+            onDismissRequest = { showDeleteCategoryDialog = null },
+            title = { Text(stringResource(R.string.delete_category_confirmation)) },
+            text = { Text(stringResource(R.string.delete_category_message)) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        categoryViewModel.delete(category)
+                        showDeleteCategoryDialog = null
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(stringResource(R.string.delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteCategoryDialog = null }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    showDeleteGroupDialog?.let { group ->
+        AlertDialog(
+            onDismissRequest = { showDeleteGroupDialog = null },
+            title = { Text(stringResource(R.string.delete_group_confirmation)) },
+            text = { Text(stringResource(R.string.delete_group_message)) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        categoryGroupViewModel.delete(group)
+                        showDeleteGroupDialog = null
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(stringResource(R.string.delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteGroupDialog = null }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
     }
 }
 
@@ -190,38 +214,12 @@ fun CategoriesList(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(categories) { category ->
-            CategoryItemWithDialog(
+            CategoryItem(
                 category = category,
                 onEditClick = { onEditCategory(category.categoryId) },
                 onDeleteClick = { onDeleteCategory(category) }
             )
         }
-    }
-}
-
-@Composable
-fun CategoryItemWithDialog(
-    category: Category,
-    onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit
-) {
-    var showDeleteDialog by remember { mutableStateOf(false) }
-
-    CategoryItem(
-        category = category,
-        onEditClick = onEditClick,
-        onDeleteClick = { showDeleteDialog = true }
-    )
-
-    if (showDeleteDialog) {
-        DeleteCategoryDialog(
-            categoryName = category.name,
-            onConfirm = {
-                onDeleteClick()
-                showDeleteDialog = false
-            },
-            onDismiss = { showDeleteDialog = false }
-        )
     }
 }
 
@@ -283,34 +281,6 @@ fun CategoryItem(
 }
 
 @Composable
-fun DeleteCategoryDialog(
-    categoryName: String,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.delete_category_confirmation)) },
-        text = { Text(stringResource(R.string.delete_category_message)) },
-        confirmButton = {
-            Button(
-                onClick = onConfirm,
-                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error
-                )
-            ) {
-                Text(stringResource(R.string.delete))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel))
-            }
-        }
-    )
-}
-
-@Composable
 fun CategoryGroupsList(
     groups: List<CategoryGroup>,
     onEditGroup: (Long) -> Unit,
@@ -321,38 +291,12 @@ fun CategoryGroupsList(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(groups) { group ->
-            CategoryGroupItemWithDialog(
+            CategoryGroupItem(
                 group = group,
                 onEditClick = { onEditGroup(group.groupId) },
                 onDeleteClick = { onDeleteGroup(group) }
             )
         }
-    }
-}
-
-@Composable
-fun CategoryGroupItemWithDialog(
-    group: CategoryGroup,
-    onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit
-) {
-    var showDeleteDialog by remember { mutableStateOf(false) }
-
-    CategoryGroupItem(
-        group = group,
-        onEditClick = onEditClick,
-        onDeleteClick = { showDeleteDialog = true }
-    )
-
-    if (showDeleteDialog) {
-        DeleteGroupDialog(
-            groupName = group.name,
-            onConfirm = {
-                onDeleteClick()
-                showDeleteDialog = false
-            },
-            onDismiss = { showDeleteDialog = false }
-        )
     }
 }
 
@@ -369,91 +313,58 @@ fun CategoryGroupItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = MaterialTheme.shapes.medium
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth()
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(
+                        try {
+                            Color(android.graphics.Color.parseColor(group.colorCode))
+                        } catch (e: Exception) {
+                            Color.Gray
+                        }
+                    )
+            )
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(
+                modifier = Modifier.weight(1f)
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(
-                            try {
-                                Color(android.graphics.Color.parseColor(group.colorCode))
-                            } catch (e: Exception) {
-                                Color.Gray
-                            }
-                        )
+                Text(
+                    text = group.name,
+                    style = MaterialTheme.typography.titleMedium
                 )
 
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
+                if (!group.description.isNullOrEmpty()) {
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = group.name,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-
-                    if (!group.description.isNullOrEmpty()) {
-                        Text(
-                            text = group.description,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
-
-                IconButton(onClick = onEditClick) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = stringResource(R.string.edit_category),
-                        tint = MaterialTheme.colorScheme.primary
+                        text = group.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+            }
 
-                IconButton(onClick = onDeleteClick) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = stringResource(R.string.delete_category),
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                }
+            IconButton(onClick = onEditClick) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = stringResource(R.string.edit_category),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            IconButton(onClick = onDeleteClick) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = stringResource(R.string.delete_group),
+                    tint = MaterialTheme.colorScheme.error
+                )
             }
         }
     }
-}
-
-@Composable
-fun DeleteGroupDialog(
-    groupName: String,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.delete_group_confirmation)) },
-        text = { Text(stringResource(R.string.delete_group_message)) },
-        confirmButton = {
-            Button(
-                onClick = onConfirm,
-                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error
-                )
-            ) {
-                Text(stringResource(R.string.delete))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel))
-            }
-        }
-    )
 }

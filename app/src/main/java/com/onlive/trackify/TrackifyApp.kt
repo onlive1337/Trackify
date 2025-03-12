@@ -8,20 +8,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShowChart
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -31,40 +25,43 @@ import com.onlive.trackify.ui.navigation.Screen
 import com.onlive.trackify.ui.navigation.TrackifyNavGraph
 import com.onlive.trackify.utils.ThemeManager
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrackifyApp(themeManager: ThemeManager) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    val showBottomBar = when {
-        currentDestination?.route == Screen.Home.route -> true
-        currentDestination?.route == Screen.Payments.route -> true
-        currentDestination?.route == Screen.Statistics.route -> true
-        currentDestination?.route == Screen.Settings.route -> true
-        else -> false
+    val showBottomBar = remember(currentDestination) {
+        when (currentDestination?.route) {
+            Screen.Home.route,
+            Screen.Payments.route,
+            Screen.Statistics.route,
+            Screen.Settings.route -> true
+            else -> false
+        }
     }
 
-    val bottomNavItems = listOf(
-        BottomNavItem(
-            title = stringResource(R.string.title_subscriptions),
-            icon = Icons.Default.Home,
-            route = Screen.Home.route
+    val items = listOf(
+        Triple(
+            Screen.Home.route,
+            stringResource(R.string.title_subscriptions),
+            Icons.Filled.Home
         ),
-        BottomNavItem(
-            title = stringResource(R.string.title_payments),
-            icon = Icons.Default.AttachMoney,
-            route = Screen.Payments.route
+        Triple(
+            Screen.Payments.route,
+            stringResource(R.string.title_payments),
+            Icons.Filled.AttachMoney
         ),
-        BottomNavItem(
-            title = stringResource(R.string.title_statistics),
-            icon = Icons.Default.ShowChart,
-            route = Screen.Statistics.route
+        Triple(
+            Screen.Statistics.route,
+            stringResource(R.string.title_statistics),
+            Icons.Filled.ShowChart
         ),
-        BottomNavItem(
-            title = stringResource(R.string.title_settings),
-            icon = Icons.Default.AccountCircle,
-            route = Screen.Settings.route
+        Triple(
+            Screen.Settings.route,
+            stringResource(R.string.title_settings),
+            Icons.Filled.Settings
         )
     )
 
@@ -72,24 +69,20 @@ fun TrackifyApp(themeManager: ThemeManager) {
         bottomBar = {
             if (showBottomBar) {
                 NavigationBar(
-                    containerColor = MaterialTheme.colorScheme.surface,
                     tonalElevation = 8.dp
                 ) {
-                    bottomNavItems.forEach { item ->
-                        val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    val currentDestination = navBackStackEntry?.destination
+
+                    items.forEach { (route, title, icon) ->
+                        val selected = currentDestination?.hierarchy?.any { it.route == route } == true
 
                         NavigationBarItem(
-                            icon = { Icon(item.icon, contentDescription = item.title) },
-                            label = {
-                                Text(
-                                    text = item.title,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            },
+                            icon = { Icon(icon, contentDescription = title) },
+                            label = { Text(title) },
                             selected = selected,
                             onClick = {
-                                navController.navigate(item.route) {
+                                navController.navigate(route) {
                                     popUpTo(navController.graph.findStartDestination().id) {
                                         saveState = true
                                     }
@@ -123,9 +116,3 @@ fun TrackifyApp(themeManager: ThemeManager) {
         }
     }
 }
-
-data class BottomNavItem(
-    val title: String,
-    val icon: ImageVector,
-    val route: String
-)

@@ -49,6 +49,7 @@
     <string name="delete_selected">Удалить выбранные</string>
     <string name="no_payments">У вас пока нет платежей</string>
     <string name="next_payment">Следующий платеж: %s</string>
+    <string name="no_pending_payments">Нет ожидающих подтверждения платежей</string>
 
     <string name="add_category">Добавить категорию</string>
     <string name="edit_category">Редактировать категорию</string>

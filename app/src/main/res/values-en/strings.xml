@@ -49,6 +49,7 @@
     <string name="delete_selected">Delete selected</string>
     <string name="no_payments">No payments yet</string>
     <string name="next_payment">Next payment: %s</string>
+    <string name="no_pending_payments">No pending confirmation of payments</string>
 
     <string name="add_category">Add category</string>
     <string name="edit_category">Edit category</string>

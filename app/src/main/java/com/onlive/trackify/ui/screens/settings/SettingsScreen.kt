@@ -2,36 +2,14 @@ package com.onlive.trackify.ui.screens.settings
 
 import android.os.Build
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.outlined.Category
-import androidx.compose.material.icons.outlined.DataObject
-import androidx.compose.material.icons.outlined.Language
-import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Palette
-import androidx.compose.material.icons.outlined.Payments
-import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -41,8 +19,10 @@ import androidx.compose.ui.unit.dp
 import com.onlive.trackify.R
 import com.onlive.trackify.ui.components.TrackifyCard
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
+import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.ThemeManager
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onNavigateToCategoryManagement: () -> Unit,
@@ -54,9 +34,14 @@ fun SettingsScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val preferenceManager = remember { PreferenceManager(context) }
 
-    var notificationsEnabled by remember { mutableStateOf(true) }
-    var selectedThemeMode by remember { mutableStateOf(themeManager.getThemeMode()) }
+    var notificationsEnabled by remember {
+        mutableStateOf(preferenceManager.areNotificationsEnabled())
+    }
+    var selectedThemeMode by remember {
+        mutableStateOf(themeManager.getThemeMode())
+    }
 
     Scaffold(
         topBar = {
@@ -75,9 +60,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             TrackifyCard(
-                title = stringResource(R.string.theme_settings),
-                backgroundColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface
+                title = stringResource(R.string.theme_settings)
             ) {
                 Column {
                     ThemeOption(
@@ -106,32 +89,12 @@ fun SettingsScreen(
                             themeManager.setThemeMode(ThemeManager.MODE_DARK)
                         }
                     )
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        Text(
-                            text = stringResource(R.string.dynamic_colors_enabled),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
-                    } else {
-                        Text(
-                            text = stringResource(R.string.dynamic_colors_unavailable),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
-                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TrackifyCard(
-                title = null,
-                backgroundColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface
-            ) {
+            TrackifyCard {
                 Column {
                     Row(
                         modifier = Modifier
@@ -155,7 +118,10 @@ fun SettingsScreen(
 
                         Switch(
                             checked = notificationsEnabled,
-                            onCheckedChange = { notificationsEnabled = it }
+                            onCheckedChange = {
+                                notificationsEnabled = it
+                                preferenceManager.setNotificationsEnabled(it)
+                            }
                         )
                     }
 
@@ -174,9 +140,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             TrackifyCard(
-                title = stringResource(R.string.general_settings),
-                backgroundColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface
+                title = stringResource(R.string.general_settings)
             ) {
                 Column {
                     SettingsItem(
@@ -205,11 +169,7 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TrackifyCard(
-                title = null,
-                backgroundColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface
-            ) {
+            TrackifyCard {
                 SettingsItem(
                     icon = Icons.Outlined.DataObject,
                     title = stringResource(R.string.data_management),
@@ -220,9 +180,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             TrackifyCard(
-                title = stringResource(R.string.about_app),
-                backgroundColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface
+                title = stringResource(R.string.about_app)
             ) {
                 Column(
                     modifier = Modifier.padding(vertical = 8.dp),

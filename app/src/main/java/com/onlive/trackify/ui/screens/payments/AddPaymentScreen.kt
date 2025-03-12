@@ -1,31 +1,14 @@
 package com.onlive.trackify.ui.screens.payments
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -34,11 +17,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.data.model.PaymentStatus
+import com.onlive.trackify.ui.components.SubscriptionSelector
+import com.onlive.trackify.ui.components.TrackifyDatePicker
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.DateUtils
 import com.onlive.trackify.viewmodel.PaymentViewModel
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
-import java.util.Date
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,9 +40,9 @@ fun AddPaymentScreen(
     var notes by remember { mutableStateOf("") }
     var paymentDate by remember { mutableStateOf(Date()) }
 
-    var isSubscriptionDropdownExpanded by remember { mutableStateOf(false) }
     var isSubscriptionError by remember { mutableStateOf(false) }
     var isAmountError by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(subscriptionId, subscriptions) {
         if (subscriptionId != -1L && subscriptions.any { it.subscriptionId == subscriptionId }) {
@@ -88,41 +73,15 @@ fun AddPaymentScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            ExposedDropdownMenuBox(
-                expanded = isSubscriptionDropdownExpanded,
-                onExpandedChange = { isSubscriptionDropdownExpanded = it }
-            ) {
-                OutlinedTextField(
-                    value = subscriptions.find { it.subscriptionId == selectedSubscriptionId }?.name
-                        ?: "",
-                    onValueChange = {},
-                    readOnly = true,
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isSubscriptionDropdownExpanded) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor(),
-                    isError = isSubscriptionError,
-                    supportingText = if (isSubscriptionError) {
-                        { Text(stringResource(R.string.select_subscription)) }
-                    } else null
-                )
-
-                ExposedDropdownMenu(
-                    expanded = isSubscriptionDropdownExpanded,
-                    onDismissRequest = { isSubscriptionDropdownExpanded = false }
-                ) {
-                    subscriptions.forEach { subscription ->
-                        DropdownMenuItem(
-                            text = { Text(subscription.name) },
-                            onClick = {
-                                selectedSubscriptionId = subscription.subscriptionId
-                                isSubscriptionDropdownExpanded = false
-                                isSubscriptionError = false
-                            }
-                        )
-                    }
-                }
-            }
+            SubscriptionSelector(
+                subscriptions = subscriptions,
+                selectedSubscriptionId = selectedSubscriptionId,
+                onSubscriptionSelected = {
+                    selectedSubscriptionId = it
+                    isSubscriptionError = false
+                },
+                isError = isSubscriptionError
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -157,11 +116,15 @@ fun AddPaymentScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedButton(
-                onClick = {
-                    // TODO: Показать диалог выбора даты
-                },
+                onClick = { showDatePicker = true },
                 modifier = Modifier.fillMaxWidth()
             ) {
+                Icon(
+                    imageVector = Icons.Default.CalendarToday,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(Modifier.width(8.dp))
                 Text(text = DateUtils.formatDate(paymentDate))
             }
 
@@ -205,7 +168,6 @@ fun AddPaymentScreen(
                     )
 
                     paymentViewModel.insert(payment)
-
                     onNavigateBack()
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -213,5 +175,15 @@ fun AddPaymentScreen(
                 Text(stringResource(R.string.save))
             }
         }
+    }
+
+    if (showDatePicker) {
+        TrackifyDatePicker(
+            selectedDate = paymentDate,
+            onDateSelected = {
+                paymentDate = it
+            },
+            onDismiss = { showDatePicker = false }
+        )
     }
 }

@@ -14,7 +14,13 @@ import com.onlive.trackify.ui.screens.category.CategoryDetailScreen
 import com.onlive.trackify.ui.screens.category.CategoryManagementScreen
 import com.onlive.trackify.ui.screens.home.HomeScreen
 import com.onlive.trackify.ui.screens.payments.AddPaymentScreen
+import com.onlive.trackify.ui.screens.payments.BulkPaymentActionsScreen
 import com.onlive.trackify.ui.screens.payments.PaymentsScreen
+import com.onlive.trackify.ui.screens.payments.PendingPaymentsScreen
+import com.onlive.trackify.ui.screens.settings.CurrencySettingsScreen
+import com.onlive.trackify.ui.screens.settings.DataManagementScreen
+import com.onlive.trackify.ui.screens.settings.LanguageSettingsScreen
+import com.onlive.trackify.ui.screens.settings.NotificationSettingsScreen
 import com.onlive.trackify.ui.screens.settings.SettingsScreen
 import com.onlive.trackify.ui.screens.statistics.StatisticsScreen
 import com.onlive.trackify.ui.screens.subscription.SubscriptionDetailScreen
@@ -263,68 +269,39 @@ fun TrackifyNavGraph(
         }
 
         composable(Screen.CurrencySettings.route) {
-            // TODO: Реализовать экран настроек валюты
-            SettingsScreen(
-                onNavigateToCategoryManagement = navigationActions.navigateToCategoryManagement,
-                onNavigateToNotificationSettings = navigationActions.navigateToNotificationSettings,
-                onNavigateToCurrencySettings = navigationActions.navigateToCurrencySettings,
-                onNavigateToLanguageSettings = navigationActions.navigateToLanguageSettings,
-                onNavigateToDataManagement = navigationActions.navigateToDataManagement,
-                themeManager = themeManager ?: ThemeManager(LocalContext.current)
+            CurrencySettingsScreen(
+                onNavigateBack = navigationActions.navigateBack
             )
         }
 
         composable(Screen.LanguageSettings.route) {
-            // TODO: Реализовать экран настроек языка
-            SettingsScreen(
-                onNavigateToCategoryManagement = navigationActions.navigateToCategoryManagement,
-                onNavigateToNotificationSettings = navigationActions.navigateToNotificationSettings,
-                onNavigateToCurrencySettings = navigationActions.navigateToCurrencySettings,
-                onNavigateToLanguageSettings = navigationActions.navigateToLanguageSettings,
-                onNavigateToDataManagement = navigationActions.navigateToDataManagement,
-                themeManager = themeManager ?: ThemeManager(LocalContext.current)
+            LanguageSettingsScreen(
+                onNavigateBack = navigationActions.navigateBack
             )
         }
 
         composable(Screen.NotificationSettings.route) {
-            // TODO: Реализовать экран настроек уведомлений
-            SettingsScreen(
-                onNavigateToCategoryManagement = navigationActions.navigateToCategoryManagement,
-                onNavigateToNotificationSettings = navigationActions.navigateToNotificationSettings,
-                onNavigateToCurrencySettings = navigationActions.navigateToCurrencySettings,
-                onNavigateToLanguageSettings = navigationActions.navigateToLanguageSettings,
-                onNavigateToDataManagement = navigationActions.navigateToDataManagement,
-                themeManager = themeManager ?: ThemeManager(LocalContext.current)
+            NotificationSettingsScreen(
+                onNavigateBack = navigationActions.navigateBack
             )
         }
 
         composable(Screen.DataManagement.route) {
-            // TODO: Реализовать экран управления данными
-            SettingsScreen(
-                onNavigateToCategoryManagement = navigationActions.navigateToCategoryManagement,
-                onNavigateToNotificationSettings = navigationActions.navigateToNotificationSettings,
-                onNavigateToCurrencySettings = navigationActions.navigateToCurrencySettings,
-                onNavigateToLanguageSettings = navigationActions.navigateToLanguageSettings,
-                onNavigateToDataManagement = navigationActions.navigateToDataManagement,
-                themeManager = themeManager ?: ThemeManager(LocalContext.current)
+            DataManagementScreen(
+                onNavigateBack = navigationActions.navigateBack
             )
         }
 
         composable(Screen.PendingPayments.route) {
-            // TODO: Реализовать экран ожидающих платежей
-            PaymentsScreen(
-                onAddPayment = navigationActions.navigateToAddPayment,
-                onNavigateToBulkActions = navigationActions.navigateToBulkPaymentActions,
-                onNavigateToPendingPayments = navigationActions.navigateToPendingPayments
+            PendingPaymentsScreen(
+                onNavigateBack = navigationActions.navigateBack,
+                onAddPayment = navigationActions.navigateToAddPayment
             )
         }
 
         composable(Screen.BulkPaymentActions.route) {
-            // TODO: Реализовать экран групповых операций с платежами
-            PaymentsScreen(
-                onAddPayment = navigationActions.navigateToAddPayment,
-                onNavigateToBulkActions = navigationActions.navigateToBulkPaymentActions,
-                onNavigateToPendingPayments = navigationActions.navigateToPendingPayments
+            BulkPaymentActionsScreen(
+                onNavigateBack = navigationActions.navigateBack
             )
         }
     }
