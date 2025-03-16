@@ -3,7 +3,8 @@ package com.onlive.trackify.utils
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
-import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 
 class ThemeManager(context: Context) {
     companion object {
@@ -16,6 +17,8 @@ class ThemeManager(context: Context) {
     }
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private val _themeMode = mutableStateOf(getThemeMode())
+    val themeMode: State<Int> = _themeMode
 
     fun getThemeMode(): Int {
         return prefs.getInt(KEY_THEME_MODE, MODE_SYSTEM)
@@ -23,14 +26,14 @@ class ThemeManager(context: Context) {
 
     fun setThemeMode(mode: Int) {
         prefs.edit().putInt(KEY_THEME_MODE, mode).apply()
-        applyTheme(mode)
+        _themeMode.value = mode
     }
 
-    fun applyTheme(mode: Int = getThemeMode()) {
-        when (mode) {
-            MODE_LIGHT -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-            MODE_DARK -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-            else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+    fun isDarkTheme(systemIsDark: Boolean): Boolean {
+        return when (_themeMode.value) {
+            MODE_LIGHT -> false
+            MODE_DARK -> true
+            else -> systemIsDark
         }
     }
 

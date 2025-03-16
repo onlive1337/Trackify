@@ -118,8 +118,6 @@ dependencies {
     // Сопутствующие библиотеки для Compose
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.32.0")
     implementation("com.google.accompanist:accompanist-permissions:0.32.0")
-    implementation("com.google.accompanist:accompanist-navigation-animation:0.32.0")
-    implementation("com.google.accompanist:accompanist-insets:0.23.1")
 
     // JSON
     implementation("com.google.code.gson:gson:2.10.1")

@@ -4,17 +4,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AttachMoney
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.ShowChart
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.onlive.trackify.ui.components.TrackifyBottomBar
@@ -38,29 +32,6 @@ fun TrackifyApp(themeManager: ThemeManager) {
             else -> false
         }
     }
-
-    val items = listOf(
-        Triple(
-            Screen.Home.route,
-            stringResource(R.string.title_subscriptions),
-            Icons.Filled.Home
-        ),
-        Triple(
-            Screen.Payments.route,
-            stringResource(R.string.title_payments),
-            Icons.Filled.AttachMoney
-        ),
-        Triple(
-            Screen.Statistics.route,
-            stringResource(R.string.title_statistics),
-            Icons.Filled.ShowChart
-        ),
-        Triple(
-            Screen.Settings.route,
-            stringResource(R.string.title_settings),
-            Icons.Filled.Settings
-        )
-    )
 
     Scaffold(
         bottomBar = {

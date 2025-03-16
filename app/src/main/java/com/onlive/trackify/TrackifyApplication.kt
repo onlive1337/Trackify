@@ -1,7 +1,6 @@
 package com.onlive.trackify
 
 import android.app.Application
-import android.os.Build
 import androidx.work.Configuration
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
@@ -16,7 +15,6 @@ import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.ThemeManager
 import com.onlive.trackify.workers.DatabaseCleanupWorker
 import com.onlive.trackify.workers.SubscriptionReminderWorker
-import com.google.android.material.color.DynamicColors
 import java.util.concurrent.TimeUnit
 
 class TrackifyApplication : Application(), Configuration.Provider {
@@ -35,51 +33,35 @@ class TrackifyApplication : Application(), Configuration.Provider {
         super.onCreate()
 
         try {
-            // Инициализация обработчика ошибок
             errorHandler = ErrorHandler.getInstance(this)
 
-            // Инициализация сервиса кэширования
             cacheService = CacheService.getInstance()
 
-            // Инициализация всех компонентов
             initializeComponents()
-
-            // Применение динамических цветов для Android S+
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                DynamicColors.applyToActivitiesIfAvailable(this)
-            }
         } catch (e: Exception) {
             handleFatalError(e)
         }
     }
 
     private fun initializeComponents() {
-        // Инициализация менеджера тем
         themeManager = ThemeManager(this)
-        themeManager.applyTheme()
 
-        // Инициализация менеджера предпочтений
         preferenceManager = PreferenceManager(this)
 
-        // Инициализация базы данных
         databaseInitializer = DatabaseInitializer(this)
         databaseInitializer.initializeCategories()
 
-        // Инициализация уведомлений
         notificationHelper = NotificationHelper(this)
         notificationHelper.createNotificationChannel()
 
-        // Настройка заданий WorkManager
         setupSubscriptionReminders()
         setupDatabaseCleanup()
 
-        // Инициализация планировщика платежей
         paymentScheduler = PaymentScheduler(this)
         paymentScheduler.schedulePaymentGeneration()
     }
 
     private fun setupSubscriptionReminders() {
-        // Настраиваем периодическое задание для напоминаний о подписках
         val reminderWorkRequest = PeriodicWorkRequestBuilder<SubscriptionReminderWorker>(
             1, TimeUnit.DAYS
         ).build()
@@ -92,7 +74,6 @@ class TrackifyApplication : Application(), Configuration.Provider {
     }
 
     private fun setupDatabaseCleanup() {
-        // Настраиваем периодическое задание для очистки базы данных
         val cleanupWorkRequest = PeriodicWorkRequestBuilder<DatabaseCleanupWorker>(
             7, TimeUnit.DAYS
         ).build()
@@ -111,13 +92,11 @@ class TrackifyApplication : Application(), Configuration.Provider {
 
     override fun onTerminate() {
         super.onTerminate()
-        // Очищаем кэш при завершении
         cacheService.clearCache()
     }
 
     override fun onLowMemory() {
         super.onLowMemory()
-        // Обрабатываем ситуацию с нехваткой памяти
         MemoryUtils.handleLowMemory(this)
         cacheService.clearCache()
     }
@@ -130,7 +109,6 @@ class TrackifyApplication : Application(), Configuration.Provider {
         }
     }
 
-    // Конфигурация WorkManager
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setMinimumLoggingLevel(android.util.Log.INFO)

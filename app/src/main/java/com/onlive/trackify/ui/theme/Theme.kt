@@ -10,9 +10,6 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -82,13 +79,7 @@ fun TrackifyTheme(
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val themeMode by remember { mutableStateOf(themeManager?.getThemeMode() ?: ThemeManager.MODE_SYSTEM) }
-
-    val useDarkTheme = when (themeMode) {
-        ThemeManager.MODE_LIGHT -> false
-        ThemeManager.MODE_DARK -> true
-        else -> darkTheme
-    }
+    val useDarkTheme = themeManager?.isDarkTheme(darkTheme) ?: darkTheme
 
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
@@ -105,6 +96,13 @@ fun TrackifyTheme(
             val window = (view.context as Activity).window
             window.statusBarColor = colorScheme.background.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !useDarkTheme
+
+            window.navigationBarColor = colorScheme.background.toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = !useDarkTheme
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                window.attributes.layoutInDisplayCutoutMode = android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+            }
         }
     }
 
