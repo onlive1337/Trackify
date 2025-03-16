@@ -16,7 +16,6 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import com.onlive.trackify.R
-
 import java.util.concurrent.ConcurrentHashMap
 
 class LiveStatisticsUpdater(

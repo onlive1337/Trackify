@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
@@ -16,11 +15,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.onlive.trackify.ui.components.TrackifyBottomBar
 import com.onlive.trackify.ui.navigation.Screen
 import com.onlive.trackify.ui.navigation.TrackifyNavGraph
 import com.onlive.trackify.utils.ThemeManager
@@ -68,38 +65,10 @@ fun TrackifyApp(themeManager: ThemeManager) {
     Scaffold(
         bottomBar = {
             if (showBottomBar) {
-                NavigationBar(
-                    tonalElevation = 8.dp
-                ) {
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
-                    val currentDestination = navBackStackEntry?.destination
-
-                    items.forEach { (route, title, icon) ->
-                        val selected = currentDestination?.hierarchy?.any { it.route == route } == true
-
-                        NavigationBarItem(
-                            icon = { Icon(icon, contentDescription = title) },
-                            label = { Text(title) },
-                            selected = selected,
-                            onClick = {
-                                navController.navigate(route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = MaterialTheme.colorScheme.primary,
-                                selectedTextColor = MaterialTheme.colorScheme.primary,
-                                indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
-                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        )
-                    }
-                }
+                TrackifyBottomBar(
+                    navController = navController,
+                    currentRoute = currentDestination?.route ?: Screen.Home.route
+                )
             }
         }
     ) { innerPadding ->

@@ -5,7 +5,6 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("kotlin-kapt")
-    id("androidx.navigation.safeargs.kotlin")
 }
 
 android {
@@ -53,7 +52,6 @@ android {
 
     buildFeatures {
         compose = true
-        viewBinding = true // Оставляем на время миграции
     }
 
     composeOptions {
@@ -97,10 +95,6 @@ dependencies {
     // Compose Navigation
     implementation("androidx.navigation:navigation-compose:2.7.6")
 
-    // Старая навигация (оставляем на время миграции)
-    implementation("androidx.navigation:navigation-fragment-ktx:2.7.6")
-    implementation("androidx.navigation:navigation-ui-ktx:2.7.6")
-
     // Room Database
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
@@ -119,8 +113,7 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 
     // Charts для Compose
-    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0") // Временно оставляем
-    implementation("com.github.tehras:charts:0.2.4-alpha") // Добавляем библиотеку для графиков в Compose
+    implementation("com.github.tehras:charts:0.2.4-alpha")
 
     // Сопутствующие библиотеки для Compose
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.32.0")

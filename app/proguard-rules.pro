@@ -10,7 +10,3 @@
 -keepattributes *Annotation*
 -dontwarn sun.misc.**
 -keep class com.google.gson.** { *; }
-
-# MPAndroidChart
--keep class com.github.mikephil.charting.** { *; }
--dontwarn com.github.mikephil.charting.**
