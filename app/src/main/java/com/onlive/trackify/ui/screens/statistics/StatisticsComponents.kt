@@ -10,9 +10,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.onlive.trackify.R
 import com.onlive.trackify.ui.components.TrackifyCard
 import com.onlive.trackify.ui.components.charts.BarChart
 import com.onlive.trackify.ui.components.charts.BarChartData
@@ -205,7 +207,7 @@ fun MonthlySpendingCard(
     }
 
     TrackifyCard(
-        title = "Динамика расходов",
+        title = stringResource(R.string.spending_over_time),
         modifier = modifier
     ) {
         BarChart(
