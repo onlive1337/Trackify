@@ -1,8 +1,6 @@
 package com.onlive.trackify
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,30 +30,26 @@ fun TrackifyApp(themeManager: ThemeManager) {
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Scaffold(
-            bottomBar = { },
-            containerColor = MaterialTheme.colorScheme.background,
-        ) { innerPadding ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-            ) {
-                TrackifyNavGraph(
-                    navController = navController,
-                    themeManager = themeManager
-                )
-            }
-        }
-
-        if (showBottomBar) {
-            Box(modifier = Modifier.align(androidx.compose.ui.Alignment.BottomCenter)) {
+    Scaffold(
+        bottomBar = {
+            if (showBottomBar) {
                 TrackifyBottomBar(
                     navController = navController,
                     currentRoute = currentDestination?.route ?: Screen.Home.route
                 )
             }
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            TrackifyNavGraph(
+                navController = navController,
+                themeManager = themeManager
+            )
         }
     }
 }
