@@ -30,13 +30,19 @@ fun TrackifyApp(themeManager: ThemeManager) {
         }
     }
 
+    val bottomPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
     Scaffold(
         bottomBar = {
             if (showBottomBar) {
-                TrackifyBottomBar(
-                    navController = navController,
-                    currentRoute = currentDestination?.route ?: Screen.Home.route
-                )
+                Box(
+                    modifier = Modifier.padding(bottom = bottomPadding)
+                ) {
+                    TrackifyBottomBar(
+                        navController = navController,
+                        currentRoute = currentDestination?.route ?: Screen.Home.route
+                    )
+                }
             }
         },
         containerColor = MaterialTheme.colorScheme.background

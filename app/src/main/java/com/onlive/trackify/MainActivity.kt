@@ -1,9 +1,11 @@
 package com.onlive.trackify
 
 import android.content.Context
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.core.view.WindowCompat
 import com.onlive.trackify.ui.theme.TrackifyTheme
 import com.onlive.trackify.utils.LocaleHelper
 import com.onlive.trackify.utils.PreferenceManager
@@ -22,6 +24,12 @@ class MainActivity : ComponentActivity(), PreferenceManager.OnPreferenceChangedL
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        window.navigationBarColor = getColor(R.color.md_theme_dark_surface)
+
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            isAppearanceLightNavigationBars = false
+        }
 
         themeManager = ThemeManager(this)
         preferenceManager.addOnPreferenceChangedListener(this)

@@ -94,15 +94,15 @@ fun TrackifyTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.background.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !useDarkTheme
 
-            window.navigationBarColor = colorScheme.background.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = !useDarkTheme
+            window.navigationBarColor = colorScheme.surface.toArgb()
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                window.attributes.layoutInDisplayCutoutMode = android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+            WindowCompat.getInsetsController(window, view).apply {
+                isAppearanceLightStatusBars = !useDarkTheme
+                isAppearanceLightNavigationBars = !useDarkTheme
             }
+
+            window.statusBarColor = colorScheme.background.toArgb()
         }
     }
 
