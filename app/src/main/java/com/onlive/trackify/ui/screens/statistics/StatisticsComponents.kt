@@ -48,7 +48,7 @@ fun TotalSpendingCard(
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = "в месяц",
+                    text = stringResource(R.string.per_month),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -63,7 +63,7 @@ fun TotalSpendingCard(
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = "в год",
+                    text = stringResource(R.string.per_year),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

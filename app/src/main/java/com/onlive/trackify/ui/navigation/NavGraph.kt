@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.onlive.trackify.ui.screens.about.AboutAppScreen
 import com.onlive.trackify.ui.screens.category.CategoryDetailScreen
 import com.onlive.trackify.ui.screens.category.CategoryManagementScreen
 import com.onlive.trackify.ui.screens.home.HomeScreen
@@ -60,6 +61,7 @@ sealed class Screen(val route: String) {
     object DataManagement : Screen("data_management")
     object PendingPayments : Screen("pending_payments")
     object BulkPaymentActions : Screen("bulk_payment_actions")
+    object AboutApp : Screen("about_app")
 }
 
 class NavigationActions(navController: NavHostController) {
@@ -141,6 +143,10 @@ class NavigationActions(navController: NavHostController) {
 
     val navigateToBulkPaymentActions: () -> Unit = {
         navController.navigate(Screen.BulkPaymentActions.route)
+    }
+
+    val navigateToAboutApp: () -> Unit = {
+        navController.navigate(Screen.AboutApp.route)
     }
 
     val navigateBack: () -> Unit = {
@@ -301,6 +307,12 @@ fun TrackifyNavGraph(
 
         composable(Screen.BulkPaymentActions.route) {
             BulkPaymentActionsScreen(
+                onNavigateBack = navigationActions.navigateBack
+            )
+        }
+
+        composable(Screen.AboutApp.route) {
+            AboutAppScreen(
                 onNavigateBack = navigationActions.navigateBack
             )
         }

@@ -152,8 +152,8 @@
     <string name="in_a_month">A month from now</string>
     <string name="one_year_later">One year later</string>
 
-    <string name="per_month">/month</string>
-    <string name="per_year">/year</string>
+    <string name="per_month">in month</string>
+    <string name="per_year">in year</string>
 
     <string name="search_subscriptions">Search subscriptions</string>
     <string name="no_subscriptions">No subscriptions yet</string>

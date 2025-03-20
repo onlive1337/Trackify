@@ -153,7 +153,7 @@
     <string name="in_a_month">Через месяц</string>
     <string name="one_year_later">Через год</string>
 
-    <string name="per_year">/год</string>
+    <string name="per_year">в год</string>
 
     <string name="search_subscriptions">Поиск подписок</string>
     <string name="no_subscriptions">У вас пока нет подписок</string>

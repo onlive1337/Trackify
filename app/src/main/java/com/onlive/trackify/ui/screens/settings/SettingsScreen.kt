@@ -8,6 +8,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,6 +22,41 @@ import com.onlive.trackify.ui.components.TrackifyCard
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.ThemeManager
+
+@Composable
+fun ThemeOption(
+    title: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    icon: ImageVector
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary
+        )
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(1f)
+        )
+
+        RadioButton(
+            selected = selected,
+            onClick = onClick
+        )
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,10 +91,10 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()),
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-
+            
             TrackifyCard(
                 title = stringResource(R.string.theme_settings)
             ) {
@@ -69,7 +105,8 @@ fun SettingsScreen(
                         onClick = {
                             selectedThemeMode = ThemeManager.MODE_SYSTEM
                             themeManager.setThemeMode(ThemeManager.MODE_SYSTEM)
-                        }
+                        },
+                        icon = Icons.Rounded.PhoneAndroid
                     )
 
                     ThemeOption(
@@ -78,7 +115,8 @@ fun SettingsScreen(
                         onClick = {
                             selectedThemeMode = ThemeManager.MODE_LIGHT
                             themeManager.setThemeMode(ThemeManager.MODE_LIGHT)
-                        }
+                        },
+                        icon = Icons.Rounded.LightMode
                     )
 
                     ThemeOption(
@@ -87,7 +125,8 @@ fun SettingsScreen(
                         onClick = {
                             selectedThemeMode = ThemeManager.MODE_DARK
                             themeManager.setThemeMode(ThemeManager.MODE_DARK)
-                        }
+                        },
+                        icon = Icons.Rounded.DarkMode
                     )
                 }
             }
@@ -179,65 +218,16 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TrackifyCard(
-                title = stringResource(R.string.about_app)
-            ) {
-                Column(
-                    modifier = Modifier.padding(vertical = 8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = stringResource(R.string.app_version),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Text(
-                        text = stringResource(R.string.app_description),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+            TrackifyCard {
+                SettingsItem(
+                    icon = Icons.Outlined.Info,
+                    title = stringResource(R.string.about_app),
+                    onClick = { /* Будет добавлена навигация */ }
+                )
             }
 
             Spacer(modifier = Modifier.height(32.dp))
         }
-    }
-}
-
-@Composable
-fun ThemeOption(
-    title: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = Icons.Outlined.Palette,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary
-        )
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f)
-        )
-
-        RadioButton(
-            selected = selected,
-            onClick = onClick
-        )
     }
 }
 

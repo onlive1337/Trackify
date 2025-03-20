@@ -3,12 +3,15 @@ package com.onlive.trackify.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.onlive.trackify.data.model.BillingFrequency
@@ -18,6 +21,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.onlive.trackify.R
 
+private fun getCategoryColor(colorCode: String?, defaultColor: Color): Color {
+    return try {
+        colorCode?.let { Color(android.graphics.Color.parseColor(it)) } ?: defaultColor
+    } catch (e: Exception) {
+        defaultColor
+    }
+}
+
 @Composable
 fun SubscriptionListItem(
     subscription: Subscription,
@@ -25,70 +36,83 @@ fun SubscriptionListItem(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val defaultColor = MaterialTheme.colorScheme.surfaceVariant
+
+    val categoryColor = getCategoryColor(subscription.categoryColor, defaultColor)
+
+    val backgroundBrush = Brush.horizontalGradient(
+        colors = listOf(
+            MaterialTheme.colorScheme.surface,
+            categoryColor.copy(alpha = 0.3f)
+        )
+    )
 
     Card(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = MaterialTheme.shapes.medium
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        )
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(backgroundBrush)
         ) {
-            val categoryColor = remember {
-                subscription.categoryColor?.let { colorCode ->
-                    try {
-                        Color(android.graphics.Color.parseColor(colorCode))
-                    } catch (e: Exception) {
-                        null
-                    }
-                }
-            }
-
-            if (categoryColor != null) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Box(
                     modifier = Modifier
-                        .width(4.dp)
+                        .width(6.dp)
                         .height(48.dp)
-                        .background(categoryColor)
+                        .background(
+                            color = categoryColor,
+                            shape = RoundedCornerShape(8.dp)
+                        )
                 )
+
                 Spacer(modifier = Modifier.width(12.dp))
-            }
 
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = subscription.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = subscription.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
 
-                Text(
-                    text = subscription.categoryName ?: stringResource(R.string.without_category),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Column(
-                horizontalAlignment = Alignment.End
-            ) {
-                val formattedPrice = when (subscription.billingFrequency) {
-                    BillingFrequency.MONTHLY ->
-                        "${CurrencyFormatter.formatAmount(context, subscription.price)}/${stringResource(R.string.month)}"
-                    BillingFrequency.YEARLY ->
-                        "${CurrencyFormatter.formatAmount(context, subscription.price)}/${stringResource(R.string.year)}"
+                    Text(
+                        text = subscription.categoryName ?: stringResource(R.string.without_category),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
 
-                Text(
-                    text = formattedPrice,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                Column(
+                    horizontalAlignment = Alignment.End
+                ) {
+                    val formattedPrice = when (subscription.billingFrequency) {
+                        BillingFrequency.MONTHLY ->
+                            "${CurrencyFormatter.formatAmount(context, subscription.price)}/${stringResource(R.string.month)}"
+                        BillingFrequency.YEARLY ->
+                            "${CurrencyFormatter.formatAmount(context, subscription.price)}/${stringResource(R.string.year)}"
+                    }
+
+                    Text(
+                        text = formattedPrice,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = categoryColor,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }
@@ -101,66 +125,88 @@ fun SubscriptionGridItem(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val defaultColor = MaterialTheme.colorScheme.surfaceVariant
 
-    OutlinedCard(
+    val categoryColor = getCategoryColor(subscription.categoryColor, defaultColor)
+
+    val backgroundBrush = Brush.verticalGradient(
+        colors = listOf(
+            MaterialTheme.colorScheme.surface,
+            categoryColor.copy(alpha = 0.2f)
+        )
+    )
+
+    Card(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = MaterialTheme.shapes.medium
+        shape = MaterialTheme.shapes.medium,
+        border = null,
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        )
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(backgroundBrush)
         ) {
-            val categoryColor = remember {
-                subscription.categoryColor?.let { colorCode ->
-                    try {
-                        Color(android.graphics.Color.parseColor(colorCode))
-                    } catch (e: Exception) {
-                        null
-                    }
-                }
-            }
-
-            if (categoryColor != null) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(4.dp)
-                        .background(categoryColor)
+                        .height(6.dp)
+                        .background(
+                            color = categoryColor,
+                            shape = RoundedCornerShape(4.dp)
+                        )
                 )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = subscription.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
                 Spacer(modifier = Modifier.height(8.dp))
+
+                val formattedPrice = when (subscription.billingFrequency) {
+                    BillingFrequency.MONTHLY ->
+                        "${CurrencyFormatter.formatAmount(context, subscription.price)}/${stringResource(R.string.month)}"
+                    BillingFrequency.YEARLY ->
+                        "${CurrencyFormatter.formatAmount(context, subscription.price)}/${stringResource(R.string.year)}"
+                }
+
+                Text(
+                    text = formattedPrice,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = categoryColor,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(categoryColor.copy(alpha = 0.2f))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = subscription.categoryName ?: stringResource(R.string.without_category),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = categoryColor
+                    )
+                }
             }
-
-            Text(
-                text = subscription.name,
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            val formattedPrice = when (subscription.billingFrequency) {
-                BillingFrequency.MONTHLY ->
-                    "${CurrencyFormatter.formatAmount(context, subscription.price)}/${stringResource(R.string.month)}"
-                BillingFrequency.YEARLY ->
-                    "${CurrencyFormatter.formatAmount(context, subscription.price)}/${stringResource(R.string.year)}"
-            }
-
-            Text(
-                text = formattedPrice,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = subscription.categoryName ?: stringResource(R.string.without_category),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }

@@ -1,93 +1,276 @@
-package com.onlive.trackify.ui.screens.statistics
+package com.onlive.trackify.ui.screens.settings
 
+import android.os.Build
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
+import com.onlive.trackify.ui.components.TrackifyCard
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
-import com.onlive.trackify.utils.CurrencyFormatter
-import com.onlive.trackify.viewmodel.StatisticsViewModel
+import com.onlive.trackify.utils.PreferenceManager
+import com.onlive.trackify.utils.ThemeManager
 
 @Composable
-fun StatisticsScreen(
-    statisticsViewModel: StatisticsViewModel = viewModel(),
+fun ThemeOption(
+    title: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    icon: ImageVector
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary
+        )
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(1f)
+        )
+
+        RadioButton(
+            selected = selected,
+            onClick = onClick
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SettingsScreen(
+    onNavigateToCategoryManagement: () -> Unit,
+    onNavigateToNotificationSettings: () -> Unit,
+    onNavigateToCurrencySettings: () -> Unit,
+    onNavigateToLanguageSettings: () -> Unit,
+    onNavigateToDataManagement: () -> Unit,
+    onNavigateToAboutApp: () -> Unit,
+    themeManager: ThemeManager,
     modifier: Modifier = Modifier
 ) {
-    val totalMonthlySpending by statisticsViewModel.totalMonthlySpending.observeAsState(0.0)
-    val totalYearlySpending by statisticsViewModel.totalYearlySpending.observeAsState(0.0)
-    val spendingByCategory by statisticsViewModel.spendingByCategory.observeAsState(emptyList())
-    val monthlySpendingHistory by statisticsViewModel.monthlySpendingHistory.observeAsState(emptyList())
-    val subscriptionTypeSpending by statisticsViewModel.subscriptionTypeSpending.observeAsState(emptyList())
-
-    val isLoading = remember { false }
     val context = LocalContext.current
+    val preferenceManager = remember { PreferenceManager(context) }
+
+    var notificationsEnabled by remember {
+        mutableStateOf(preferenceManager.areNotificationsEnabled())
+    }
+    var selectedThemeMode by remember {
+        mutableStateOf(themeManager.getThemeMode())
+    }
 
     Scaffold(
         topBar = {
             TrackifyTopAppBar(
-                title = stringResource(R.string.title_statistics)
+                title = stringResource(R.string.title_settings)
             )
         }
     ) { paddingValues ->
-        if (isLoading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(horizontal = 16.dp)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                Spacer(modifier = Modifier.height(16.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState()),
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
 
-                TotalSpendingCard(
-                    monthlySpending = totalMonthlySpending,
-                    yearlySpending = totalYearlySpending,
-                    formattedMonthlySpending = CurrencyFormatter.formatAmount(context, totalMonthlySpending),
-                    formattedYearlySpending = CurrencyFormatter.formatAmount(context, totalYearlySpending)
+            // Настройки темы с новыми иконками
+            TrackifyCard(
+                title = stringResource(R.string.theme_settings)
+            ) {
+                Column {
+                    // Системная тема
+                    ThemeOption(
+                        title = stringResource(R.string.system_theme),
+                        selected = selectedThemeMode == ThemeManager.MODE_SYSTEM,
+                        onClick = {
+                            selectedThemeMode = ThemeManager.MODE_SYSTEM
+                            themeManager.setThemeMode(ThemeManager.MODE_SYSTEM)
+                        },
+                        icon = Icons.Rounded.PhoneAndroid // Иконка телефона для системной темы
+                    )
+
+                    // Светлая тема
+                    ThemeOption(
+                        title = stringResource(R.string.light_theme),
+                        selected = selectedThemeMode == ThemeManager.MODE_LIGHT,
+                        onClick = {
+                            selectedThemeMode = ThemeManager.MODE_LIGHT
+                            themeManager.setThemeMode(ThemeManager.MODE_LIGHT)
+                        },
+                        icon = Icons.Rounded.LightMode // Иконка солнца для светлой темы
+                    )
+
+                    // Темная тема
+                    ThemeOption(
+                        title = stringResource(R.string.dark_theme),
+                        selected = selectedThemeMode == ThemeManager.MODE_DARK,
+                        onClick = {
+                            selectedThemeMode = ThemeManager.MODE_DARK
+                            themeManager.setThemeMode(ThemeManager.MODE_DARK)
+                        },
+                        icon = Icons.Rounded.DarkMode // Иконка луны для темной темы
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Блок уведомлений
+            TrackifyCard {
+                Column {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Notifications,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+
+                        Spacer(modifier = Modifier.width(16.dp))
+
+                        Text(
+                            text = stringResource(R.string.notifications),
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        Switch(
+                            checked = notificationsEnabled,
+                            onCheckedChange = {
+                                notificationsEnabled = it
+                                preferenceManager.setNotificationsEnabled(it)
+                            }
+                        )
+                    }
+
+                    if (notificationsEnabled) {
+                        Divider(modifier = Modifier.padding(vertical = 8.dp))
+
+                        SettingsItem(
+                            icon = Icons.Outlined.Notifications,
+                            title = stringResource(R.string.notification_settings),
+                            onClick = onNavigateToNotificationSettings
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Общие настройки
+            TrackifyCard(
+                title = stringResource(R.string.general_settings)
+            ) {
+                Column {
+                    SettingsItem(
+                        icon = Icons.Outlined.Category,
+                        title = stringResource(R.string.manage_categories),
+                        onClick = onNavigateToCategoryManagement
+                    )
+
+                    Divider(modifier = Modifier.padding(vertical = 8.dp))
+
+                    SettingsItem(
+                        icon = Icons.Outlined.Payments,
+                        title = stringResource(R.string.currency_settings),
+                        onClick = onNavigateToCurrencySettings
+                    )
+
+                    Divider(modifier = Modifier.padding(vertical = 8.dp))
+
+                    SettingsItem(
+                        icon = Icons.Outlined.Language,
+                        title = stringResource(R.string.language_settings),
+                        onClick = onNavigateToLanguageSettings
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Управление данными
+            TrackifyCard {
+                SettingsItem(
+                    icon = Icons.Outlined.DataObject,
+                    title = stringResource(R.string.data_management),
+                    onClick = onNavigateToDataManagement
                 )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                if (spendingByCategory.isNotEmpty()) {
-                    CategorySpendingCard(
-                        categories = spendingByCategory,
-                        totalAmount = spendingByCategory.sumOf { it.amount },
-                        formattedTotalAmount = CurrencyFormatter.formatAmount(context, spendingByCategory.sumOf { it.amount }),
-                        perMonthText = stringResource(R.string.per_month),
-                        formatAmount = { amount -> CurrencyFormatter.formatAmount(context, amount) }
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-
-                if (monthlySpendingHistory.isNotEmpty()) {
-                    MonthlySpendingCard(
-                        monthlySpending = monthlySpendingHistory
-                    )
-
-                    Spacer(modifier = Modifier.height(32.dp))
-                }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // О приложении
+            TrackifyCard {
+                SettingsItem(
+                    icon = Icons.Outlined.Info,
+                    title = stringResource(R.string.about_app),
+                    onClick = onNavigateToAboutApp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
         }
+    }
+}
+
+@Composable
+fun SettingsItem(
+    icon: ImageVector,
+    title: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary
+        )
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(1f)
+        )
+
+        Icon(
+            imageVector = Icons.Filled.KeyboardArrowRight,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
