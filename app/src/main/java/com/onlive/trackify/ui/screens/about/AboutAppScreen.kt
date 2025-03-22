@@ -2,7 +2,6 @@ package com.onlive.trackify.ui.screens.about
 
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
@@ -29,6 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.onlive.trackify.R
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
+import androidx.core.net.toUri
 
 @RequiresApi(Build.VERSION_CODES.P)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,7 +47,6 @@ fun AboutAppScreen(
     }
 
     val versionName = packageInfo?.versionName ?: "1.0.0"
-    val versionCode = packageInfo?.longVersionCode ?: 1
 
     Scaffold(
         topBar = {
@@ -132,7 +131,7 @@ fun AboutAppScreen(
 
             OutlinedButton(
                 onClick = {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/onlivedev"))
+                    val intent = Intent(Intent.ACTION_VIEW, "https://t.me/onlivedev".toUri())
                     context.startActivity(intent)
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -153,7 +152,8 @@ fun AboutAppScreen(
 
             OutlinedButton(
                 onClick = {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/onlive1337/Trackify/"))
+                    val intent = Intent(Intent.ACTION_VIEW,
+                        "https://github.com/onlive1337/Trackify/".toUri())
                     context.startActivity(intent)
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -174,7 +174,7 @@ fun AboutAppScreen(
 
             OutlinedButton(
                 onClick = {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/onswix"))
+                    val intent = Intent(Intent.ACTION_VIEW, "https://t.me/onswix".toUri())
                     context.startActivity(intent)
                 },
                 modifier = Modifier.fillMaxWidth(),
