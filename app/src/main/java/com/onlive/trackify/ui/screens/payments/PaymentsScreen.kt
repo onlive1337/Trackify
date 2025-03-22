@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
@@ -41,8 +42,14 @@ fun PaymentsScreen(
     val payments by paymentViewModel.allPayments.observeAsState(emptyList())
     val subscriptions by subscriptionViewModel.allActiveSubscriptions.observeAsState(emptyList())
     val pendingPaymentsCount by paymentViewModel.pendingPaymentsCount.observeAsState(0)
-
     val context = LocalContext.current
+
+    // Для диалога удаления платежа
+    var paymentToDelete by remember { mutableStateOf<Payment?>(null) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    // Для диалога редактирования платежа
+    var selectedPayment by remember { mutableStateOf<Payment?>(null) }
 
     Scaffold(
         topBar = {
@@ -54,7 +61,8 @@ fun PaymentsScreen(
             FloatingActionButton(
                 onClick = { onAddPayment(-1L) },
                 containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(
                     imageVector = Icons.Filled.Add,
@@ -110,15 +118,60 @@ fun PaymentsScreen(
                             subscriptionName = subscription?.name ?: stringResource(R.string.unknown),
                             formatAmount = { amount -> CurrencyFormatter.formatAmount(context, amount) },
                             onPaymentClick = {
+                                // Реализуем обработчик нажатия - открываем для редактирования
+                                selectedPayment = payment
+                                onAddPayment(payment.subscriptionId)
                             },
                             onConfirmClick = {
                                 paymentViewModel.confirmPayment(payment)
+                            },
+                            onDeleteClick = {
+                                paymentToDelete = payment
+                                showDeleteDialog = true
                             }
                         )
                     }
                 }
             }
         }
+    }
+
+    // Диалог подтверждения удаления платежа
+    if (showDeleteDialog && paymentToDelete != null) {
+        AlertDialog(
+            onDismissRequest = {
+                showDeleteDialog = false
+                paymentToDelete = null
+            },
+            title = { Text(stringResource(R.string.delete_payment_confirmation)) },
+            text = { Text(stringResource(R.string.delete_payment_message)) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        paymentToDelete?.let { payment ->
+                            paymentViewModel.delete(payment)
+                        }
+                        showDeleteDialog = false
+                        paymentToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(stringResource(R.string.delete))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        paymentToDelete = null
+                    }
+                ) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
     }
 }
 
@@ -177,8 +230,11 @@ fun PaymentItem(
     subscriptionName: String,
     formatAmount: (Double) -> String,
     onPaymentClick: () -> Unit,
-    onConfirmClick: () -> Unit
+    onConfirmClick: () -> Unit,
+    onDeleteClick: () -> Unit
 ) {
+    var showMenu by remember { mutableStateOf(false) }
+
     TrackifyCard(
         modifier = Modifier
             .fillMaxWidth()
@@ -204,6 +260,36 @@ fun PaymentItem(
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
+
+                IconButton(
+                    onClick = { showMenu = true }
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = "Дополнительные действия",
+                        modifier = Modifier.size(20.dp)
+                    )
+
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.edit_payment)) },
+                            onClick = {
+                                showMenu = false
+                                onPaymentClick()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.delete)) },
+                            onClick = {
+                                showMenu = false
+                                onDeleteClick()
+                            }
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))

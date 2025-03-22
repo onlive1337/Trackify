@@ -3,6 +3,7 @@ package com.onlive.trackify.ui.screens.payments
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
@@ -18,6 +19,7 @@ import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.data.model.PaymentStatus
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
+import com.onlive.trackify.utils.CurrencyFormatter
 import com.onlive.trackify.viewmodel.PaymentViewModel
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
 
@@ -33,19 +35,39 @@ fun PendingPaymentsScreen(
     val subscriptions by subscriptionViewModel.allActiveSubscriptions.observeAsState(emptyList())
     val context = LocalContext.current
 
+    // Для диалога удаления платежа
+    var paymentToDelete by remember { mutableStateOf<Payment?>(null) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    // Для подтверждения всех платежей
+    var showConfirmAllDialog by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             TrackifyTopAppBar(
                 title = stringResource(R.string.pending_payments),
                 showBackButton = true,
-                onBackClick = onNavigateBack
+                onBackClick = onNavigateBack,
+                actions = {
+                    if (pendingPayments.isNotEmpty()) {
+                        TextButton(
+                            onClick = { showConfirmAllDialog = true }
+                        ) {
+                            Text(
+                                text = stringResource(R.string.confirm_selected),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { onAddPayment(-1L) },
                 containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(
                     imageVector = Icons.Filled.Add,
@@ -81,15 +103,89 @@ fun PendingPaymentsScreen(
                         PaymentItem(
                             payment = payment,
                             subscriptionName = subscription?.name ?: stringResource(R.string.unknown),
-                            formatAmount = { amount -> com.onlive.trackify.utils.CurrencyFormatter.formatAmount(context, amount) },
-                            onPaymentClick = { /* Заглушка */ },
+                            formatAmount = { amount -> CurrencyFormatter.formatAmount(context, amount) },
+                            onPaymentClick = {
+                                // Переходим к экрану редактирования платежа
+                                onAddPayment(payment.subscriptionId)
+                            },
                             onConfirmClick = {
                                 paymentViewModel.confirmPayment(payment)
+                            },
+                            onDeleteClick = {
+                                paymentToDelete = payment
+                                showDeleteDialog = true
                             }
                         )
                     }
                 }
             }
         }
+    }
+
+    // Диалог подтверждения удаления платежа
+    if (showDeleteDialog && paymentToDelete != null) {
+        AlertDialog(
+            onDismissRequest = {
+                showDeleteDialog = false
+                paymentToDelete = null
+            },
+            title = { Text(stringResource(R.string.delete_payment_confirmation)) },
+            text = { Text(stringResource(R.string.delete_payment_message)) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        paymentToDelete?.let { payment ->
+                            paymentViewModel.delete(payment)
+                        }
+                        showDeleteDialog = false
+                        paymentToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(stringResource(R.string.delete))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        paymentToDelete = null
+                    }
+                ) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    // Диалог подтверждения всех платежей
+    if (showConfirmAllDialog) {
+        AlertDialog(
+            onDismissRequest = { showConfirmAllDialog = false },
+            title = { Text("Подтверждение платежей") },
+            text = { Text("Вы действительно хотите подтвердить все ожидающие платежи (${pendingPayments.size})?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        // Подтверждаем все платежи
+                        pendingPayments.forEach { payment ->
+                            paymentViewModel.confirmPayment(payment)
+                        }
+                        showConfirmAllDialog = false
+                    }
+                ) {
+                    Text(stringResource(R.string.confirm_selected))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showConfirmAllDialog = false }
+                ) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
     }
 }

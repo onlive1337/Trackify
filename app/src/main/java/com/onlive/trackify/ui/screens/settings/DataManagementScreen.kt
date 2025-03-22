@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -19,6 +20,9 @@ import com.onlive.trackify.utils.DataExportImportManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,6 +32,7 @@ fun DataManagementScreen(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     val dataManager = remember { DataExportImportManager(context) }
 
@@ -38,10 +43,13 @@ fun DataManagementScreen(
     var errorMessage by remember { mutableStateOf("") }
     var exportFilePath by remember { mutableStateOf("") }
 
+    var isLoading by remember { mutableStateOf(false) }
+
     val exportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/json")
     ) { uri: Uri? ->
         uri?.let {
+            isLoading = true
             coroutineScope.launch {
                 try {
                     val success = withContext(Dispatchers.IO) {
@@ -57,6 +65,8 @@ fun DataManagementScreen(
                 } catch (e: Exception) {
                     errorMessage = e.message ?: context.getString(R.string.data_export_error)
                     showErrorDialog = true
+                } finally {
+                    isLoading = false
                 }
             }
         }
@@ -66,6 +76,7 @@ fun DataManagementScreen(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         uri?.let {
+            isLoading = true
             coroutineScope.launch {
                 try {
                     val success = withContext(Dispatchers.IO) {
@@ -80,6 +91,8 @@ fun DataManagementScreen(
                 } catch (e: Exception) {
                     errorMessage = e.message ?: context.getString(R.string.data_import_error)
                     showErrorDialog = true
+                } finally {
+                    isLoading = false
                 }
             }
         }
@@ -92,64 +105,89 @@ fun DataManagementScreen(
                 showBackButton = true,
                 onBackClick = onNavigateBack
             )
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
         }
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState())
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            TrackifyCard(
-                title = stringResource(R.string.export_title)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState())
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = stringResource(R.string.export_description),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                Spacer(modifier = Modifier.height(16.dp))
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                TrackifyCard(
+                    title = stringResource(R.string.export_title)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = stringResource(R.string.export_description),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
 
-                    Button(
-                        onClick = {
-                            exportLauncher.launch("trackify_backup.json")
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(stringResource(R.string.export_button))
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(
+                            onClick = {
+                                val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+                                val dateString = dateFormat.format(Date())
+                                val fileName = "trackify_backup_$dateString.json"
+
+                                exportLauncher.launch(fileName)
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !isLoading
+                        ) {
+                            Text(stringResource(R.string.export_button))
+                        }
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-            TrackifyCard(
-                title = stringResource(R.string.import_title)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = stringResource(R.string.import_description),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                TrackifyCard(
+                    title = stringResource(R.string.import_title)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = stringResource(R.string.import_description),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                    Button(
-                        onClick = { showImportDialog = true },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(stringResource(R.string.import_button))
+                        Button(
+                            onClick = { showImportDialog = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !isLoading
+                        ) {
+                            Text(stringResource(R.string.import_button))
+                        }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(32.dp))
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .align(Alignment.Center),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
         }
     }
 
@@ -197,10 +235,23 @@ fun DataManagementScreen(
         AlertDialog(
             onDismissRequest = { showImportSuccessDialog = false },
             title = { Text(stringResource(R.string.import_success)) },
-            text = { Text(stringResource(R.string.import_success)) },
+            text = {
+                Column {
+                    Text(stringResource(R.string.import_success))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "Для применения всех изменений рекомендуется перезапустить приложение.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            },
             confirmButton = {
                 TextButton(
-                    onClick = { showImportSuccessDialog = false }
+                    onClick = {
+                        showImportSuccessDialog = false
+                        onNavigateBack()
+                    }
                 ) {
                     Text(stringResource(R.string.done))
                 }

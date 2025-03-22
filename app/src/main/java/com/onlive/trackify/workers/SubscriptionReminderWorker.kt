@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -25,10 +26,14 @@ class SubscriptionReminderWorker(
 
     private val notificationHelper = NotificationHelper(appContext)
     private val preferenceManager = PreferenceManager(appContext)
+    private val TAG = "SubscriptionReminder"
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
+            Log.d(TAG, "SubscriptionReminderWorker запущен")
+
             if (!preferenceManager.areNotificationsEnabled()) {
+                Log.d(TAG, "Уведомления отключены в настройках")
                 return@withContext Result.success()
             }
 
@@ -39,6 +44,7 @@ class SubscriptionReminderWorker(
                 ) == PackageManager.PERMISSION_GRANTED
 
                 if (!hasPermission) {
+                    Log.d(TAG, "Нет разрешения на отправку уведомлений")
                     return@withContext Result.success()
                 }
             }
@@ -46,38 +52,66 @@ class SubscriptionReminderWorker(
             val subscriptionDao = AppDatabase.getDatabase(applicationContext).subscriptionDao()
             val activeSubscriptions = subscriptionDao.getActiveSubscriptionsSync()
 
+            if (activeSubscriptions.isEmpty()) {
+                Log.d(TAG, "Активные подписки не найдены")
+                return@withContext Result.success()
+            }
+
             val today = Calendar.getInstance()
             var reminderDays = preferenceManager.getReminderDays()
 
             val inputDays = inputData.getIntArray("reminder_days")
             if (inputDays != null && inputDays.isNotEmpty()) {
                 reminderDays = inputDays.toSet()
+                Log.d(TAG, "Используются дни напоминаний из входных данных: $reminderDays")
             }
 
             if (preferenceManager.getNotificationFrequency() == NotificationFrequency.WEEKLY) {
                 if (today.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
+                    Log.d(TAG, "Сегодня не понедельник, пропускаем отправку для еженедельной частоты")
                     return@withContext Result.success()
                 }
             }
 
             if (preferenceManager.getNotificationFrequency() == NotificationFrequency.MONTHLY) {
                 if (today.get(Calendar.DAY_OF_MONTH) != 1) {
+                    Log.d(TAG, "Сегодня не первое число месяца, пропускаем отправку для ежемесячной частоты")
                     return@withContext Result.success()
                 }
             }
 
+            var notificationCount = 0
+
             for (subscription in activeSubscriptions) {
                 val nextPaymentDate = calculateNextPaymentDate(subscription.startDate, subscription.billingFrequency)
-
                 val daysUntilPayment = getDaysDifference(today.time, nextPaymentDate)
 
                 if (daysUntilPayment in reminderDays) {
                     notificationHelper.showUpcomingPaymentNotification(subscription, daysUntilPayment)
+                    notificationCount++
+                    Log.d(TAG, "Отправлено уведомление о платеже для ${subscription.name} через $daysUntilPayment дней")
+                }
+
+                subscription.endDate?.let { endDate ->
+                    if (endDate.after(today.time)) {
+                        val daysUntilExpiration = getDaysDifference(today.time, endDate)
+
+                        if (daysUntilExpiration == 0 || daysUntilExpiration == 1 ||
+                            daysUntilExpiration == 3 || daysUntilExpiration == 7 ||
+                            daysUntilExpiration == 14 || daysUntilExpiration == 30) {
+
+                            notificationHelper.showExpirationNotification(subscription, daysUntilExpiration)
+                            notificationCount++
+                            Log.d(TAG, "Отправлено уведомление об истечении для ${subscription.name} через $daysUntilExpiration дней")
+                        }
+                    }
                 }
             }
 
+            Log.d(TAG, "SubscriptionReminderWorker завершен успешно, отправлено $notificationCount уведомлений")
             Result.success()
         } catch (e: Exception) {
+            Log.e(TAG, "Ошибка в SubscriptionReminderWorker: ${e.message}", e)
             Result.failure()
         }
     }

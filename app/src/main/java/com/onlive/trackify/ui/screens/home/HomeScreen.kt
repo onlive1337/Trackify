@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.GridView
@@ -57,7 +58,8 @@ fun HomeScreen(
             FloatingActionButton(
                 onClick = onAddSubscription,
                 containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.add_subscription))
             }

@@ -14,6 +14,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
+import com.onlive.trackify.data.model.Payment
+import com.onlive.trackify.data.model.PaymentStatus
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.viewmodel.PaymentViewModel
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
@@ -32,12 +34,30 @@ fun BulkPaymentActionsScreen(
     var selectedPayments by remember { mutableStateOf<Set<Long>>(emptySet()) }
     var filterTabIndex by remember { mutableStateOf(0) }
 
+    // Состояние для диалогов
+    var showConfirmDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var showSuccessSnackbar by remember { mutableStateOf(false) }
+    var snackbarMessage by remember { mutableStateOf("") }
+    val snackbarHostState = remember { SnackbarHostState() }
+
     val filteredPayments = when (filterTabIndex) {
         0 -> allPayments
-        1 -> allPayments.filter { it.status == com.onlive.trackify.data.model.PaymentStatus.PENDING }
-        2 -> allPayments.filter { it.status == com.onlive.trackify.data.model.PaymentStatus.CONFIRMED }
-        3 -> allPayments.filter { it.status == com.onlive.trackify.data.model.PaymentStatus.MANUAL }
+        1 -> allPayments.filter { it.status == PaymentStatus.PENDING }
+        2 -> allPayments.filter { it.status == PaymentStatus.CONFIRMED }
+        3 -> allPayments.filter { it.status == PaymentStatus.MANUAL }
         else -> allPayments
+    }
+
+    // Эффект для снэкбара
+    LaunchedEffect(showSuccessSnackbar) {
+        if (showSuccessSnackbar) {
+            snackbarHostState.showSnackbar(
+                message = snackbarMessage,
+                duration = SnackbarDuration.Short
+            )
+            showSuccessSnackbar = false
+        }
     }
 
     Scaffold(
@@ -47,6 +67,9 @@ fun BulkPaymentActionsScreen(
                 showBackButton = true,
                 onBackClick = onNavigateBack
             )
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
         }
     ) { paddingValues ->
         Column(
@@ -120,29 +143,18 @@ fun BulkPaymentActionsScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Button(
-                        onClick = {
-                            selectedPayments.forEach { paymentId ->
-                                allPayments.find { it.paymentId == paymentId }?.let {
-                                    paymentViewModel.confirmPayment(it)
-                                }
-                            }
-                            selectedPayments = emptySet()
-                        },
+                        onClick = { showConfirmDialog = true },
                         modifier = Modifier.weight(1f),
                         enabled = selectedPayments.any { paymentId ->
                             allPayments.find { it.paymentId == paymentId }?.status ==
-                                    com.onlive.trackify.data.model.PaymentStatus.PENDING
+                                    PaymentStatus.PENDING
                         }
                     ) {
                         Text(stringResource(R.string.confirm_selected))
                     }
 
                     Button(
-                        onClick = {
-                            // Вместо реального удаления, просто покажем диалог
-                            // в реальном приложении здесь был бы код удаления
-                            selectedPayments = emptySet()
-                        },
+                        onClick = { showDeleteDialog = true },
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.error
@@ -250,5 +262,94 @@ fun BulkPaymentActionsScreen(
                 }
             }
         }
+    }
+
+    // Диалог подтверждения платежей
+    if (showConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showConfirmDialog = false },
+            title = { Text(stringResource(R.string.confirm_selected)) },
+            text = {
+                val pendingCount = selectedPayments.count { paymentId ->
+                    allPayments.find { it.paymentId == paymentId }?.status == PaymentStatus.PENDING
+                }
+                Text("Вы уверены, что хотите подтвердить $pendingCount платежей?")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        // Подтверждаем выбранные платежи со статусом PENDING
+                        val pendingPaymentIds = selectedPayments.filter { paymentId ->
+                            allPayments.find { it.paymentId == paymentId }?.status == PaymentStatus.PENDING
+                        }
+
+                        pendingPaymentIds.forEach { paymentId ->
+                            paymentViewModel.confirmPayment(paymentId)
+                        }
+
+                        // Показываем сообщение об успехе
+                        snackbarMessage = "Подтверждено ${pendingPaymentIds.size} платежей"
+                        showSuccessSnackbar = true
+
+                        // Закрываем диалог
+                        showConfirmDialog = false
+                    }
+                ) {
+                    Text(stringResource(R.string.confirm_selected))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showConfirmDialog = false }
+                ) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    // Диалог удаления платежей
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text(stringResource(R.string.delete_selected)) },
+            text = { Text("Вы уверены, что хотите удалить ${selectedPayments.size} платежей? Это действие нельзя отменить.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        // Удаляем выбранные платежи
+                        var deletedCount = 0
+                        selectedPayments.forEach { paymentId ->
+                            allPayments.find { it.paymentId == paymentId }?.let { payment ->
+                                paymentViewModel.delete(payment)
+                                deletedCount++
+                            }
+                        }
+
+                        // Очищаем выбранные платежи
+                        selectedPayments = emptySet()
+
+                        // Показываем сообщение об успехе
+                        snackbarMessage = "Удалено $deletedCount платежей"
+                        showSuccessSnackbar = true
+
+                        // Закрываем диалог
+                        showDeleteDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(stringResource(R.string.delete))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showDeleteDialog = false }
+                ) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
     }
 }
