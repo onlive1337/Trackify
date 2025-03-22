@@ -154,30 +154,28 @@ fun AnimatedNavItem(
                 onClick = onClick
             )
     ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp, 32.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(
-                    color = if (selected) MaterialTheme.colorScheme.primaryContainer
-                    else Color.Transparent
-                )
-                .scale(scale)
-                .padding(6.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            AnimatedContent(
-                targetState = selected,
-                transitionSpec = {
-                    (fadeIn(animationSpec = tween(200)) +
-                            scaleIn(initialScale = 0.8f, animationSpec = tween(200)))
-                        .togetherWith(
-                            fadeOut(animationSpec = tween(200)) +
-                                    scaleOut(targetScale = 1.2f, animationSpec = tween(200))
-                        )
-                },
-                label = "icon_transition"
-            ) { isSelected ->
+        AnimatedContent(
+            targetState = selected,
+            transitionSpec = {
+                fadeIn(animationSpec = tween(300)) +
+                        scaleIn(initialScale = 0.8f, animationSpec = tween(300)) togetherWith
+                        fadeOut(animationSpec = tween(300)) +
+                        scaleOut(targetScale = 0.8f, animationSpec = tween(300))
+            },
+            label = "background_transition"
+        ) { isSelected ->
+            Box(
+                modifier = Modifier
+                    .size(40.dp, 32.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(
+                        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                        else Color.Transparent
+                    )
+                    .scale(scale)
+                    .padding(6.dp),
+                contentAlignment = Alignment.Center
+            ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = label,
@@ -190,13 +188,22 @@ fun AnimatedNavItem(
 
         Spacer(modifier = Modifier.height(2.dp))
 
-        Text(
-            text = label,
-            color = if (selected) MaterialTheme.colorScheme.primary
-            else MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.labelSmall,
-            textAlign = TextAlign.Center,
-            maxLines = 1
-        )
+        AnimatedContent(
+            targetState = selected,
+            transitionSpec = {
+                fadeIn(animationSpec = tween(200)) togetherWith
+                        fadeOut(animationSpec = tween(200))
+            },
+            label = "text_transition"
+        ) { isSelected ->
+            Text(
+                text = label,
+                color = if (isSelected) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelSmall,
+                textAlign = TextAlign.Center,
+                maxLines = 1
+            )
+        }
     }
 }

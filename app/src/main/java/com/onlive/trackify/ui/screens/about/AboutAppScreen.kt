@@ -86,7 +86,7 @@ fun AboutAppScreen(
             )
 
             Text(
-                text = "Версия $versionName ($versionCode)",
+                text = stringResource(R.string.app_version) + " $versionName",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -158,13 +158,13 @@ fun AboutAppScreen(
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = Color(0xFF24292E)
+                    contentColor = MaterialTheme.colorScheme.onBackground
                 )
             ) {
                 Icon(
                     imageVector = Icons.Default.Code,
                     contentDescription = "GitHub",
-                    tint = Color(0xFF24292E)
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(text = stringResource(R.string.github))
