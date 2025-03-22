@@ -30,10 +30,10 @@ class SubscriptionReminderWorker(
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
-            Log.d(TAG, "SubscriptionReminderWorker запущен")
+            Log.d(TAG, "SubscriptionReminderWorker started")
 
             if (!preferenceManager.areNotificationsEnabled()) {
-                Log.d(TAG, "Уведомления отключены в настройках")
+                Log.d(TAG, "Notifications disabled in settings")
                 return@withContext Result.success()
             }
 
@@ -44,7 +44,7 @@ class SubscriptionReminderWorker(
                 ) == PackageManager.PERMISSION_GRANTED
 
                 if (!hasPermission) {
-                    Log.d(TAG, "Нет разрешения на отправку уведомлений")
+                    Log.d(TAG, "No permission to send notifications")
                     return@withContext Result.success()
                 }
             }
@@ -53,7 +53,7 @@ class SubscriptionReminderWorker(
             val activeSubscriptions = subscriptionDao.getActiveSubscriptionsSync()
 
             if (activeSubscriptions.isEmpty()) {
-                Log.d(TAG, "Активные подписки не найдены")
+                Log.d(TAG, "No active subscriptions found")
                 return@withContext Result.success()
             }
 
@@ -63,19 +63,19 @@ class SubscriptionReminderWorker(
             val inputDays = inputData.getIntArray("reminder_days")
             if (inputDays != null && inputDays.isNotEmpty()) {
                 reminderDays = inputDays.toSet()
-                Log.d(TAG, "Используются дни напоминаний из входных данных: $reminderDays")
+                Log.d(TAG, "Using reminder days from input data: $reminderDays")
             }
 
             if (preferenceManager.getNotificationFrequency() == NotificationFrequency.WEEKLY) {
                 if (today.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
-                    Log.d(TAG, "Сегодня не понедельник, пропускаем отправку для еженедельной частоты")
+                    Log.d(TAG, "Today is not Monday, skipping for weekly frequency")
                     return@withContext Result.success()
                 }
             }
 
             if (preferenceManager.getNotificationFrequency() == NotificationFrequency.MONTHLY) {
                 if (today.get(Calendar.DAY_OF_MONTH) != 1) {
-                    Log.d(TAG, "Сегодня не первое число месяца, пропускаем отправку для ежемесячной частоты")
+                    Log.d(TAG, "Today is not the first day of the month, skipping for monthly frequency")
                     return@withContext Result.success()
                 }
             }
@@ -89,7 +89,7 @@ class SubscriptionReminderWorker(
                 if (daysUntilPayment in reminderDays) {
                     notificationHelper.showUpcomingPaymentNotification(subscription, daysUntilPayment)
                     notificationCount++
-                    Log.d(TAG, "Отправлено уведомление о платеже для ${subscription.name} через $daysUntilPayment дней")
+                    Log.d(TAG, "Sent payment notification for ${subscription.name} in $daysUntilPayment days")
                 }
 
                 subscription.endDate?.let { endDate ->
@@ -102,16 +102,16 @@ class SubscriptionReminderWorker(
 
                             notificationHelper.showExpirationNotification(subscription, daysUntilExpiration)
                             notificationCount++
-                            Log.d(TAG, "Отправлено уведомление об истечении для ${subscription.name} через $daysUntilExpiration дней")
+                            Log.d(TAG, "Sent expiration notification for ${subscription.name} in $daysUntilExpiration days")
                         }
                     }
                 }
             }
 
-            Log.d(TAG, "SubscriptionReminderWorker завершен успешно, отправлено $notificationCount уведомлений")
+            Log.d(TAG, "SubscriptionReminderWorker completed successfully, sent $notificationCount notifications")
             Result.success()
         } catch (e: Exception) {
-            Log.e(TAG, "Ошибка в SubscriptionReminderWorker: ${e.message}", e)
+            Log.e(TAG, "Error in SubscriptionReminderWorker: ${e.message}", e)
             Result.failure()
         }
     }

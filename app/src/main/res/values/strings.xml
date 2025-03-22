@@ -168,6 +168,15 @@
     <string name="deleted_count">Удалено %d платежей</string>
     <string name="more_actions">Дополнительные действия</string>
     <string name="notes">Примечания</string>
+    <string name="import_restart_message">Для применения всех изменений рекомендуется перезапустить приложение.</string>
+    <string name="notification_channel_payment_due">Просроченные платежи</string>
+    <string name="notification_channel_payment_due_description">Уведомления о просроченных платежах по подпискам</string>
+    <string name="notification_channel_expiration">Истекающие подписки</string>
+    <string name="notification_channel_expiration_description">Уведомления об истекающих подписках</string>
+    <string name="subscription_expires_today">Подписка %1$s истекает сегодня</string>
+    <string name="subscription_expires_tomorrow">Подписка %1$s истекает завтра</string>
+    <string name="subscription_expires_days">Подписка %1$s истекает через %2$d дней</string>
+    <string name="payment_auto_generated">Автоматически создан системой</string>
 
     <string name="per_year">в год</string>
 

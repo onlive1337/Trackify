@@ -42,18 +42,18 @@ class NotificationHelper(private val context: Context) {
 
             val paymentDueChannel = NotificationChannel(
                 PAYMENT_DUE_CHANNEL_ID,
-                "Просроченные платежи",
+                context.getString(R.string.notification_channel_payment_due),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Уведомления о просроченных платежах по подпискам"
+                description = context.getString(R.string.notification_channel_payment_due_description)
             }
 
             val expirationChannel = NotificationChannel(
                 EXPIRATION_CHANNEL_ID,
-                "Истекающие подписки",
+                context.getString(R.string.notification_channel_expiration),
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = "Уведомления об истекающих подписках"
+                description = context.getString(R.string.notification_channel_expiration_description)
             }
 
             notificationManager.createNotificationChannels(
@@ -123,14 +123,14 @@ class NotificationHelper(private val context: Context) {
         )
 
         val notificationText = when {
-            daysLeft == 0 -> "Подписка ${subscription.name} истекает сегодня"
-            daysLeft == 1 -> "Подписка ${subscription.name} истекает завтра"
-            else -> "Подписка ${subscription.name} истекает через $daysLeft дней"
+            daysLeft == 0 -> context.getString(R.string.subscription_expires_today, subscription.name)
+            daysLeft == 1 -> context.getString(R.string.subscription_expires_tomorrow, subscription.name)
+            else -> context.getString(R.string.subscription_expires_days, subscription.name, daysLeft)
         }
 
         val builder = NotificationCompat.Builder(context, EXPIRATION_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_subscriptions)
-            .setContentTitle("Истекающая подписка")
+            .setContentTitle(context.getString(R.string.notification_channel_expiration))
             .setContentText(notificationText)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)

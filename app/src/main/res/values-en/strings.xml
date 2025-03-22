@@ -167,6 +167,15 @@
     <string name="deleted_count">Deleted %d payments</string>
     <string name="more_actions">More actions</string>
     <string name="notes">Notes</string>
+    <string name="import_restart_message">It is recommended to restart the application to apply all changes.</string>
+    <string name="notification_channel_payment_due">Overdue payments</string>
+    <string name="notification_channel_payment_due_description">Notifications of overdue payments on subscriptions</string>
+    <string name="notification_channel_expiration">Expiring subscriptions</string>
+    <string name="notification_channel_expiration_description">Notifications of expiring subscriptions</string>
+    <string name="subscription_expires_today">%1$s subscription expires today</string>
+    <string name="subscription_expires_tomorrow">%1$s subscription expires tomorrow</string>
+    <string name="subscription_expires_days">Subscription %1$s expires in %2$d days</string>
+    <string name="payment_auto_generated">Automatically created by the system</string>
 
     <string name="per_month">in month</string>
     <string name="per_year">in year</string>

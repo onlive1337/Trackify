@@ -240,7 +240,7 @@ fun DataManagementScreen(
                     Text(stringResource(R.string.import_success))
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        "Для применения всех изменений рекомендуется перезапустить приложение.",
+                        stringResource(R.string.import_restart_message),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
