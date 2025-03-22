@@ -35,11 +35,9 @@ fun PendingPaymentsScreen(
     val subscriptions by subscriptionViewModel.allActiveSubscriptions.observeAsState(emptyList())
     val context = LocalContext.current
 
-    // Для диалога удаления платежа
     var paymentToDelete by remember { mutableStateOf<Payment?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
-    // Для подтверждения всех платежей
     var showConfirmAllDialog by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -105,7 +103,6 @@ fun PendingPaymentsScreen(
                             subscriptionName = subscription?.name ?: stringResource(R.string.unknown),
                             formatAmount = { amount -> CurrencyFormatter.formatAmount(context, amount) },
                             onPaymentClick = {
-                                // Переходим к экрану редактирования платежа
                                 onAddPayment(payment.subscriptionId)
                             },
                             onConfirmClick = {
@@ -122,7 +119,6 @@ fun PendingPaymentsScreen(
         }
     }
 
-    // Диалог подтверждения удаления платежа
     if (showDeleteDialog && paymentToDelete != null) {
         AlertDialog(
             onDismissRequest = {
@@ -160,16 +156,14 @@ fun PendingPaymentsScreen(
         )
     }
 
-    // Диалог подтверждения всех платежей
     if (showConfirmAllDialog) {
         AlertDialog(
             onDismissRequest = { showConfirmAllDialog = false },
-            title = { Text("Подтверждение платежей") },
-            text = { Text("Вы действительно хотите подтвердить все ожидающие платежи (${pendingPayments.size})?") },
+            title = { Text(stringResource(R.string.confirm_all_payments_title)) },
+            text = { Text(stringResource(R.string.confirm_all_payments_message, pendingPayments.size)) },
             confirmButton = {
                 Button(
                     onClick = {
-                        // Подтверждаем все платежи
                         pendingPayments.forEach { payment ->
                             paymentViewModel.confirmPayment(payment)
                         }

@@ -8,21 +8,26 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.data.model.PaymentStatus
-import com.onlive.trackify.ui.components.TrackifyCard
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.CurrencyFormatter
 import com.onlive.trackify.utils.DateUtils
@@ -44,11 +49,9 @@ fun PaymentsScreen(
     val pendingPaymentsCount by paymentViewModel.pendingPaymentsCount.observeAsState(0)
     val context = LocalContext.current
 
-    // Для диалога удаления платежа
     var paymentToDelete by remember { mutableStateOf<Payment?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
-    // Для диалога редактирования платежа
     var selectedPayment by remember { mutableStateOf<Payment?>(null) }
 
     Scaffold(
@@ -118,7 +121,6 @@ fun PaymentsScreen(
                             subscriptionName = subscription?.name ?: stringResource(R.string.unknown),
                             formatAmount = { amount -> CurrencyFormatter.formatAmount(context, amount) },
                             onPaymentClick = {
-                                // Реализуем обработчик нажатия - открываем для редактирования
                                 selectedPayment = payment
                                 onAddPayment(payment.subscriptionId)
                             },
@@ -136,7 +138,6 @@ fun PaymentsScreen(
         }
     }
 
-    // Диалог подтверждения удаления платежа
     if (showDeleteDialog && paymentToDelete != null) {
         AlertDialog(
             onDismissRequest = {
@@ -224,6 +225,13 @@ fun PendingPaymentsCard(
     }
 }
 
+private data class StatusInfo(
+    val backgroundColor: Color,
+    val contentColor: Color,
+    val text: String,
+    val icon: ImageVector?
+)
+
 @Composable
 fun PaymentItem(
     payment: Payment,
@@ -235,39 +243,60 @@ fun PaymentItem(
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
-    TrackifyCard(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onPaymentClick)
+            .padding(vertical = 4.dp),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF1E2630),
+            contentColor = MaterialTheme.colorScheme.onSurface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier.padding(16.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = DateUtils.formatDate(payment.date),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = subscriptionName,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
 
-                Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = DateUtils.formatDate(payment.date),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
 
                 Text(
                     text = formatAmount(payment.amount),
                     style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
 
                 IconButton(
-                    onClick = { showMenu = true }
+                    onClick = { showMenu = true },
+                    modifier = Modifier.size(36.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Add,
-                        contentDescription = "Дополнительные действия",
-                        modifier = Modifier.size(20.dp)
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = stringResource(R.string.more_actions),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     DropdownMenu(
@@ -294,94 +323,103 @@ fun PaymentItem(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = subscriptionName,
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            PaymentStatusIndicator(
-                status = payment.status,
-                onConfirmClick = if (payment.status == PaymentStatus.PENDING) onConfirmClick else null
-            )
-
-            if (!payment.notes.isNullOrEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = payment.notes,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun PaymentStatusIndicator(
-    status: PaymentStatus,
-    onConfirmClick: (() -> Unit)? = null
-) {
-    val (backgroundColor, contentColor, icon) = when (status) {
-        PaymentStatus.PENDING -> Triple(
-            MaterialTheme.colorScheme.errorContainer,
-            MaterialTheme.colorScheme.error,
-            Icons.Filled.Warning
-        )
-        PaymentStatus.CONFIRMED -> Triple(
-            MaterialTheme.colorScheme.primaryContainer,
-            MaterialTheme.colorScheme.primary,
-            Icons.Filled.CheckCircle
-        )
-        PaymentStatus.MANUAL -> Triple(
-            MaterialTheme.colorScheme.secondaryContainer,
-            MaterialTheme.colorScheme.secondary,
-            null
-        )
-    }
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Surface(
-            color = backgroundColor,
-            contentColor = contentColor,
-            shape = MaterialTheme.shapes.small
-        ) {
             Row(
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                if (icon != null) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
+                val statusInfo = when (payment.status) {
+                    PaymentStatus.PENDING -> StatusInfo(
+                        backgroundColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.error,
+                        text = stringResource(R.string.payment_status_pending),
+                        icon = Icons.Filled.Warning
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                    PaymentStatus.CONFIRMED -> StatusInfo(
+                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.primary,
+                        text = stringResource(R.string.payment_status_confirmed),
+                        icon = Icons.Filled.CheckCircle
+                    )
+                    PaymentStatus.MANUAL -> StatusInfo(
+                        backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.secondary,
+                        text = stringResource(R.string.payment_status_manual),
+                        icon = null
+                    )
                 }
 
-                Text(
-                    text = when (status) {
-                        PaymentStatus.PENDING -> stringResource(R.string.payment_status_pending)
-                        PaymentStatus.CONFIRMED -> stringResource(R.string.payment_status_confirmed)
-                        PaymentStatus.MANUAL -> stringResource(R.string.payment_status_manual)
-                    },
-                    style = MaterialTheme.typography.labelMedium
-                )
-            }
-        }
+                Surface(
+                    color = statusInfo.backgroundColor,
+                    contentColor = statusInfo.contentColor,
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.height(28.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        statusInfo.icon?.let {
+                            Icon(
+                                imageVector = it,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                        }
 
-        if (onConfirmClick != null) {
-            Spacer(modifier = Modifier.width(8.dp))
-            TextButton(onClick = onConfirmClick) {
-                Text(stringResource(R.string.confirm_payment))
+                        Text(
+                            text = statusInfo.text,
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
+                }
+
+                if (payment.status == PaymentStatus.PENDING) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    TextButton(
+                        onClick = onConfirmClick,
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                    ) {
+                        Text(stringResource(R.string.confirm_payment))
+                    }
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                if (!payment.notes.isNullOrEmpty()) {
+                    Box {
+                        var showNotes by remember { mutableStateOf(false) }
+
+                        IconButton(onClick = { showNotes = !showNotes }) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = stringResource(R.string.notes),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        if (showNotes) {
+                            Popup(
+                                alignment = Alignment.CenterEnd,
+                                onDismissRequest = { showNotes = false }
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = MaterialTheme.colorScheme.surface,
+                                    tonalElevation = 3.dp,
+                                    shadowElevation = 3.dp
+                                ) {
+                                    Text(
+                                        text = payment.notes,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        modifier = Modifier.padding(12.dp),
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

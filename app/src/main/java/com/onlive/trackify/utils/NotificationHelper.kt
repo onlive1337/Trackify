@@ -17,9 +17,6 @@ import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.utils.CurrencyFormatter
 
-/**
- * Класс для работы с уведомлениями в приложении
- */
 class NotificationHelper(private val context: Context) {
 
     companion object {
@@ -31,14 +28,10 @@ class NotificationHelper(private val context: Context) {
         private const val TAG = "NotificationHelper"
     }
 
-    /**
-     * Создает каналы уведомлений для Android 8.0+
-     */
     fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-            // Канал для напоминаний о платежах
             val reminderChannel = NotificationChannel(
                 CHANNEL_ID,
                 context.getString(R.string.notification_channel_name),
@@ -47,7 +40,6 @@ class NotificationHelper(private val context: Context) {
                 description = context.getString(R.string.notification_channel_description)
             }
 
-            // Канал для уведомлений о просроченных платежах
             val paymentDueChannel = NotificationChannel(
                 PAYMENT_DUE_CHANNEL_ID,
                 "Просроченные платежи",
@@ -56,7 +48,6 @@ class NotificationHelper(private val context: Context) {
                 description = "Уведомления о просроченных платежах по подпискам"
             }
 
-            // Канал для уведомлений об истекающих подписках
             val expirationChannel = NotificationChannel(
                 EXPIRATION_CHANNEL_ID,
                 "Истекающие подписки",
@@ -65,16 +56,12 @@ class NotificationHelper(private val context: Context) {
                 description = "Уведомления об истекающих подписках"
             }
 
-            // Регистрируем все каналы
             notificationManager.createNotificationChannels(
                 listOf(reminderChannel, paymentDueChannel, expirationChannel)
             )
         }
     }
 
-    /**
-     * Показывает уведомление о предстоящем платеже
-     */
     fun showUpcomingPaymentNotification(subscription: Subscription, daysLeft: Int) {
         if (!checkNotificationPermission()) {
             Log.e(TAG, "Отсутствует разрешение на отправку уведомлений")
@@ -98,7 +85,6 @@ class NotificationHelper(private val context: Context) {
             else -> context.getString(R.string.notification_payment_upcoming, subscription.name, daysLeft)
         }
 
-        // Форматируем сумму платежа с валютой
         val formattedAmount = CurrencyFormatter.formatAmount(context, subscription.price)
         val notificationTextWithAmount = "$notificationText ($formattedAmount)"
 
@@ -120,9 +106,6 @@ class NotificationHelper(private val context: Context) {
         }
     }
 
-    /**
-     * Показывает уведомление об истекающей подписке
-     */
     fun showExpirationNotification(subscription: Subscription, daysLeft: Int) {
         if (!checkNotificationPermission()) return
 
@@ -155,7 +138,6 @@ class NotificationHelper(private val context: Context) {
 
         try {
             with(NotificationManagerCompat.from(context)) {
-                // Используем другой ID, чтобы не конфликтовать с уведомлениями о платежах
                 notify(subscription.subscriptionId.toInt() + 2000, builder.build())
             }
         } catch (e: SecurityException) {
@@ -163,11 +145,7 @@ class NotificationHelper(private val context: Context) {
         }
     }
 
-    /**
-     * Проверяет наличие разрешения на отправку уведомлений
-     */
     private fun checkNotificationPermission(): Boolean {
-        // Для Android 13+ нужно явное разрешение
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             return ActivityCompat.checkSelfPermission(
                 context,
@@ -177,9 +155,6 @@ class NotificationHelper(private val context: Context) {
         return true
     }
 
-    /**
-     * Отменяет уведомление
-     */
     fun cancelNotification(notificationId: Int) {
         NotificationManagerCompat.from(context).cancel(notificationId)
     }

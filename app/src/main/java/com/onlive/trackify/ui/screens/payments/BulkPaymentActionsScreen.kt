@@ -14,7 +14,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
-import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.data.model.PaymentStatus
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.viewmodel.PaymentViewModel
@@ -34,7 +33,6 @@ fun BulkPaymentActionsScreen(
     var selectedPayments by remember { mutableStateOf<Set<Long>>(emptySet()) }
     var filterTabIndex by remember { mutableStateOf(0) }
 
-    // Состояние для диалогов
     var showConfirmDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showSuccessSnackbar by remember { mutableStateOf(false) }
@@ -49,7 +47,9 @@ fun BulkPaymentActionsScreen(
         else -> allPayments
     }
 
-    // Эффект для снэкбара
+    val confirmedMessage = stringResource(R.string.confirmed_count)
+    val deletedMessage = stringResource(R.string.deleted_count)
+
     LaunchedEffect(showSuccessSnackbar) {
         if (showSuccessSnackbar) {
             snackbarHostState.showSnackbar(
@@ -264,21 +264,19 @@ fun BulkPaymentActionsScreen(
         }
     }
 
-    // Диалог подтверждения платежей
     if (showConfirmDialog) {
         AlertDialog(
             onDismissRequest = { showConfirmDialog = false },
-            title = { Text(stringResource(R.string.confirm_selected)) },
+            title = { Text(stringResource(R.string.confirm_payments_title)) },
             text = {
                 val pendingCount = selectedPayments.count { paymentId ->
                     allPayments.find { it.paymentId == paymentId }?.status == PaymentStatus.PENDING
                 }
-                Text("Вы уверены, что хотите подтвердить $pendingCount платежей?")
+                Text(stringResource(R.string.confirm_payments_message, pendingCount))
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        // Подтверждаем выбранные платежи со статусом PENDING
                         val pendingPaymentIds = selectedPayments.filter { paymentId ->
                             allPayments.find { it.paymentId == paymentId }?.status == PaymentStatus.PENDING
                         }
@@ -287,11 +285,9 @@ fun BulkPaymentActionsScreen(
                             paymentViewModel.confirmPayment(paymentId)
                         }
 
-                        // Показываем сообщение об успехе
-                        snackbarMessage = "Подтверждено ${pendingPaymentIds.size} платежей"
+                        snackbarMessage = String.format(confirmedMessage, pendingPaymentIds.size)
                         showSuccessSnackbar = true
 
-                        // Закрываем диалог
                         showConfirmDialog = false
                     }
                 ) {
@@ -308,16 +304,14 @@ fun BulkPaymentActionsScreen(
         )
     }
 
-    // Диалог удаления платежей
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
             title = { Text(stringResource(R.string.delete_selected)) },
-            text = { Text("Вы уверены, что хотите удалить ${selectedPayments.size} платежей? Это действие нельзя отменить.") },
+            text = { Text(stringResource(R.string.delete_payments_message, selectedPayments.size)) },
             confirmButton = {
                 Button(
                     onClick = {
-                        // Удаляем выбранные платежи
                         var deletedCount = 0
                         selectedPayments.forEach { paymentId ->
                             allPayments.find { it.paymentId == paymentId }?.let { payment ->
@@ -326,14 +320,11 @@ fun BulkPaymentActionsScreen(
                             }
                         }
 
-                        // Очищаем выбранные платежи
                         selectedPayments = emptySet()
 
-                        // Показываем сообщение об успехе
-                        snackbarMessage = "Удалено $deletedCount платежей"
+                        snackbarMessage = String.format(deletedMessage, deletedCount)
                         showSuccessSnackbar = true
 
-                        // Закрываем диалог
                         showDeleteDialog = false
                     },
                     colors = ButtonDefaults.buttonColors(

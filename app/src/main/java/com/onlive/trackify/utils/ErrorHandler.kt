@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import com.onlive.trackify.R
 
 class ErrorHandler private constructor(private val context: Context) {
 
@@ -27,14 +28,14 @@ class ErrorHandler private constructor(private val context: Context) {
             is String -> error
             is Exception -> getReadableErrorMessage(error)
             is Result.Error -> error.message
-            else -> "Произошла неизвестная ошибка"
+            else -> context.getString(R.string.unknown_error)
         }
 
         _errorEvent.postValue(Event(errorMessage))
     }
 
     private fun getReadableErrorMessage(e: Exception): String {
-        return e.message ?: "Произошла неизвестная ошибка"
+        return e.message ?: context.getString(R.string.unknown_error)
     }
 
     fun observeErrors(owner: LifecycleOwner, observer: (String) -> Unit) {
