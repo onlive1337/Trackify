@@ -66,6 +66,7 @@ fun SettingsScreen(
     onNavigateToCurrencySettings: () -> Unit,
     onNavigateToLanguageSettings: () -> Unit,
     onNavigateToDataManagement: () -> Unit,
+    onNavigateToAboutApp: () -> Unit,
     themeManager: ThemeManager,
     modifier: Modifier = Modifier
 ) {
@@ -94,7 +95,7 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState()),
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             TrackifyCard(
                 title = stringResource(R.string.theme_settings)
             ) {
@@ -222,7 +223,7 @@ fun SettingsScreen(
                 SettingsItem(
                     icon = Icons.Outlined.Info,
                     title = stringResource(R.string.about_app),
-                    onClick = { /* Будет добавлена навигация */ }
+                    onClick = onNavigateToAboutApp
                 )
             }
 

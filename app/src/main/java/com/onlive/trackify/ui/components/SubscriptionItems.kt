@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -40,18 +39,13 @@ fun SubscriptionListItem(
 
     val categoryColor = getCategoryColor(subscription.categoryColor, defaultColor)
 
-    val backgroundBrush = Brush.horizontalGradient(
-        colors = listOf(
-            MaterialTheme.colorScheme.surface,
-            categoryColor.copy(alpha = 0.3f)
-        )
-    )
+    val backgroundColor = categoryColor.copy(alpha = 0.15f)
 
     Card(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent
@@ -60,7 +54,7 @@ fun SubscriptionListItem(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(backgroundBrush)
+                .background(backgroundColor)
         ) {
             Row(
                 modifier = Modifier.padding(16.dp),
@@ -68,7 +62,7 @@ fun SubscriptionListItem(
             ) {
                 Box(
                     modifier = Modifier
-                        .width(6.dp)
+                        .width(8.dp)
                         .height(48.dp)
                         .background(
                             color = categoryColor,
@@ -129,12 +123,7 @@ fun SubscriptionGridItem(
 
     val categoryColor = getCategoryColor(subscription.categoryColor, defaultColor)
 
-    val backgroundBrush = Brush.verticalGradient(
-        colors = listOf(
-            MaterialTheme.colorScheme.surface,
-            categoryColor.copy(alpha = 0.2f)
-        )
-    )
+    val backgroundColor = categoryColor.copy(alpha = 0.15f)
 
     Card(
         modifier = modifier
@@ -142,7 +131,7 @@ fun SubscriptionGridItem(
             .clickable(onClick = onClick),
         shape = MaterialTheme.shapes.medium,
         border = null,
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent
         )
@@ -150,7 +139,7 @@ fun SubscriptionGridItem(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(backgroundBrush)
+                .background(backgroundColor)
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),

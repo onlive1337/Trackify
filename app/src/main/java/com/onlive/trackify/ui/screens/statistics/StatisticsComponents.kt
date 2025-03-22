@@ -12,14 +12,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.onlive.trackify.R
 import com.onlive.trackify.ui.components.TrackifyCard
 import com.onlive.trackify.ui.components.charts.BarChart
 import com.onlive.trackify.ui.components.charts.BarChartData
-import com.onlive.trackify.ui.components.charts.PieChart
-import com.onlive.trackify.ui.components.charts.PieChartData
+import com.onlive.trackify.ui.components.charts.CategorySpendingBar
 import com.onlive.trackify.viewmodel.StatisticsViewModel
 
 @Composable
@@ -81,66 +79,51 @@ fun CategorySpendingCard(
     formatAmount: (Double) -> String,
     modifier: Modifier = Modifier
 ) {
-    val pieChartData = categories.map { category ->
-        PieChartData(
-            value = category.amount,
-            color = try {
-                Color(android.graphics.Color.parseColor(category.colorCode))
-            } catch (e: Exception) {
-                Color.Gray
-            },
-            label = category.categoryName
-        )
-    }
-
     TrackifyCard(
-        title = "Расходы по категориям",
+        title = stringResource(R.string.spending_by_category),
         modifier = modifier
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp),
+                .padding(16.dp)
         ) {
-            Box(
+            Row(
                 modifier = Modifier
-                    .weight(0.4f)
-                    .aspectRatio(1f)
-                    .padding(8.dp),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                PieChart(
-                    data = pieChartData,
-                    centerText = "$formattedTotalAmount\n$perMonthText"
+                Text(
+                    text = stringResource(R.string.total_category),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Text(
+                    text = formattedTotalAmount,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Text(
+                    text = perMonthText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
-            Column(
-                modifier = Modifier
-                    .weight(0.6f)
-                    .padding(start = 8.dp)
-            ) {
-                categories.take(5).forEach { category ->
-                    CategorySpendingItem(
-                        categoryName = category.categoryName,
-                        amount = category.amount,
-                        percentage = (category.amount / totalAmount * 100).toInt(),
-                        colorCode = category.colorCode,
-                        formattedAmount = formatAmount(category.amount)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-
-                if (categories.size > 5) {
-                    Text(
-                        text = "... и ещё ${categories.size - 5}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
+            CategorySpendingBar(
+                categories = categories,
+                totalAmount = totalAmount,
+                formatAmount = formatAmount
+            )
         }
     }
 }

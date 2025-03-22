@@ -71,6 +71,7 @@
     <string name="yearly_type">Yearly (per month)</string>
     <string name="no_data">No data to display</string>
     <string name="total">total</string>
+    <string name="total_category">Total:</string>
 
     <string name="theme_settings">Theme settings</string>
     <string name="system_theme">System theme</string>
@@ -123,8 +124,8 @@
     <string name="data_management">Data management</string>
     <string name="export_import_data">Export and import data</string>
     <string name="about_app">About app</string>
-    <string name="app_version">Version 1.0.0</string>
-    <string name="app_description">Application for tracking subscriptions</string>
+    <string name="app_version">Version</string>
+    <string name="app_description">Trackify helps you track your subscriptions and recurring payments. Keep track of your expenses, receive notifications of upcoming payments and analyse your spending by category.</string>
     <string name="export_data">Export data</string>
     <string name="import_data">Import data</string>
     <string name="export_description">Save all application data to a JSON file. This will allow you to restore your data if necessary or transfer it to another device.</string>
@@ -134,6 +135,11 @@
     <string name="data_export_error">Error when exporting data</string>
     <string name="data_exported_success">Data successfully exported to %1$s</string>
     <string name="default_file_name">file</string>
+    <string name="links">Useful links</string>
+    <string name="telegram">Telegram</string>
+    <string name="github">Github</string>
+    <string name="report_error">Report an error</string>
+    <string name="credits">© 2025 Trackify\nAll rights reserved</string>
 
     <string name="upcoming_payments">Upcoming payments</string>
     <string name="today">Today</string>

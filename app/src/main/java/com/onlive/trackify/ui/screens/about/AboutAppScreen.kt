@@ -104,7 +104,7 @@ fun AboutAppScreen(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
-                        text = "О приложении",
+                        text = stringResource(R.string.about_app),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -112,9 +112,7 @@ fun AboutAppScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Trackify помогает отслеживать ваши подписки и регулярные платежи. " +
-                                "Следите за расходами, получайте уведомления о предстоящих платежах и " +
-                                "анализируйте свои траты по категориям.",
+                        text = stringResource(R.string.app_description),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
@@ -124,7 +122,7 @@ fun AboutAppScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Полезные ссылки",
+                text = stringResource(R.string.links),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
@@ -134,7 +132,7 @@ fun AboutAppScreen(
 
             OutlinedButton(
                 onClick = {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/trackify_app"))
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/onlivedev"))
                     context.startActivity(intent)
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -148,14 +146,14 @@ fun AboutAppScreen(
                     tint = Color(0xFF0088CC)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "Telegram канал")
+                Text(text = stringResource(R.string.telegram))
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedButton(
                 onClick = {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/username/trackify"))
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/onlive1337/Trackify/"))
                     context.startActivity(intent)
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -169,18 +167,15 @@ fun AboutAppScreen(
                     tint = Color(0xFF24292E)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "Исходный код на GitHub")
+                Text(text = stringResource(R.string.github))
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedButton(
                 onClick = {
-                    val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                        data = Uri.parse("mailto:support@trackify.app")
-                        putExtra(Intent.EXTRA_SUBJECT, "Trackify: Отчет об ошибке")
-                    }
-                    context.startActivity(Intent.createChooser(emailIntent, "Отправить отчет об ошибке"))
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/onswix"))
+                    context.startActivity(intent)
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.outlinedButtonColors(
@@ -193,13 +188,13 @@ fun AboutAppScreen(
                     tint = MaterialTheme.colorScheme.error
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "Сообщить об ошибке")
+                Text(text = stringResource(R.string.report_error))
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "© 2023-2025 Trackify App Team\nВсе права защищены",
+                text = stringResource(R.string.credits),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center

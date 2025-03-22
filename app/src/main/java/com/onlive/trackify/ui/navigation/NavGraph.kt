@@ -1,5 +1,7 @@
 package com.onlive.trackify.ui.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -154,6 +156,7 @@ class NavigationActions(navController: NavHostController) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.P)
 @Composable
 fun TrackifyNavGraph(
     modifier: Modifier = Modifier,
@@ -196,6 +199,7 @@ fun TrackifyNavGraph(
                 onNavigateToCurrencySettings = navigationActions.navigateToCurrencySettings,
                 onNavigateToLanguageSettings = navigationActions.navigateToLanguageSettings,
                 onNavigateToDataManagement = navigationActions.navigateToDataManagement,
+                onNavigateToAboutApp = navigationActions.navigateToAboutApp,
                 themeManager = themeManager ?: ThemeManager(LocalContext.current)
             )
         }

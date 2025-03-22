@@ -72,6 +72,7 @@
     <string name="no_data">Нет данных для отображения</string>
     <string name="total">всего</string>
     <string name="per_month">в месяц</string>
+    <string name="total_category">Всего:</string>
 
     <string name="theme_settings">Настройки темы</string>
     <string name="system_theme">Системная тема</string>
@@ -124,8 +125,7 @@
     <string name="data_management">Управление данными</string>
     <string name="export_import_data">Экспорт и импорт данных</string>
     <string name="about_app">О приложении</string>
-    <string name="app_version">Версия 1.0.0</string>
-    <string name="app_description">Приложение для отслеживания подписок</string>
+    <string name="app_version">Версия</string>
     <string name="export_data">Экспортировать данные</string>
     <string name="import_data">Импортировать данные</string>
     <string name="export_description">Сохраните все данные приложения в JSON файл. Это позволит вам восстановить данные в случае необходимости или перенести их на другое устройство.</string>
@@ -135,6 +135,12 @@
     <string name="data_export_error">Ошибка при экспорте данных</string>
     <string name="data_exported_success">Данные успешно экспортированы в %1$s</string>
     <string name="default_file_name">файл</string>
+    <string name="app_description">Trackify помогает отслеживать ваши подписки и регулярные платежи. Следите за расходами, получайте уведомления о предстоящих платежах ианализируйте свои траты по категориям.</string>\
+    <string name="links">Полезные ссылки</string>
+    <string name="telegram">Telegram</string>
+    <string name="github">Github</string>
+    <string name="report_error">Сообщить об ошибке</string>
+    <string name="credits">© 2025 Trackify\nВсе права защищены</string>
 
     <string name="upcoming_payments">Предстоящие платежи</string>
     <string name="today">Сегодня</string>
