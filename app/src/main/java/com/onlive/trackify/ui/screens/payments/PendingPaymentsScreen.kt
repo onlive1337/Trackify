@@ -27,7 +27,7 @@ import com.onlive.trackify.viewmodel.SubscriptionViewModel
 @Composable
 fun PendingPaymentsScreen(
     onNavigateBack: () -> Unit,
-    onAddPayment: (Long) -> Unit,
+    onAddPayment: (Long, Long) -> Unit,
     paymentViewModel: PaymentViewModel = viewModel(),
     subscriptionViewModel: SubscriptionViewModel = viewModel()
 ) {
@@ -62,7 +62,7 @@ fun PendingPaymentsScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { onAddPayment(-1L) },
+                onClick = { onAddPayment(-1L, -1L) },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = RoundedCornerShape(16.dp)
@@ -103,7 +103,7 @@ fun PendingPaymentsScreen(
                             subscriptionName = subscription?.name ?: stringResource(R.string.unknown),
                             formatAmount = { amount -> CurrencyFormatter.formatAmount(context, amount) },
                             onPaymentClick = {
-                                onAddPayment(payment.subscriptionId)
+                                onAddPayment(payment.subscriptionId, payment.paymentId)
                             },
                             onConfirmClick = {
                                 paymentViewModel.confirmPayment(payment)

@@ -37,7 +37,7 @@ import com.onlive.trackify.viewmodel.SubscriptionViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PaymentsScreen(
-    onAddPayment: (Long) -> Unit,
+    onAddPayment: (Long, Long) -> Unit,
     onNavigateToBulkActions: () -> Unit = {},
     onNavigateToPendingPayments: () -> Unit = {},
     modifier: Modifier = Modifier,
@@ -62,7 +62,7 @@ fun PaymentsScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { onAddPayment(-1L) },
+                onClick = { onAddPayment(-1L, -1L) },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = RoundedCornerShape(16.dp)
@@ -122,7 +122,7 @@ fun PaymentsScreen(
                             formatAmount = { amount -> CurrencyFormatter.formatAmount(context, amount) },
                             onPaymentClick = {
                                 selectedPayment = payment
-                                onAddPayment(payment.subscriptionId)
+                                onAddPayment(payment.subscriptionId, payment.paymentId)
                             },
                             onConfirmClick = {
                                 paymentViewModel.confirmPayment(payment)

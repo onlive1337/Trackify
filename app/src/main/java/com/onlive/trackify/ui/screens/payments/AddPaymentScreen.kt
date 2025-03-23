@@ -29,11 +29,19 @@ import java.util.*
 @Composable
 fun AddPaymentScreen(
     subscriptionId: Long = -1L,
+    paymentId: Long = -1L,
     onNavigateBack: () -> Unit,
     paymentViewModel: PaymentViewModel = viewModel(),
     subscriptionViewModel: SubscriptionViewModel = viewModel()
 ) {
     val subscriptions by subscriptionViewModel.allActiveSubscriptions.observeAsState(emptyList())
+    val allPayments by paymentViewModel.allPayments.observeAsState(emptyList())
+
+    val existingPayment = remember(allPayments, paymentId) {
+        allPayments.find { it.paymentId == paymentId }
+    }
+
+    val isEditing = paymentId != -1L && existingPayment != null
 
     var selectedSubscriptionId by remember { mutableStateOf(subscriptionId) }
     var amount by remember { mutableStateOf("") }
@@ -44,8 +52,17 @@ fun AddPaymentScreen(
     var isAmountError by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
 
+    LaunchedEffect(existingPayment) {
+        existingPayment?.let {
+            selectedSubscriptionId = it.subscriptionId
+            amount = it.amount.toString()
+            notes = it.notes ?: ""
+            paymentDate = it.date
+        }
+    }
+
     LaunchedEffect(subscriptionId, subscriptions) {
-        if (subscriptionId != -1L && subscriptions.any { it.subscriptionId == subscriptionId }) {
+        if (subscriptionId != -1L && !isEditing && subscriptions.any { it.subscriptionId == subscriptionId }) {
             selectedSubscriptionId = subscriptionId
         }
     }
@@ -53,7 +70,7 @@ fun AddPaymentScreen(
     Scaffold(
         topBar = {
             TrackifyTopAppBar(
-                title = stringResource(R.string.add_payment),
+                title = stringResource(if (isEditing) R.string.edit_payment else R.string.add_payment),
                 showBackButton = true,
                 onBackClick = onNavigateBack
             )
@@ -159,15 +176,24 @@ fun AddPaymentScreen(
                         return@Button
                     }
 
-                    val payment = Payment(
-                        subscriptionId = selectedSubscriptionId,
-                        amount = amountValue,
-                        date = paymentDate,
-                        notes = notes.takeIf { it.isNotEmpty() },
-                        status = PaymentStatus.MANUAL
-                    )
-
-                    paymentViewModel.insert(payment)
+                    if (isEditing && existingPayment != null) {
+                        val updatedPayment = existingPayment.copy(
+                            subscriptionId = selectedSubscriptionId,
+                            amount = amountValue,
+                            date = paymentDate,
+                            notes = notes.takeIf { it.isNotEmpty() }
+                        )
+                        paymentViewModel.update(updatedPayment)
+                    } else {
+                        val payment = Payment(
+                            subscriptionId = selectedSubscriptionId,
+                            amount = amountValue,
+                            date = paymentDate,
+                            notes = notes.takeIf { it.isNotEmpty() },
+                            status = PaymentStatus.MANUAL
+                        )
+                        paymentViewModel.insert(payment)
+                    }
                     onNavigateBack()
                 },
                 modifier = Modifier.fillMaxWidth()

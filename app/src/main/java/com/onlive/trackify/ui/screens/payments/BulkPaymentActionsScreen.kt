@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
@@ -81,22 +82,49 @@ fun BulkPaymentActionsScreen(
                 Tab(
                     selected = filterTabIndex == 0,
                     onClick = { filterTabIndex = 0 },
-                    text = { Text(stringResource(R.string.all_payments)) }
+                    text = {
+                        Text(
+                            text = stringResource(R.string.all),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 )
+
                 Tab(
                     selected = filterTabIndex == 1,
                     onClick = { filterTabIndex = 1 },
-                    text = { Text(stringResource(R.string.payments_pending_confirmation)) }
+                    text = {
+                        Text(
+                            text = stringResource(R.string.payment_status_pending),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 )
+
                 Tab(
                     selected = filterTabIndex == 2,
                     onClick = { filterTabIndex = 2 },
-                    text = { Text(stringResource(R.string.confirmed_payments)) }
+                    text = {
+                        Text(
+                            text = stringResource(R.string.confirmed_payments),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 )
+
                 Tab(
                     selected = filterTabIndex == 3,
                     onClick = { filterTabIndex = 3 },
-                    text = { Text(stringResource(R.string.manual_payments)) }
+                    text = {
+                        Text(
+                            text = stringResource(R.string.manual_payments),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 )
             }
 

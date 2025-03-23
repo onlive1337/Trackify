@@ -41,10 +41,9 @@ sealed class Screen(val route: String) {
 
     object AddSubscription : Screen("add_subscription")
 
-    object AddPayment : Screen("add_payment?subscriptionId={subscriptionId}") {
-        fun createRoute(subscriptionId: Long = -1L) =
-            if (subscriptionId != -1L) "add_payment?subscriptionId=$subscriptionId"
-            else "add_payment"
+    object AddPayment : Screen("add_payment?subscriptionId={subscriptionId}&paymentId={paymentId}") {
+        fun createRoute(subscriptionId: Long = -1L, paymentId: Long = -1L) =
+            "add_payment?subscriptionId=$subscriptionId&paymentId=$paymentId"
     }
 
     object CategoryManagement : Screen("category_management")
@@ -107,8 +106,8 @@ class NavigationActions(navController: NavHostController) {
         navController.navigate(Screen.SubscriptionDetail.createRoute(subscriptionId))
     }
 
-    val navigateToAddPayment: (Long) -> Unit = { subscriptionId ->
-        navController.navigate(Screen.AddPayment.createRoute(subscriptionId))
+    val navigateToAddPayment: (Long, Long) -> Unit = { subscriptionId, paymentId ->
+        navController.navigate(Screen.AddPayment.createRoute(subscriptionId, paymentId))
     }
 
     val navigateToCategoryManagement: () -> Unit = {
@@ -214,7 +213,7 @@ fun TrackifyNavGraph(
             SubscriptionDetailScreen(
                 subscriptionId = subscriptionId,
                 onNavigateBack = navigationActions.navigateBack,
-                onAddPayment = { navigationActions.navigateToAddPayment(subscriptionId) }
+                onAddPayment = { navigationActions.navigateToAddPayment(subscriptionId, -1L) }
             )
         }
 
@@ -232,12 +231,18 @@ fun TrackifyNavGraph(
                 navArgument("subscriptionId") {
                     type = NavType.LongType
                     defaultValue = -1L
+                },
+                navArgument("paymentId") {
+                    type = NavType.LongType
+                    defaultValue = -1L
                 }
             )
         ) { entry ->
             val subscriptionId = entry.arguments?.getLong("subscriptionId") ?: -1L
+            val paymentId = entry.arguments?.getLong("paymentId") ?: -1L
             AddPaymentScreen(
                 subscriptionId = subscriptionId,
+                paymentId = paymentId,
                 onNavigateBack = navigationActions.navigateBack
             )
         }
@@ -305,7 +310,9 @@ fun TrackifyNavGraph(
         composable(Screen.PendingPayments.route) {
             PendingPaymentsScreen(
                 onNavigateBack = navigationActions.navigateBack,
-                onAddPayment = navigationActions.navigateToAddPayment
+                onAddPayment = { subscriptionId, paymentId ->
+                    navigationActions.navigateToAddPayment(subscriptionId, paymentId)
+                }
             )
         }
 
