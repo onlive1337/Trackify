@@ -1,6 +1,7 @@
 package com.onlive.trackify.utils
 
 import android.content.Context
+import android.util.Log
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
@@ -12,6 +13,7 @@ import java.util.concurrent.TimeUnit
 class NotificationScheduler(private val context: Context) {
 
     companion object {
+        private const val TAG = "NotificationScheduler"
         private const val REMINDER_WORK_NAME = "subscription_reminders"
         private const val DAILY_REMINDER_WORK = "daily_subscription_reminder"
         private const val WEEKLY_REMINDER_WORK = "weekly_subscription_reminder"
@@ -22,9 +24,11 @@ class NotificationScheduler(private val context: Context) {
     private val preferenceManager = PreferenceManager(context)
 
     fun rescheduleNotifications() {
+        Log.d(TAG, "Rescheduling notifications")
         cancelAllReminders()
 
         if (!preferenceManager.areNotificationsEnabled()) {
+            Log.d(TAG, "Notifications disabled in settings")
             return
         }
 
@@ -36,7 +40,8 @@ class NotificationScheduler(private val context: Context) {
         }
     }
 
-    private fun cancelAllReminders() {
+    fun cancelAllReminders() {
+        Log.d(TAG, "Cancelling all reminders")
         WorkManager.getInstance(context).apply {
             cancelUniqueWork(DAILY_REMINDER_WORK)
             cancelUniqueWork(WEEKLY_REMINDER_WORK)
@@ -47,6 +52,7 @@ class NotificationScheduler(private val context: Context) {
     }
 
     private fun scheduleDailyReminder() {
+        Log.d(TAG, "Scheduling daily reminders")
         val (hour, minute) = preferenceManager.getNotificationTime()
         val now = Calendar.getInstance()
         val targetTime = Calendar.getInstance().apply {
@@ -73,9 +79,12 @@ class NotificationScheduler(private val context: Context) {
             ExistingPeriodicWorkPolicy.UPDATE,
             reminderWorkRequest
         )
+
+        Log.d(TAG, "Daily reminder scheduled for ${hour}:${minute}, initial delay: ${initialDelay/1000/60} minutes")
     }
 
     private fun scheduleWeeklyReminder() {
+        Log.d(TAG, "Scheduling weekly reminders")
         val (hour, minute) = preferenceManager.getNotificationTime()
         val now = Calendar.getInstance()
         val targetTime = Calendar.getInstance().apply {
@@ -104,9 +113,12 @@ class NotificationScheduler(private val context: Context) {
             ExistingPeriodicWorkPolicy.UPDATE,
             reminderWorkRequest
         )
+
+        Log.d(TAG, "Weekly reminder scheduled for Monday ${hour}:${minute}")
     }
 
     private fun scheduleMonthlyReminder() {
+        Log.d(TAG, "Scheduling monthly reminders")
         val (hour, minute) = preferenceManager.getNotificationTime()
         val now = Calendar.getInstance()
         val targetTime = Calendar.getInstance().apply {
@@ -135,12 +147,16 @@ class NotificationScheduler(private val context: Context) {
             ExistingPeriodicWorkPolicy.UPDATE,
             reminderWorkRequest
         )
+
+        Log.d(TAG, "Monthly reminder scheduled for 1st day ${hour}:${minute}")
     }
 
     private fun scheduleCustomReminder() {
+        Log.d(TAG, "Scheduling custom reminders")
         val reminderDays = preferenceManager.getReminderDays()
 
         if (reminderDays.isEmpty()) {
+            Log.d(TAG, "No reminder days selected, using daily reminders")
             scheduleDailyReminder()
             return
         }
@@ -176,5 +192,7 @@ class NotificationScheduler(private val context: Context) {
             ExistingPeriodicWorkPolicy.UPDATE,
             reminderWorkRequest
         )
+
+        Log.d(TAG, "Custom reminders scheduled with selected days: ${reminderDays.joinToString()}")
     }
 }

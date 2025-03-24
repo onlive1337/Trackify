@@ -60,6 +60,11 @@ class SubscriptionReminderWorker(
             val today = Calendar.getInstance()
             var reminderDays = preferenceManager.getReminderDays()
 
+            if (reminderDays.isEmpty()) {
+                reminderDays = setOf(0, 1, 3, 7)
+                Log.d(TAG, "No reminder days set, using defaults")
+            }
+
             val inputDays = inputData.getIntArray("reminder_days")
             if (inputDays != null && inputDays.isNotEmpty()) {
                 reminderDays = inputDays.toSet()
@@ -83,6 +88,11 @@ class SubscriptionReminderWorker(
             var notificationCount = 0
 
             for (subscription in activeSubscriptions) {
+                if (subscription.endDate != null && subscription.endDate.before(today.time)) {
+                    Log.d(TAG, "Subscription ${subscription.name} has expired, skipping")
+                    continue
+                }
+
                 val nextPaymentDate = calculateNextPaymentDate(subscription.startDate, subscription.billingFrequency)
                 val daysUntilPayment = getDaysDifference(today.time, nextPaymentDate)
 
@@ -122,7 +132,7 @@ class SubscriptionReminderWorker(
 
         val today = Calendar.getInstance()
 
-        while (calendar.before(today)) {
+        while (calendar.before(today) || calendar.timeInMillis == today.timeInMillis) {
             when (frequency) {
                 BillingFrequency.MONTHLY -> calendar.add(Calendar.MONTH, 1)
                 BillingFrequency.YEARLY -> calendar.add(Calendar.YEAR, 1)
@@ -133,7 +143,7 @@ class SubscriptionReminderWorker(
     }
 
     private fun getDaysDifference(date1: Date, date2: Date): Int {
-        val diff = date2.time - date1.time
-        return TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS).toInt()
+        val diffMillis = date2.time - date1.time
+        return TimeUnit.DAYS.convert(diffMillis, TimeUnit.MILLISECONDS).toInt()
     }
 }

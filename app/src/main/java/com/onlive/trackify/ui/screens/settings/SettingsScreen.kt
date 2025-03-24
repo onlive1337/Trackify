@@ -1,6 +1,10 @@
 package com.onlive.trackify.ui.screens.settings
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
+import android.provider.Settings
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -17,9 +21,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.onlive.trackify.R
 import com.onlive.trackify.ui.components.TrackifyCard
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
+import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.ThemeManager
 
@@ -156,11 +162,30 @@ fun SettingsScreen(
                             modifier = Modifier.weight(1f)
                         )
 
+                        val notificationScheduler = remember { NotificationScheduler(context) }
                         Switch(
                             checked = notificationsEnabled,
                             onCheckedChange = {
                                 notificationsEnabled = it
                                 preferenceManager.setNotificationsEnabled(it)
+                                if (it) {
+                                    notificationScheduler.rescheduleNotifications()
+
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                        if (ContextCompat.checkSelfPermission(
+                                                context,
+                                                Manifest.permission.POST_NOTIFICATIONS
+                                            ) != PackageManager.PERMISSION_GRANTED) {
+
+                                            val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                                                putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                                            }
+                                            context.startActivity(intent)
+                                        }
+                                    }
+                                } else {
+                                    notificationScheduler.cancelAllReminders()
+                                }
                             }
                         )
                     }

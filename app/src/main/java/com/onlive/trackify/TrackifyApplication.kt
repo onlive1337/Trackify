@@ -10,6 +10,7 @@ import com.onlive.trackify.data.database.DatabaseInitializer
 import com.onlive.trackify.utils.ErrorHandler
 import com.onlive.trackify.utils.MemoryUtils
 import com.onlive.trackify.utils.NotificationHelper
+import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PaymentScheduler
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.ThemeManager
@@ -53,6 +54,11 @@ class TrackifyApplication : Application(), Configuration.Provider {
 
         notificationHelper = NotificationHelper(this)
         notificationHelper.createNotificationChannel()
+
+        val notificationScheduler = NotificationScheduler(this)
+        if (preferenceManager.areNotificationsEnabled()) {
+            notificationScheduler.rescheduleNotifications()
+        }
 
         setupSubscriptionReminders()
         setupDatabaseCleanup()

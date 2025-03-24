@@ -9,7 +9,9 @@ import com.onlive.trackify.data.database.AppDatabase
 import com.onlive.trackify.data.model.BillingFrequency
 import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.data.model.PaymentStatus
+import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.utils.NotificationHelper
+import com.onlive.trackify.utils.PreferenceManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Calendar
@@ -24,13 +26,19 @@ class PaymentGenerationWorker(
     private val subscriptionDao = database.subscriptionDao()
     private val paymentDao = database.paymentDao()
     private val notificationHelper = NotificationHelper(appContext)
+    private val preferenceManager = PreferenceManager(appContext)
     private val TAG = "PaymentGeneration"
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
-            Log.d(TAG, "PaymentGenerationWorker запущен")
+            Log.d(TAG, "PaymentGenerationWorker started")
 
             val activeSubscriptions = subscriptionDao.getActiveSubscriptionsSync()
+            if (activeSubscriptions.isEmpty()) {
+                Log.d(TAG, "No active subscriptions to process")
+                return@withContext Result.success()
+            }
+
             var generatedCount = 0
             var skippedCount = 0
             var errorCount = 0
@@ -38,7 +46,7 @@ class PaymentGenerationWorker(
             for (subscription in activeSubscriptions) {
                 try {
                     if (subscription.endDate != null && subscription.endDate.before(Date())) {
-                        Log.d(TAG, "Подписка ${subscription.name} истекла, пропускаем")
+                        Log.d(TAG, "Subscription ${subscription.name} has expired, skipping")
                         skippedCount++
                         continue
                     }
@@ -67,27 +75,73 @@ class PaymentGenerationWorker(
                         val paymentId = paymentDao.insert(newPayment)
                         generatedCount++
 
-                        Log.d(TAG, "Создан платеж для ${subscription.name} на дату ${nextPaymentDate}, ID: $paymentId")
+                        Log.d(TAG, "Created payment for ${subscription.name} on date ${nextPaymentDate}, ID: $paymentId")
 
-                        if (isSameDay(nextPaymentDate, today) || nextPaymentDate.before(today)) {
+                        if (preferenceManager.areNotificationsEnabled() &&
+                            (isSameDay(nextPaymentDate, today) || nextPaymentDate.before(today))) {
                             notificationHelper.showUpcomingPaymentNotification(subscription, 0)
-                            Log.d(TAG, "Отправлено уведомление о платеже для ${subscription.name}")
+                            Log.d(TAG, "Sent payment notification for ${subscription.name}")
                         }
                     } else {
                         skippedCount++
-                        Log.d(TAG, "Платеж для ${subscription.name} не требуется или уже создан")
+                        Log.d(TAG, "Payment for ${subscription.name} not needed or already exists")
                     }
+
+                    generateFuturePayments(subscription)
+
                 } catch (e: Exception) {
                     errorCount++
-                    Log.e(TAG, "Ошибка при обработке подписки ${subscription.name}: ${e.message}", e)
+                    Log.e(TAG, "Error processing subscription ${subscription.name}: ${e.message}", e)
                 }
             }
 
-            Log.d(TAG, "PaymentGenerationWorker завершен: создано $generatedCount платежей, пропущено $skippedCount, ошибок $errorCount")
+            Log.d(TAG, "PaymentGenerationWorker finished: created $generatedCount payments, skipped $skippedCount, errors $errorCount")
             Result.success()
         } catch (e: Exception) {
-            Log.e(TAG, "Критическая ошибка в PaymentGenerationWorker: ${e.message}", e)
+            Log.e(TAG, "Critical error in PaymentGenerationWorker: ${e.message}", e)
             Result.failure()
+        }
+    }
+
+    private suspend fun generateFuturePayments(subscription: Subscription) {
+        try {
+            val lastPayment = paymentDao.getLastPaymentForSubscriptionSync(subscription.subscriptionId)
+
+            if (lastPayment == null) {
+                Log.d(TAG, "No payments for ${subscription.name}, skipping future payment generation")
+                return
+            }
+
+            var baseDate = lastPayment.date
+
+            for (i in 1..3) {
+                val futurePaymentDate = calculateNextPaymentDate(baseDate, subscription.billingFrequency)
+
+                if (subscription.endDate != null && futurePaymentDate.after(subscription.endDate)) {
+                    Log.d(TAG, "Future payment ${i} for ${subscription.name} exceeds subscription end date")
+                    break
+                }
+
+                if (!isPaymentAlreadyCreated(subscription.subscriptionId, futurePaymentDate)) {
+                    val futurePayment = Payment(
+                        subscriptionId = subscription.subscriptionId,
+                        amount = subscription.price,
+                        date = futurePaymentDate,
+                        status = PaymentStatus.PENDING,
+                        autoGenerated = true,
+                        notes = "${applicationContext.getString(R.string.payment_auto_generated)} (future)"
+                    )
+
+                    paymentDao.insert(futurePayment)
+                    Log.d(TAG, "Created future payment #${i} for ${subscription.name} on date ${futurePaymentDate}")
+                } else {
+                    Log.d(TAG, "Future payment #${i} for ${subscription.name} already exists")
+                }
+
+                baseDate = futurePaymentDate
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error generating future payments for ${subscription.name}: ${e.message}", e)
         }
     }
 

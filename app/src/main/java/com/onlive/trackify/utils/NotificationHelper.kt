@@ -15,7 +15,6 @@ import androidx.core.app.NotificationManagerCompat
 import com.onlive.trackify.MainActivity
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Subscription
-import com.onlive.trackify.utils.CurrencyFormatter
 
 class NotificationHelper(private val context: Context) {
 
@@ -59,13 +58,21 @@ class NotificationHelper(private val context: Context) {
             notificationManager.createNotificationChannels(
                 listOf(reminderChannel, paymentDueChannel, expirationChannel)
             )
+
+            Log.d(TAG, "Notification channels created")
         }
     }
 
     fun showUpcomingPaymentNotification(subscription: Subscription, daysLeft: Int) {
         if (!checkNotificationPermission()) {
-            Log.e(TAG, "Отсутствует разрешение на отправку уведомлений")
+            Log.e(TAG, "Missing notification permission")
             return
+        }
+
+        val pendingIntentFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        } else {
+            PendingIntent.FLAG_UPDATE_CURRENT
         }
 
         val intent = Intent(context, MainActivity::class.java).apply {
@@ -75,8 +82,7 @@ class NotificationHelper(private val context: Context) {
         }
 
         val pendingIntent = PendingIntent.getActivity(
-            context, 0, intent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            context, 0, intent, pendingIntentFlags
         )
 
         val notificationText = when {
@@ -101,13 +107,20 @@ class NotificationHelper(private val context: Context) {
             with(NotificationManagerCompat.from(context)) {
                 notify(subscription.subscriptionId.toInt(), builder.build())
             }
+            Log.d(TAG, "Payment notification sent for ${subscription.name}")
         } catch (e: SecurityException) {
-            Log.e(TAG, "Ошибка при отправке уведомления: ${e.message}")
+            Log.e(TAG, "Error sending notification: ${e.message}")
         }
     }
 
     fun showExpirationNotification(subscription: Subscription, daysLeft: Int) {
         if (!checkNotificationPermission()) return
+
+        val pendingIntentFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        } else {
+            PendingIntent.FLAG_UPDATE_CURRENT
+        }
 
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -119,7 +132,7 @@ class NotificationHelper(private val context: Context) {
             context,
             subscription.subscriptionId.toInt() + 1000,
             intent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            pendingIntentFlags
         )
 
         val notificationText = when {
@@ -140,8 +153,9 @@ class NotificationHelper(private val context: Context) {
             with(NotificationManagerCompat.from(context)) {
                 notify(subscription.subscriptionId.toInt() + 2000, builder.build())
             }
+            Log.d(TAG, "Expiration notification sent for ${subscription.name}")
         } catch (e: SecurityException) {
-            Log.e(TAG, "Ошибка при отправке уведомления об истечении: ${e.message}")
+            Log.e(TAG, "Error sending expiration notification: ${e.message}")
         }
     }
 
