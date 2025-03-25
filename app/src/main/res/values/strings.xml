@@ -274,4 +274,35 @@
     <string name="enter_correct_amount">Введите корректную сумму</string>
     <string name="enter_amount">Введите сумму</string>
     <string name="select_subscription">Выберите подписку</string>
+
+    <string name="google_drive_title">Интеграция с Google Drive</string>
+    <string name="google_drive_description">Сохраняйте и восстанавливайте резервные копии данных в вашем Google Drive аккаунте.</string>
+    <string name="manage_cloud_backups">Управление облачными бэкапами</string>
+    <string name="google_drive_backups">Резервные копии на Google Drive</string>
+    <string name="google_drive_signin_title">Подключение к Google Drive</string>
+    <string name="google_drive_signin_description">Для сохранения и восстановления резервных копий необходимо войти в ваш аккаунт Google.</string>
+    <string name="sign_in_with_google">Войти с Google</string>
+    <string name="google_drive_sign_in_failed">Не удалось войти в Google Drive</string>
+    <string name="signed_in_as">Вы вошли как</string>
+    <string name="unknown_account">Неизвестный аккаунт</string>
+    <string name="sign_out">Выйти</string>
+    <string name="sign_out_confirm">Вы уверены, что хотите выйти из аккаунта Google Drive?</string>
+    <string name="backups_on_drive">Резервные копии в Google Drive</string>
+    <string name="no_backups_found">Резервные копии не найдены</string>
+    <string name="create_backup">Создать резервную копию</string>
+    <string name="backup_created_successfully">Резервная копия успешно создана</string>
+    <string name="backup_creation_failed">Не удалось создать резервную копию</string>
+    <string name="restore_from_backup">Восстановление из резервной копии</string>
+    <string name="restore_from_backup_confirm">Вы действительно хотите восстановить данные из резервной копии %1$s? Все текущие данные будут заменены.</string>
+    <string name="restore">Восстановить</string>
+    <string name="restore_successful">Данные успешно восстановлены</string>
+    <string name="restore_failed">Не удалось восстановить данные</string>
+    <string name="delete_backup">Удаление резервной копии</string>
+    <string name="delete_backup_confirm">Вы уверены, что хотите удалить резервную копию %1$s?</string>
+    <string name="backup_deleted">Резервная копия удалена</string>
+    <string name="backup_deletion_failed">Не удалось удалить резервную копию</string>
+    <string name="refresh">Обновить</string>
+    <string name="export_success_title">Экспорт успешен</string>
+    <string name="import_success_title">Импорт успешен</string>
+    <string name="error">Ошибка</string>
 </resources>

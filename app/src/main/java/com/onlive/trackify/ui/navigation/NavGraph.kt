@@ -22,6 +22,7 @@ import com.onlive.trackify.ui.screens.payments.PaymentsScreen
 import com.onlive.trackify.ui.screens.payments.PendingPaymentsScreen
 import com.onlive.trackify.ui.screens.settings.CurrencySettingsScreen
 import com.onlive.trackify.ui.screens.settings.DataManagementScreen
+import com.onlive.trackify.ui.screens.settings.GoogleDriveBackupsScreen
 import com.onlive.trackify.ui.screens.settings.LanguageSettingsScreen
 import com.onlive.trackify.ui.screens.settings.NotificationSettingsScreen
 import com.onlive.trackify.ui.screens.settings.SettingsScreen
@@ -60,6 +61,7 @@ sealed class Screen(val route: String) {
     object LanguageSettings : Screen("language_settings")
     object NotificationSettings : Screen("notification_settings")
     object DataManagement : Screen("data_management")
+    object GoogleDriveBackups : Screen("google_drive_backups")
     object PendingPayments : Screen("pending_payments")
     object BulkPaymentActions : Screen("bulk_payment_actions")
     object AboutApp : Screen("about_app")
@@ -136,6 +138,10 @@ class NavigationActions(navController: NavHostController) {
 
     val navigateToDataManagement: () -> Unit = {
         navController.navigate(Screen.DataManagement.route)
+    }
+
+    val navigateToGoogleDriveBackups: () -> Unit = {
+        navController.navigate(Screen.GoogleDriveBackups.route)
     }
 
     val navigateToPendingPayments: () -> Unit = {
@@ -303,6 +309,13 @@ fun TrackifyNavGraph(
 
         composable(Screen.DataManagement.route) {
             DataManagementScreen(
+                onNavigateBack = navigationActions.navigateBack,
+                onNavigateToGoogleDrive = navigationActions.navigateToGoogleDriveBackups
+            )
+        }
+
+        composable(Screen.GoogleDriveBackups.route) {
+            GoogleDriveBackupsScreen(
                 onNavigateBack = navigationActions.navigateBack
             )
         }
