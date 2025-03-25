@@ -24,7 +24,6 @@ import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.NotificationFrequency
 import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

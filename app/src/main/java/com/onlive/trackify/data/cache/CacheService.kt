@@ -1,7 +1,6 @@
 package com.onlive.trackify.data.cache
 
 import androidx.collection.LruCache
-import com.onlive.trackify.data.model.Subscription
 
 class CacheService {
     companion object {
