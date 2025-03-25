@@ -1,11 +1,9 @@
 package com.onlive.trackify.ui.screens.settings
 
 import android.app.Activity
-import android.content.Intent
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -37,19 +35,20 @@ import com.onlive.trackify.utils.GoogleDriveManager
 import kotlinx.coroutines.launch
 import java.text.ParseException
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GoogleDriveBackupsScreen(
     onNavigateBack: () -> Unit,
-    dataManager: DataExportImportManager = remember { DataExportImportManager(LocalContext. current) }
+    dataManager: DataExportImportManager? = null
 ) {
     val context = LocalContext.current
+    val actualDataManager = dataManager ?: DataExportImportManager(context)
+    val driveManager = actualDataManager.getGoogleDriveManager()
+
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-
-    val driveManager = remember { dataManager.getGoogleDriveManager() }
 
     var isSignedIn by remember { mutableStateOf(driveManager.isUserSignedIn()) }
     var isLoading by remember { mutableStateOf(false) }
@@ -125,12 +124,11 @@ fun GoogleDriveBackupsScreen(
                         coroutineScope.launch {
                             isLoading = true
                             try {
-                                val result = dataManager.exportDataToGoogleDrive()
+                                val result = actualDataManager.exportDataToGoogleDrive()
                                 if (result.isSuccess) {
                                     snackbarHostState.showSnackbar(
                                         message = context.getString(R.string.backup_created_successfully)
                                     )
-                                    // Обновляем список бэкапов
                                     loadBackups(driveManager) { loadedBackups ->
                                         backups = loadedBackups
                                     }
@@ -179,7 +177,6 @@ fun GoogleDriveBackupsScreen(
                         }
                     )
                 } else {
-                    // Отображение информации о пользователе и кнопка выхода
                     UserInfoCard(
                         onSignOutClick = {
                             showSignOutDialog = true
@@ -188,7 +185,6 @@ fun GoogleDriveBackupsScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Список бэкапов
                     BackupsList(
                         backups = backups,
                         onRestoreClick = { backup ->
@@ -214,7 +210,6 @@ fun GoogleDriveBackupsScreen(
         }
     }
 
-    // Диалоги
     if (showRestoreDialog != null) {
         AlertDialog(
             onDismissRequest = { showRestoreDialog = null },
@@ -230,7 +225,7 @@ fun GoogleDriveBackupsScreen(
                             coroutineScope.launch {
                                 isLoading = true
                                 try {
-                                    val success = dataManager.importDataFromGoogleDrive(backup.id)
+                                    val success = actualDataManager.importDataFromGoogleDrive(backup.id)
                                     if (success) {
                                         snackbarHostState.showSnackbar(
                                             message = context.getString(R.string.restore_successful)
@@ -284,7 +279,6 @@ fun GoogleDriveBackupsScreen(
                                         snackbarHostState.showSnackbar(
                                             message = context.getString(R.string.backup_deleted)
                                         )
-                                        // Обновляем список бэкапов
                                         loadBackups(driveManager) { loadedBackups ->
                                             backups = loadedBackups
                                         }
@@ -355,16 +349,15 @@ private suspend fun loadBackups(
     try {
         val result = driveManager.getBackupsList()
         if (result.isSuccess) {
-            // Сортируем бэкапы по дате (сначала новые)
-            val sortedBackups = result.getOrThrow().sortedByDescending {
+            val backups = result.getOrNull() ?: emptyList()
+
+            val sortedBackups = backups.sortedByDescending {
                 try {
                     val timeStr = it.createdTime
-                    // Пытаемся извлечь дату из строки
                     if (timeStr.isNotEmpty()) {
                         return@sortedByDescending timeStr
                     }
                 } catch (e: ParseException) {
-                    // В случае ошибки разбора даты, просто возвращаем пустую строку
                     Log.e("GoogleDriveBackups", "Error parsing date: ${e.message}")
                 }
                 ""
