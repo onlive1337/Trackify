@@ -31,17 +31,6 @@ sealed class Result<out T> {
         else -> null
     }
 
-    fun getOrThrow(): T = when(this) {
-        is Success -> data
-        is Error -> throw exception ?: IllegalStateException(message)
-        is Loading -> throw IllegalStateException("Cannot get value from Loading state")
-    }
-
-    fun exceptionOrNull(): Exception? = when(this) {
-        is Error -> exception
-        else -> null
-    }
-
     inline fun <R> fold(
         onSuccess: (T) -> R,
         onError: (String) -> R,

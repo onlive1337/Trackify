@@ -97,7 +97,7 @@ class DataExportImportManager(private val context: Context) {
             return@withContext driveManager.backupToDrive(jsonData)
         } catch (e: Exception) {
             Log.e(TAG, "Error exporting data to Google Drive", e)
-            return@withContext Result.Error("Ошибка при экспорте данных в Google Drive", e)
+            return@withContext Result.failure(e)
         }
     }
 
@@ -126,16 +126,10 @@ class DataExportImportManager(private val context: Context) {
             val result = driveManager.restoreFromDrive(fileId)
 
             if (result.isSuccess) {
-                val jsonData = result.getOrNull() ?: ""
-                if (jsonData.isNotEmpty()) {
-                    return@withContext importFromJson(jsonData)
-                } else {
-                    Log.e(TAG, "No data received from Google Drive")
-                    return@withContext false
-                }
+                val jsonData = result.getOrThrow()
+                return@withContext importFromJson(jsonData)
             } else {
-                val errorMsg = result.errorMessage() ?: "Unknown error"
-                Log.e(TAG, "Failed to get backup file from Google Drive: $errorMsg")
+                Log.e(TAG, "Failed to get backup file from Google Drive")
                 return@withContext false
             }
         } catch (e: Exception) {
