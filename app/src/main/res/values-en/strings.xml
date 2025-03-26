@@ -274,35 +274,4 @@
     <string name="enter_correct_amount">Enter the correct amount</string>
     <string name="enter_amount">Enter the amount</string>
     <string name="select_subscription">Select a subscription</string>
-
-    <string name="google_drive_title">Google Drive integration</string>
-    <string name="google_drive_description">Save and restore backed up data to your Google Drive account.</string>
-    <string name="manage_cloud_backups">Cloud backup management</string>
-    <string name="google_drive_backups">Backups to Google Drive</string>
-    <string name="google_drive_signin_title">Connecting to Google Drive</string>
-    <string name="google_drive_signin_description">To save and restore your backups, you need to sign in to your Google account.</string>
-    <string name="sign_in_with_google">Sign in with Google</string>
-    <string name="google_drive_sign_in_failed">Failed to sign in to Google Drive</string>
-    <string name="signed_in_as">You signed in as</string>
-    <string name="unknown_account">Unknown account</string>
-    <string name="sign_out">Sign out</string>
-    <string name="sign_out_confirm">Are you sure you want to sign out of your Google Drive account?</string>
-    <string name="backups_on_drive">Backups in Google Drive</string>
-    <string name="no_backups_found">Backups not found</string>
-    <string name="create_backup">Create a backup</string>
-    <string name="backup_created_successfully">The backup has been successfully created</string>
-    <string name="backup_creation_failed">Backup failed</string>
-    <string name="restore_from_backup">Restore from backup</string>
-    <string name="restore_from_backup_confirm">Do you really want to restore data from backup %1$s? All current data will be replaced.</string>
-    <string name="restore">Restore</string>
-    <string name="restore_successful">Data successfully restored</string>
-    <string name="restore_failed">Failed to recover data</string>
-    <string name="delete_backup">Deleting a backup</string>
-    <string name="delete_backup_confirm">Are you sure you want to delete the %1$s backup?</string>
-    <string name="backup_deleted">Backup deleted</string>
-    <string name="backup_deletion_failed">Failed to delete the backup</string>
-    <string name="refresh">Refresh</string>
-    <string name="export_success_title">Export success</string>
-    <string name="import_success_title">Import successful</string>
-    <string name="error">Error</string>
 </resources>

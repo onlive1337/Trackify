@@ -32,8 +32,6 @@ class DataExportImportManager(private val context: Context) {
     private val themeManager = ThemeManager(context)
     private val viewModePreference = ViewModePreference(context)
 
-    private var googleDriveManager: GoogleDriveManager? = null
-
     data class UserPreferences(
         val notificationsEnabled: Boolean = true,
         val reminderDays: Set<Int> = setOf(0, 1, 3, 7),
@@ -57,18 +55,41 @@ class DataExportImportManager(private val context: Context) {
         val exportDate: String = ""
     )
 
-    fun getGoogleDriveManager(): GoogleDriveManager {
-        if (googleDriveManager == null) {
-            googleDriveManager = GoogleDriveManager(context)
-        }
-        return googleDriveManager!!
-    }
-
     suspend fun exportData(uri: Uri): Boolean = withContext(Dispatchers.IO) {
         try {
             Log.d(TAG, "Starting data export")
 
-            val exportData = prepareExportData()
+            val subscriptions = database.subscriptionDao().getAllSubscriptionsSync()
+            val payments = database.paymentDao().getAllPaymentsSync()
+            val categories = database.categoryDao().getAllCategoriesSync()
+            val categoryGroups = database.categoryGroupDao().getAllGroupsSync()
+
+            Log.d(TAG, "Fetched data: ${subscriptions.size} subscriptions, ${payments.size} payments, ${categories.size} categories, ${categoryGroups.size} groups")
+
+            val userPreferences = UserPreferences(
+                notificationsEnabled = preferenceManager.areNotificationsEnabled(),
+                reminderDays = preferenceManager.getReminderDays(),
+                notificationHour = preferenceManager.getNotificationTime().first,
+                notificationMinute = preferenceManager.getNotificationTime().second,
+                notificationFrequency = preferenceManager.getNotificationFrequency().name,
+                currencyCode = preferenceManager.getCurrencyCode(),
+                languageCode = preferenceManager.getLanguageCode(),
+                themeMode = themeManager.getThemeMode(),
+                gridModeEnabled = viewModePreference.isGridModeEnabled()
+            )
+
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
+            val currentDateStr = dateFormat.format(Date())
+
+            val exportData = ExportData(
+                subscriptions = subscriptions,
+                payments = payments,
+                categories = categories,
+                categoryGroups = categoryGroups,
+                userPreferences = userPreferences,
+                exportDate = currentDateStr
+            )
+
             val jsonData = gson.toJson(exportData)
             Log.d(TAG, "JSON data generated, length: ${jsonData.length}")
 
@@ -86,21 +107,6 @@ class DataExportImportManager(private val context: Context) {
         }
     }
 
-    suspend fun exportDataToGoogleDrive(): Result<String> = withContext(Dispatchers.IO) {
-        try {
-            Log.d(TAG, "Starting data export to Google Drive")
-
-            val exportData = prepareExportData()
-            val jsonData = gson.toJson(exportData)
-
-            val driveManager = getGoogleDriveManager()
-            return@withContext driveManager.backupToDrive(jsonData)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error exporting data to Google Drive", e)
-            return@withContext Result.failure(e)
-        }
-    }
-
     suspend fun importData(uri: Uri): Boolean = withContext(Dispatchers.IO) {
         try {
             Log.d(TAG, "Starting data import from ${uri.path}")
@@ -111,69 +117,7 @@ class DataExportImportManager(private val context: Context) {
                 }
             } ?: return@withContext false
 
-            return@withContext importFromJson(jsonData)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error importing data", e)
-            return@withContext false
-        }
-    }
-
-    suspend fun importDataFromGoogleDrive(fileId: String): Boolean = withContext(Dispatchers.IO) {
-        try {
-            Log.d(TAG, "Starting data import from Google Drive, file ID: $fileId")
-
-            val driveManager = getGoogleDriveManager()
-            val result = driveManager.restoreFromDrive(fileId)
-
-            if (result.isSuccess) {
-                val jsonData = result.getOrThrow()
-                return@withContext importFromJson(jsonData)
-            } else {
-                Log.e(TAG, "Failed to get backup file from Google Drive")
-                return@withContext false
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error importing data from Google Drive", e)
-            return@withContext false
-        }
-    }
-
-    private suspend fun prepareExportData(): ExportData = withContext(Dispatchers.IO) {
-        val subscriptions = database.subscriptionDao().getAllSubscriptionsSync()
-        val payments = database.paymentDao().getAllPaymentsSync()
-        val categories = database.categoryDao().getAllCategoriesSync()
-        val categoryGroups = database.categoryGroupDao().getAllGroupsSync()
-
-        Log.d(TAG, "Fetched data: ${subscriptions.size} subscriptions, ${payments.size} payments, ${categories.size} categories, ${categoryGroups.size} groups")
-
-        val userPreferences = UserPreferences(
-            notificationsEnabled = preferenceManager.areNotificationsEnabled(),
-            reminderDays = preferenceManager.getReminderDays(),
-            notificationHour = preferenceManager.getNotificationTime().first,
-            notificationMinute = preferenceManager.getNotificationTime().second,
-            notificationFrequency = preferenceManager.getNotificationFrequency().name,
-            currencyCode = preferenceManager.getCurrencyCode(),
-            languageCode = preferenceManager.getLanguageCode(),
-            themeMode = themeManager.getThemeMode(),
-            gridModeEnabled = viewModePreference.isGridModeEnabled()
-        )
-
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
-        val currentDateStr = dateFormat.format(Date())
-
-        return@withContext ExportData(
-            subscriptions = subscriptions,
-            payments = payments,
-            categories = categories,
-            categoryGroups = categoryGroups,
-            userPreferences = userPreferences,
-            exportDate = currentDateStr
-        )
-    }
-
-    private suspend fun importFromJson(jsonData: String): Boolean = withContext(Dispatchers.IO) {
-        try {
-            Log.d(TAG, "Parsing JSON data, length: ${jsonData.length}")
+            Log.d(TAG, "Read JSON data, length: ${jsonData.length}")
 
             val importedData = gson.fromJson(jsonData, ExportData::class.java)
 
@@ -265,7 +209,7 @@ class DataExportImportManager(private val context: Context) {
             Log.d(TAG, "Data import completed successfully")
             return@withContext true
         } catch (e: Exception) {
-            Log.e(TAG, "Error during JSON import", e)
+            Log.e(TAG, "Error importing data", e)
             return@withContext false
         }
     }

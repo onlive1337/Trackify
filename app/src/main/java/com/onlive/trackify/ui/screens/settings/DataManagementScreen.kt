@@ -6,10 +6,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CloudSync
-import androidx.compose.material.icons.filled.DownloadForOffline
-import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,7 +28,6 @@ import java.util.Locale
 @Composable
 fun DataManagementScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToGoogleDrive: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -129,40 +124,6 @@ fun DataManagementScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 TrackifyCard(
-                    title = stringResource(R.string.google_drive_title)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = stringResource(R.string.google_drive_description),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Button(
-                            onClick = onNavigateToGoogleDrive,
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary
-                            )
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.CloudSync,
-                                contentDescription = null,
-                                modifier = Modifier.size(24.dp)
-                            )
-
-                            Spacer(modifier = Modifier.width(8.dp))
-
-                            Text(stringResource(R.string.manage_cloud_backups))
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                TrackifyCard(
                     title = stringResource(R.string.export_title)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -185,14 +146,6 @@ fun DataManagementScreen(
                             modifier = Modifier.fillMaxWidth(),
                             enabled = !isLoading
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Save,
-                                contentDescription = null,
-                                modifier = Modifier.size(24.dp)
-                            )
-
-                            Spacer(modifier = Modifier.width(8.dp))
-
                             Text(stringResource(R.string.export_button))
                         }
                     }
@@ -217,14 +170,6 @@ fun DataManagementScreen(
                             modifier = Modifier.fillMaxWidth(),
                             enabled = !isLoading
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.DownloadForOffline,
-                                contentDescription = null,
-                                modifier = Modifier.size(24.dp)
-                            )
-
-                            Spacer(modifier = Modifier.width(8.dp))
-
                             Text(stringResource(R.string.import_button))
                         }
                     }
@@ -274,7 +219,7 @@ fun DataManagementScreen(
     if (showExportSuccessDialog) {
         AlertDialog(
             onDismissRequest = { showExportSuccessDialog = false },
-            title = { Text(stringResource(R.string.export_success_title)) },
+            title = { Text(stringResource(R.string.export_success, exportFilePath)) },
             text = { Text(stringResource(R.string.export_success, exportFilePath)) },
             confirmButton = {
                 TextButton(
@@ -289,7 +234,7 @@ fun DataManagementScreen(
     if (showImportSuccessDialog) {
         AlertDialog(
             onDismissRequest = { showImportSuccessDialog = false },
-            title = { Text(stringResource(R.string.import_success_title)) },
+            title = { Text(stringResource(R.string.import_success)) },
             text = {
                 Column {
                     Text(stringResource(R.string.import_success))
@@ -317,7 +262,7 @@ fun DataManagementScreen(
     if (showErrorDialog) {
         AlertDialog(
             onDismissRequest = { showErrorDialog = false },
-            title = { Text(stringResource(R.string.error)) },
+            title = { Text(stringResource(R.string.import_error)) },
             text = { Text(errorMessage) },
             confirmButton = {
                 TextButton(
