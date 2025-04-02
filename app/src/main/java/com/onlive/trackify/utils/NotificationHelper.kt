@@ -82,7 +82,7 @@ class NotificationHelper(private val context: Context) {
         }
 
         val pendingIntent = PendingIntent.getActivity(
-            context, 0, intent, pendingIntentFlags
+            context, subscription.subscriptionId.toInt(), intent, pendingIntentFlags
         )
 
         val notificationText = when {

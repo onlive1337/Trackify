@@ -11,7 +11,6 @@ import com.onlive.trackify.utils.ErrorHandler
 import com.onlive.trackify.utils.MemoryUtils
 import com.onlive.trackify.utils.NotificationHelper
 import com.onlive.trackify.utils.NotificationScheduler
-import com.onlive.trackify.utils.PaymentScheduler
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.ThemeManager
 import com.onlive.trackify.workers.DatabaseCleanupWorker
@@ -27,7 +26,6 @@ class TrackifyApplication : Application(), Configuration.Provider {
     private lateinit var notificationHelper: NotificationHelper
     private lateinit var preferenceManager: PreferenceManager
     private lateinit var databaseInitializer: DatabaseInitializer
-    private lateinit var paymentScheduler: PaymentScheduler
     private lateinit var cacheService: CacheService
 
     override fun onCreate() {
@@ -62,9 +60,6 @@ class TrackifyApplication : Application(), Configuration.Provider {
 
         setupSubscriptionReminders()
         setupDatabaseCleanup()
-
-        paymentScheduler = PaymentScheduler(this)
-        paymentScheduler.schedulePaymentGeneration()
     }
 
     private fun setupSubscriptionReminders() {
