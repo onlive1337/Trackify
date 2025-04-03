@@ -183,6 +183,7 @@ fun NotificationSettingsScreen(
                     Column {
                         ReminderDayOption(
                             title = stringResource(R.string.on_payment_day),
+                            description = stringResource(R.string.notification_on_day_description),
                             selected = reminderDays.contains(0),
                             onClick = {
                                 reminderDays = if (reminderDays.contains(0)) {
@@ -197,6 +198,7 @@ fun NotificationSettingsScreen(
 
                         ReminderDayOption(
                             title = stringResource(R.string.one_day_before),
+                            description = stringResource(R.string.notification_one_day_description),
                             selected = reminderDays.contains(1),
                             onClick = {
                                 reminderDays = if (reminderDays.contains(1)) {
@@ -211,6 +213,7 @@ fun NotificationSettingsScreen(
 
                         ReminderDayOption(
                             title = stringResource(R.string.three_days_before),
+                            description = stringResource(R.string.notification_three_days_description),
                             selected = reminderDays.contains(3),
                             onClick = {
                                 reminderDays = if (reminderDays.contains(3)) {
@@ -225,6 +228,7 @@ fun NotificationSettingsScreen(
 
                         ReminderDayOption(
                             title = stringResource(R.string.week_before),
+                            description = stringResource(R.string.notification_week_description),
                             selected = reminderDays.contains(7),
                             onClick = {
                                 reminderDays = if (reminderDays.contains(7)) {
@@ -239,6 +243,7 @@ fun NotificationSettingsScreen(
 
                         ReminderDayOption(
                             title = stringResource(R.string.two_weeks_before),
+                            description = stringResource(R.string.notification_two_weeks_description),
                             selected = reminderDays.contains(14),
                             onClick = {
                                 reminderDays = if (reminderDays.contains(14)) {
@@ -253,6 +258,7 @@ fun NotificationSettingsScreen(
 
                         ReminderDayOption(
                             title = stringResource(R.string.month_before),
+                            description = stringResource(R.string.notification_month_description),
                             selected = reminderDays.contains(30),
                             onClick = {
                                 reminderDays = if (reminderDays.contains(30)) {
@@ -446,6 +452,7 @@ private fun FrequencyOption(
 @Composable
 private fun ReminderDayOption(
     title: String,
+    description: String,
     selected: Boolean,
     onClick: () -> Unit
 ) {
@@ -460,13 +467,23 @@ private fun ReminderDayOption(
             onCheckedChange = { onClick() }
         )
 
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyLarge,
+        Column(
             modifier = Modifier
+                .weight(1f)
                 .padding(start = 8.dp)
                 .clickable(onClick = onClick)
-        )
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge
+            )
+
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 

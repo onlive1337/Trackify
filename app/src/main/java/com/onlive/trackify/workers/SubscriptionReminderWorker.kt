@@ -9,7 +9,8 @@ import androidx.core.content.ContextCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.onlive.trackify.data.database.AppDatabase
-import com.onlive.trackify.data.model.PaymentStatus
+import com.onlive.trackify.data.model.BillingFrequency
+import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.utils.NotificationFrequency
 import com.onlive.trackify.utils.NotificationHelper
 import com.onlive.trackify.utils.PreferenceManager
@@ -30,10 +31,10 @@ class SubscriptionReminderWorker(
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
-            Log.d(TAG, "SubscriptionReminderWorker started")
+            Log.d(TAG, "SubscriptionReminderWorker запущен")
 
             if (!preferenceManager.areNotificationsEnabled()) {
-                Log.d(TAG, "Notifications disabled in settings")
+                Log.d(TAG, "Уведомления отключены в настройках")
                 return@withContext Result.success()
             }
 
@@ -44,7 +45,7 @@ class SubscriptionReminderWorker(
                 ) == PackageManager.PERMISSION_GRANTED
 
                 if (!hasPermission) {
-                    Log.d(TAG, "No permission to send notifications")
+                    Log.d(TAG, "Нет разрешения на отправку уведомлений")
                     return@withContext Result.success()
                 }
             }
@@ -53,70 +54,95 @@ class SubscriptionReminderWorker(
 
             if (preferenceManager.getNotificationFrequency() == NotificationFrequency.WEEKLY) {
                 if (today.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
-                    Log.d(TAG, "Today is not Monday, skipping for weekly frequency")
+                    Log.d(TAG, "Сегодня не понедельник, пропускаем для еженедельной частоты")
                     return@withContext Result.success()
                 }
             }
 
             if (preferenceManager.getNotificationFrequency() == NotificationFrequency.MONTHLY) {
                 if (today.get(Calendar.DAY_OF_MONTH) != 1) {
-                    Log.d(TAG, "Today is not the first day of the month, skipping for monthly frequency")
+                    Log.d(TAG, "Сегодня не первый день месяца, пропускаем для ежемесячной частоты")
                     return@withContext Result.success()
                 }
             }
 
             val database = AppDatabase.getDatabase(applicationContext)
             val subscriptions = database.subscriptionDao().getActiveSubscriptionsSync()
-            val payments = database.paymentDao().getAllPaymentsSync()
 
             if (subscriptions.isEmpty()) {
-                Log.d(TAG, "No active subscriptions found")
+                Log.d(TAG, "Активные подписки не найдены")
                 return@withContext Result.success()
             }
 
             var notificationCount = 0
             val reminderDays = preferenceManager.getReminderDays()
-
-            for (payment in payments) {
-                if (payment.status == PaymentStatus.CONFIRMED) {
-                    continue
-                }
-
-                val daysUntilPayment = getDaysDifference(today.time, payment.date)
-
-                if (daysUntilPayment in reminderDays) {
-                    val subscription = subscriptions.find { it.subscriptionId == payment.subscriptionId }
-                    if (subscription != null && subscription.active) {
-                        notificationHelper.showUpcomingPaymentNotification(subscription, daysUntilPayment)
-                        notificationCount++
-                        Log.d(TAG, "Sent payment notification for ${subscription.name} in $daysUntilPayment days")
-                    }
-                }
-            }
+            val currentDate = today.time
 
             for (subscription in subscriptions) {
                 subscription.endDate?.let { endDate ->
-                    if (endDate.after(today.time)) {
-                        val daysUntilExpiration = getDaysDifference(today.time, endDate)
+                    if (endDate.after(currentDate)) {
+                        val daysUntilExpiration = getDaysDifference(currentDate, endDate)
 
-                        if (daysUntilExpiration == 0 || daysUntilExpiration == 1 ||
-                            daysUntilExpiration == 3 || daysUntilExpiration == 7 ||
-                            daysUntilExpiration == 14 || daysUntilExpiration == 30) {
-
-                            notificationHelper.showExpirationNotification(subscription, daysUntilExpiration)
+                        if (daysUntilExpiration in reminderDays) {
+                            notificationHelper.showSubscriptionExpirationNotification(subscription, daysUntilExpiration)
                             notificationCount++
-                            Log.d(TAG, "Sent expiration notification for ${subscription.name} in $daysUntilExpiration days")
+                            Log.d(TAG, "Отправлено уведомление об окончании подписки ${subscription.name} через $daysUntilExpiration дней")
                         }
+                    }
+                }
+
+                val nextPaymentDate = calculateNextPaymentDate(subscription)
+                if (nextPaymentDate != null) {
+                    val daysUntilPayment = getDaysDifference(currentDate, nextPaymentDate)
+
+                    if (daysUntilPayment in reminderDays) {
+                        notificationHelper.showUpcomingSubscriptionPaymentNotification(subscription, daysUntilPayment)
+                        notificationCount++
+                        Log.d(TAG, "Отправлено уведомление о платеже по подписке ${subscription.name} через $daysUntilPayment дней")
                     }
                 }
             }
 
-            Log.d(TAG, "SubscriptionReminderWorker completed successfully, sent $notificationCount notifications")
+            Log.d(TAG, "SubscriptionReminderWorker завершен успешно, отправлено $notificationCount уведомлений")
             Result.success()
         } catch (e: Exception) {
-            Log.e(TAG, "Error in SubscriptionReminderWorker: ${e.message}", e)
+            Log.e(TAG, "Ошибка в SubscriptionReminderWorker: ${e.message}", e)
             Result.failure()
         }
+    }
+
+    private fun calculateNextPaymentDate(subscription: Subscription): Date? {
+        val calendar = Calendar.getInstance()
+        val today = calendar.time
+        val startDate = subscription.startDate
+
+        if (startDate.after(today)) {
+            return startDate
+        }
+
+        val paymentCalendar = Calendar.getInstance()
+        paymentCalendar.time = startDate
+
+        when (subscription.billingFrequency) {
+            BillingFrequency.MONTHLY -> {
+                while (paymentCalendar.time.before(today)) {
+                    paymentCalendar.add(Calendar.MONTH, 1)
+                }
+            }
+            BillingFrequency.YEARLY -> {
+                while (paymentCalendar.time.before(today)) {
+                    paymentCalendar.add(Calendar.YEAR, 1)
+                }
+            }
+        }
+
+        subscription.endDate?.let { endDate ->
+            if (endDate.before(paymentCalendar.time)) {
+                return null
+            }
+        }
+
+        return paymentCalendar.time
     }
 
     private fun getDaysDifference(date1: Date, date2: Date): Int {

@@ -20,9 +20,9 @@ class NotificationHelper(private val context: Context) {
 
     companion object {
         const val CHANNEL_ID = "trackify_reminders_channel"
-        const val UPCOMING_NOTIFICATION_ID = 1001
-        const val PAYMENT_DUE_CHANNEL_ID = "trackify_payment_due_channel"
+        const val PAYMENT_NOTIFICATION_ID_PREFIX = 1000
         const val EXPIRATION_CHANNEL_ID = "trackify_expiration_channel"
+        const val PAYMENT_CHANNEL_ID = "trackify_payment_channel"
 
         private const val TAG = "NotificationHelper"
     }
@@ -39,8 +39,8 @@ class NotificationHelper(private val context: Context) {
                 description = context.getString(R.string.notification_channel_description)
             }
 
-            val paymentDueChannel = NotificationChannel(
-                PAYMENT_DUE_CHANNEL_ID,
+            val paymentChannel = NotificationChannel(
+                PAYMENT_CHANNEL_ID,
                 context.getString(R.string.notification_channel_payment_due),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
@@ -56,16 +56,16 @@ class NotificationHelper(private val context: Context) {
             }
 
             notificationManager.createNotificationChannels(
-                listOf(reminderChannel, paymentDueChannel, expirationChannel)
+                listOf(reminderChannel, paymentChannel, expirationChannel)
             )
 
-            Log.d(TAG, "Notification channels created")
+            Log.d(TAG, "Каналы уведомлений созданы")
         }
     }
 
-    fun showUpcomingPaymentNotification(subscription: Subscription, daysLeft: Int) {
+    fun showUpcomingSubscriptionPaymentNotification(subscription: Subscription, daysLeft: Int) {
         if (!checkNotificationPermission()) {
-            Log.e(TAG, "Missing notification permission")
+            Log.e(TAG, "Отсутствует разрешение на уведомления")
             return
         }
 
@@ -82,7 +82,10 @@ class NotificationHelper(private val context: Context) {
         }
 
         val pendingIntent = PendingIntent.getActivity(
-            context, subscription.subscriptionId.toInt(), intent, pendingIntentFlags
+            context,
+            (PAYMENT_NOTIFICATION_ID_PREFIX + subscription.subscriptionId).toInt(),
+            intent,
+            pendingIntentFlags
         )
 
         val notificationText = when {
@@ -94,7 +97,7 @@ class NotificationHelper(private val context: Context) {
         val formattedAmount = CurrencyFormatter.formatAmount(context, subscription.price)
         val notificationTextWithAmount = "$notificationText ($formattedAmount)"
 
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+        val builder = NotificationCompat.Builder(context, PAYMENT_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_subscriptions)
             .setContentTitle(context.getString(R.string.notification_upcoming_payment_title))
             .setContentText(notificationTextWithAmount)
@@ -105,15 +108,15 @@ class NotificationHelper(private val context: Context) {
 
         try {
             with(NotificationManagerCompat.from(context)) {
-                notify(subscription.subscriptionId.toInt(), builder.build())
+                notify((PAYMENT_NOTIFICATION_ID_PREFIX + subscription.subscriptionId).toInt(), builder.build())
             }
-            Log.d(TAG, "Payment notification sent for ${subscription.name}")
+            Log.d(TAG, "Уведомление о платеже отправлено для ${subscription.name}")
         } catch (e: SecurityException) {
-            Log.e(TAG, "Error sending notification: ${e.message}")
+            Log.e(TAG, "Ошибка отправки уведомления: ${e.message}")
         }
     }
 
-    fun showExpirationNotification(subscription: Subscription, daysLeft: Int) {
+    fun showSubscriptionExpirationNotification(subscription: Subscription, daysLeft: Int) {
         if (!checkNotificationPermission()) return
 
         val pendingIntentFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -130,7 +133,7 @@ class NotificationHelper(private val context: Context) {
 
         val pendingIntent = PendingIntent.getActivity(
             context,
-            subscription.subscriptionId.toInt() + 1000,
+            (subscription.subscriptionId + 3000).toInt(),
             intent,
             pendingIntentFlags
         )
@@ -151,11 +154,11 @@ class NotificationHelper(private val context: Context) {
 
         try {
             with(NotificationManagerCompat.from(context)) {
-                notify(subscription.subscriptionId.toInt() + 2000, builder.build())
+                notify((subscription.subscriptionId + 3000).toInt(), builder.build())
             }
-            Log.d(TAG, "Expiration notification sent for ${subscription.name}")
+            Log.d(TAG, "Уведомление об окончании подписки отправлено для ${subscription.name}")
         } catch (e: SecurityException) {
-            Log.e(TAG, "Error sending expiration notification: ${e.message}")
+            Log.e(TAG, "Ошибка отправки уведомления об окончании подписки: ${e.message}")
         }
     }
 

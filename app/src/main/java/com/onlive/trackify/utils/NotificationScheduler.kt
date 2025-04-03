@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import androidx.work.workDataOf
 import com.onlive.trackify.workers.SubscriptionReminderWorker
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
@@ -24,11 +23,11 @@ class NotificationScheduler(private val context: Context) {
     private val preferenceManager = PreferenceManager(context)
 
     fun rescheduleNotifications() {
-        Log.d(TAG, "Rescheduling notifications")
+        Log.d(TAG, "Перепланирование уведомлений")
         cancelAllReminders()
 
         if (!preferenceManager.areNotificationsEnabled()) {
-            Log.d(TAG, "Notifications disabled in settings")
+            Log.d(TAG, "Уведомления отключены в настройках")
             return
         }
 
@@ -41,7 +40,7 @@ class NotificationScheduler(private val context: Context) {
     }
 
     fun cancelAllReminders() {
-        Log.d(TAG, "Cancelling all reminders")
+        Log.d(TAG, "Отмена всех напоминаний")
         WorkManager.getInstance(context).apply {
             cancelUniqueWork(DAILY_REMINDER_WORK)
             cancelUniqueWork(WEEKLY_REMINDER_WORK)
@@ -52,7 +51,7 @@ class NotificationScheduler(private val context: Context) {
     }
 
     private fun scheduleDailyReminder() {
-        Log.d(TAG, "Scheduling daily reminders")
+        Log.d(TAG, "Планирование ежедневных напоминаний")
         val (hour, minute) = preferenceManager.getNotificationTime()
         val now = Calendar.getInstance()
         val targetTime = Calendar.getInstance().apply {
@@ -80,11 +79,12 @@ class NotificationScheduler(private val context: Context) {
             reminderWorkRequest
         )
 
-        Log.d(TAG, "Daily reminder scheduled for ${hour}:${minute}, initial delay: ${initialDelay/1000/60} minutes")
+        Log.d(TAG, "Ежедневное напоминание запланировано на ${hour}:${minute}, " +
+                "начальная задержка: ${initialDelay/1000/60} минут")
     }
 
     private fun scheduleWeeklyReminder() {
-        Log.d(TAG, "Scheduling weekly reminders")
+        Log.d(TAG, "Планирование еженедельных напоминаний")
         val (hour, minute) = preferenceManager.getNotificationTime()
         val now = Calendar.getInstance()
         val targetTime = Calendar.getInstance().apply {
@@ -114,11 +114,11 @@ class NotificationScheduler(private val context: Context) {
             reminderWorkRequest
         )
 
-        Log.d(TAG, "Weekly reminder scheduled for Monday ${hour}:${minute}")
+        Log.d(TAG, "Еженедельное напоминание запланировано на понедельник ${hour}:${minute}")
     }
 
     private fun scheduleMonthlyReminder() {
-        Log.d(TAG, "Scheduling monthly reminders")
+        Log.d(TAG, "Планирование ежемесячных напоминаний")
         val (hour, minute) = preferenceManager.getNotificationTime()
         val now = Calendar.getInstance()
         val targetTime = Calendar.getInstance().apply {
@@ -148,15 +148,15 @@ class NotificationScheduler(private val context: Context) {
             reminderWorkRequest
         )
 
-        Log.d(TAG, "Monthly reminder scheduled for 1st day ${hour}:${minute}")
+        Log.d(TAG, "Ежемесячное напоминание запланировано на 1-е число ${hour}:${minute}")
     }
 
     private fun scheduleCustomReminder() {
-        Log.d(TAG, "Scheduling custom reminders")
+        Log.d(TAG, "Планирование пользовательских напоминаний")
         val reminderDays = preferenceManager.getReminderDays()
 
         if (reminderDays.isEmpty()) {
-            Log.d(TAG, "No reminder days selected, using daily reminders")
+            Log.d(TAG, "Не выбраны дни для напоминаний, используем ежедневные напоминания")
             scheduleDailyReminder()
             return
         }
@@ -180,11 +180,6 @@ class NotificationScheduler(private val context: Context) {
             24, TimeUnit.HOURS
         )
             .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
-            .setInputData(
-                workDataOf(
-                    "reminder_days" to reminderDays.toIntArray()
-                )
-            )
             .build()
 
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
@@ -193,6 +188,6 @@ class NotificationScheduler(private val context: Context) {
             reminderWorkRequest
         )
 
-        Log.d(TAG, "Custom reminders scheduled with selected days: ${reminderDays.joinToString()}")
+        Log.d(TAG, "Пользовательские напоминания запланированы с выбранными днями: ${reminderDays.joinToString()}")
     }
 }

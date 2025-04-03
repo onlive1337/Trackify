@@ -274,4 +274,10 @@
     <string name="enter_correct_amount">Enter the correct amount</string>
     <string name="enter_amount">Enter the amount</string>
     <string name="select_subscription">Select a subscription</string>
+    <string name="notification_on_day_description">Notification on the day of payment or subscription expiration</string>
+    <string name="notification_one_day_description">Notification 1 day before payment or subscription expiration</string>
+    <string name="notification_three_days_description">Notification 3 days before payment or subscription expiration</string>
+    <string name="notification_week_description">Notification 7 days before payment or subscription expiration</string>
+    <string name="notification_two_weeks_description">Notification 14 days before payment or subscription expiration</string>
+    <string name="notification_month_description">Notification 30 days before payment or subscription expiration</string>
 </resources>

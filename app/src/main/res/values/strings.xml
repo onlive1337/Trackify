@@ -274,4 +274,10 @@
     <string name="enter_correct_amount">Введите корректную сумму</string>
     <string name="enter_amount">Введите сумму</string>
     <string name="select_subscription">Выберите подписку</string>
+    <string name="notification_on_day_description">Уведомление в день платежа или окончания подписки</string>
+    <string name="notification_one_day_description">Уведомление за 1 день до платежа или окончания подписки</string>
+    <string name="notification_three_days_description">Уведомление за 3 дня до платежа или окончания подписки</string>
+    <string name="notification_week_description">Уведомление за 7 дней до платежа или окончания подписки</string>
+    <string name="notification_two_weeks_description">Уведомление за 14 дней до платежа или окончания подписки</string>
+    <string name="notification_month_description">Уведомление за 30 дней до платежа или окончания подписки</string>
 </resources>
