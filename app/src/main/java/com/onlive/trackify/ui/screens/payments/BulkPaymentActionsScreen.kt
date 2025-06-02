@@ -20,7 +20,6 @@ import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.viewmodel.PaymentViewModel
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BulkPaymentActionsScreen(
     onNavigateBack: () -> Unit,

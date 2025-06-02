@@ -1,7 +1,6 @@
 package com.onlive.trackify.ui.components
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -16,10 +15,10 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.ShowChart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -92,7 +91,7 @@ fun TrackifyBottomBar(
             )
 
             AnimatedNavItem(
-                icon = Icons.Filled.ShowChart,
+                icon = Icons.AutoMirrored.Filled.ShowChart,
                 label = stringResource(R.string.title_statistics),
                 selected = currentRoute == Screen.Statistics.route,
                 onClick = {
@@ -128,7 +127,6 @@ fun TrackifyBottomBar(
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun AnimatedNavItem(
     icon: ImageVector,

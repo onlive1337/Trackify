@@ -27,8 +27,8 @@ import com.onlive.trackify.data.model.CategoryGroup
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.viewmodel.CategoryGroupViewModel
 import com.onlive.trackify.viewmodel.CategoryViewModel
+import androidx.core.graphics.toColorInt
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryManagementScreen(
     onNavigateBack: () -> Unit,
@@ -36,7 +36,6 @@ fun CategoryManagementScreen(
     onEditCategory: (Long) -> Unit,
     onAddCategoryGroup: () -> Unit,
     onEditCategoryGroup: (Long) -> Unit,
-    modifier: Modifier = Modifier,
     categoryViewModel: CategoryViewModel = viewModel(),
     categoryGroupViewModel: CategoryGroupViewModel = viewModel()
 ) {
@@ -248,7 +247,7 @@ fun CategoryItem(
                     .clip(CircleShape)
                     .background(
                         try {
-                            Color(android.graphics.Color.parseColor(category.colorCode))
+                            Color(category.colorCode.toColorInt())
                         } catch (e: Exception) {
                             Color.Gray
                         }
@@ -325,7 +324,7 @@ fun CategoryGroupItem(
                     .clip(CircleShape)
                     .background(
                         try {
-                            Color(android.graphics.Color.parseColor(group.colorCode))
+                            Color(group.colorCode.toColorInt())
                         } catch (e: Exception) {
                             Color.Gray
                         }

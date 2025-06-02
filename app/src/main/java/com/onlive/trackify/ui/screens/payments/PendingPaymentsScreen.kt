@@ -22,7 +22,6 @@ import com.onlive.trackify.utils.CurrencyFormatter
 import com.onlive.trackify.viewmodel.PaymentViewModel
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PendingPaymentsScreen(
     onNavigateBack: () -> Unit,

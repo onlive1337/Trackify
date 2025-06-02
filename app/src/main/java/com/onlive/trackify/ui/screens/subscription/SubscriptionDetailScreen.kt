@@ -41,7 +41,7 @@ fun SubscriptionDetailScreen(
     categoryViewModel: CategoryViewModel = viewModel(),
     paymentViewModel: PaymentViewModel = viewModel()
 ) {
-    val context = LocalContext.current
+    LocalContext.current
     val isNewSubscription = subscriptionId == -1L
 
     val existingSubscription by if (!isNewSubscription) {

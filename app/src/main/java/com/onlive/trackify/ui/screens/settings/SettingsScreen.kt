@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
@@ -64,7 +64,6 @@ fun ThemeOption(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onNavigateToCategoryManagement: () -> Unit,
@@ -73,8 +72,7 @@ fun SettingsScreen(
     onNavigateToLanguageSettings: () -> Unit,
     onNavigateToDataManagement: () -> Unit,
     onNavigateToAboutApp: () -> Unit,
-    themeManager: ThemeManager,
-    modifier: Modifier = Modifier
+    themeManager: ThemeManager
 ) {
     val context = LocalContext.current
     val preferenceManager = remember { PreferenceManager(context) }
@@ -83,7 +81,7 @@ fun SettingsScreen(
         mutableStateOf(preferenceManager.areNotificationsEnabled())
     }
     var selectedThemeMode by remember {
-        mutableStateOf(themeManager.getThemeMode())
+        mutableIntStateOf(themeManager.getThemeMode())
     }
 
     Scaffold(
@@ -191,7 +189,7 @@ fun SettingsScreen(
                     }
 
                     if (notificationsEnabled) {
-                        Divider(modifier = Modifier.padding(vertical = 8.dp))
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                         SettingsItem(
                             icon = Icons.Outlined.Notifications,
@@ -214,7 +212,7 @@ fun SettingsScreen(
                         onClick = onNavigateToCategoryManagement
                     )
 
-                    Divider(modifier = Modifier.padding(vertical = 8.dp))
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                     SettingsItem(
                         icon = Icons.Outlined.Payments,
@@ -222,7 +220,7 @@ fun SettingsScreen(
                         onClick = onNavigateToCurrencySettings
                     )
 
-                    Divider(modifier = Modifier.padding(vertical = 8.dp))
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                     SettingsItem(
                         icon = Icons.Outlined.Language,
@@ -285,7 +283,7 @@ fun SettingsItem(
         )
 
         Icon(
-            imageVector = Icons.Filled.KeyboardArrowRight,
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurfaceVariant
         )

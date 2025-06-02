@@ -13,7 +13,6 @@ import com.onlive.trackify.ui.navigation.Screen
 import com.onlive.trackify.ui.navigation.TrackifyNavGraph
 import com.onlive.trackify.utils.ThemeManager
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrackifyApp(themeManager: ThemeManager) {
     val navController = rememberNavController()

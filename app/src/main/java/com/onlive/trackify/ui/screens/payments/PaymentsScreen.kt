@@ -34,13 +34,11 @@ import com.onlive.trackify.utils.DateUtils
 import com.onlive.trackify.viewmodel.PaymentViewModel
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PaymentsScreen(
     onAddPayment: (Long, Long) -> Unit,
     onNavigateToBulkActions: () -> Unit = {},
     onNavigateToPendingPayments: () -> Unit = {},
-    modifier: Modifier = Modifier,
     paymentViewModel: PaymentViewModel = viewModel(),
     subscriptionViewModel: SubscriptionViewModel = viewModel()
 ) {
@@ -176,7 +174,6 @@ fun PaymentsScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PendingPaymentsCard(
     pendingCount: Int,

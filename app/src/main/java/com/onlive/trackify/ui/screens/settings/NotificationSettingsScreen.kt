@@ -25,11 +25,9 @@ import com.onlive.trackify.utils.NotificationFrequency
 import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationSettingsScreen(
-    onNavigateBack: () -> Unit,
-    modifier: Modifier = Modifier
+    onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
     val preferenceManager = remember { PreferenceManager(context) }
@@ -44,8 +42,8 @@ fun NotificationSettingsScreen(
     }
 
     val (hour, minute) = preferenceManager.getNotificationTime()
-    var notificationHour by remember { mutableStateOf(hour) }
-    var notificationMinute by remember { mutableStateOf(minute) }
+    var notificationHour by remember { mutableIntStateOf(hour) }
+    var notificationMinute by remember { mutableIntStateOf(minute) }
     var notificationTime by remember {
         mutableStateOf(formatTime(hour, minute))
     }
@@ -326,8 +324,8 @@ fun TimePickerDialog(
     onDismiss: () -> Unit,
     onConfirm: (Int, Int) -> Unit
 ) {
-    var hour by remember { mutableStateOf(initialHour) }
-    var minute by remember { mutableStateOf(initialMinute) }
+    var hour by remember { mutableIntStateOf(initialHour) }
+    var minute by remember { mutableIntStateOf(initialMinute) }
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(

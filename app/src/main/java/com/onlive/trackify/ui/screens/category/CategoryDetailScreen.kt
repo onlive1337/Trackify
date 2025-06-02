@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -50,13 +49,12 @@ import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Category
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.viewmodel.CategoryViewModel
+import androidx.core.graphics.toColorInt
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryDetailScreen(
     categoryId: Long,
     onNavigateBack: () -> Unit,
-    modifier: Modifier = Modifier,
     categoryViewModel: CategoryViewModel = viewModel()
 ) {
     val predefinedColors = listOf(
@@ -131,7 +129,7 @@ fun CategoryDetailScreen(
                         .clip(CircleShape)
                         .background(
                             try {
-                                Color(android.graphics.Color.parseColor(categoryColor))
+                                Color(categoryColor.toColorInt())
                             } catch (e: Exception) {
                                 Color.Gray
                             }
@@ -263,7 +261,7 @@ fun ColorPickerItem(
 ) {
     val borderWidth = if (isSelected) 3.dp else 1.dp
     val color = try {
-        Color(android.graphics.Color.parseColor(colorCode))
+        Color(colorCode.toColorInt())
     } catch (e: Exception) {
         Color.Gray
     }

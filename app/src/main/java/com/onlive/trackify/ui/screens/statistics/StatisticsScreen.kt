@@ -16,10 +16,8 @@ import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.CurrencyFormatter
 import com.onlive.trackify.viewmodel.StatisticsViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatisticsScreen(
-    modifier: Modifier = Modifier,
     viewModel: StatisticsViewModel = viewModel()
 ) {
     val context = LocalContext.current
@@ -57,8 +55,6 @@ fun StatisticsScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             TotalSpendingCard(
-                monthlySpending = totalMonthlySpending,
-                yearlySpending = totalYearlySpending,
                 formattedMonthlySpending = formattedMonthlySpending,
                 formattedYearlySpending = formattedYearlySpending
             )

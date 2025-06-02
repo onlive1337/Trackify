@@ -17,11 +17,9 @@ import com.onlive.trackify.ui.components.TrackifyCard
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.PreferenceManager
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CurrencySettingsScreen(
-    onNavigateBack: () -> Unit,
-    modifier: Modifier = Modifier
+    onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
     val preferenceManager = remember { PreferenceManager(context) }

@@ -17,11 +17,9 @@ import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.LocaleHelper
 import com.onlive.trackify.utils.PreferenceManager
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LanguageSettingsScreen(
-    onNavigateBack: () -> Unit,
-    modifier: Modifier = Modifier
+    onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
     val preferenceManager = remember { PreferenceManager(context) }
@@ -74,7 +72,6 @@ fun LanguageSettingsScreen(
                 items(LocaleHelper.getAvailableLanguages()) { language ->
                     LanguageItem(
                         languageName = language.name,
-                        languageCode = language.code,
                         selected = language.code == selectedLanguageCode,
                         onClick = {
                             if (language.code != selectedLanguageCode) {
@@ -111,7 +108,6 @@ fun LanguageSettingsScreen(
 @Composable
 private fun LanguageItem(
     languageName: String,
-    languageCode: String,
     selected: Boolean,
     onClick: () -> Unit
 ) {
