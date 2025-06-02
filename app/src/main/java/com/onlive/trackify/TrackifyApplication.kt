@@ -17,6 +17,7 @@ import com.onlive.trackify.utils.ThemeManager
 import com.onlive.trackify.workers.DatabaseCleanupWorker
 import com.onlive.trackify.workers.SubscriptionReminderWorker
 import java.util.concurrent.TimeUnit
+import kotlin.system.exitProcess
 
 class TrackifyApplication : Application(), Configuration.Provider {
 
@@ -89,7 +90,7 @@ class TrackifyApplication : Application(), Configuration.Provider {
 
     private fun handleFatalError(e: Exception) {
         e.printStackTrace()
-        System.exit(1)
+        exitProcess(1)
     }
 
     override fun onTerminate() {
