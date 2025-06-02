@@ -350,7 +350,7 @@ fun SubscriptionDetailScreen(
                         if (isNewSubscription) {
                             val newSubscription = Subscription(
                                 name = name,
-                                description = if (description.isEmpty()) null else description,
+                                description = description.ifEmpty { null },
                                 price = priceValue,
                                 billingFrequency = billingFrequency,
                                 startDate = startDate,
@@ -363,7 +363,7 @@ fun SubscriptionDetailScreen(
                             existingSubscription?.let {
                                 val updatedSubscription = it.copy(
                                     name = name,
-                                    description = if (description.isEmpty()) null else description,
+                                    description = description.ifEmpty { null },
                                     price = priceValue,
                                     billingFrequency = billingFrequency,
                                     startDate = startDate,
