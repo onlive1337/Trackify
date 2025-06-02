@@ -34,11 +34,21 @@ fun HomeScreen(
     onSubscriptionClick: (Long) -> Unit,
     viewModel: SubscriptionViewModel = viewModel()
 ) {
-    val subscriptions by viewModel.allActiveSubscriptions.observeAsState(emptyList())
+    val allActiveSubscriptions by viewModel.allActiveSubscriptions.observeAsState(emptyList())
     val loading by viewModel.isLoading.observeAsState(false)
 
     var query by remember { mutableStateOf("") }
     var isGridMode by remember { mutableStateOf(false) }
+
+    val filteredSubscriptions = remember(query, allActiveSubscriptions) {
+        if (query.isEmpty()) {
+            allActiveSubscriptions
+        } else {
+            allActiveSubscriptions.filter { subscription ->
+                subscription.name.contains(query, ignoreCase = true)
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -76,10 +86,6 @@ fun HomeScreen(
                         query = query,
                         onQueryChange = { newQuery ->
                             query = newQuery
-                            if (newQuery.isEmpty()) {
-                            } else {
-                                viewModel.searchSubscriptions(newQuery)
-                            }
                         },
                         onSearch = { },
                         expanded = false,
@@ -102,17 +108,28 @@ fun HomeScreen(
                 ) {
                     CircularProgressIndicator()
                 }
-            } else if (subscriptions.isEmpty()) {
+            } else if (allActiveSubscriptions.isEmpty()) {
                 EmptySubscriptionsView()
+            } else if (filteredSubscriptions.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.subscriptions_not_found),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                    )
+                }
             } else {
                 if (isGridMode) {
                     SubscriptionsGrid(
-                        subscriptions = subscriptions,
+                        subscriptions = filteredSubscriptions,
                         onSubscriptionClick = onSubscriptionClick
                     )
                 } else {
                     SubscriptionsList(
-                        subscriptions = subscriptions,
+                        subscriptions = filteredSubscriptions,
                         onSubscriptionClick = onSubscriptionClick
                     )
                 }
