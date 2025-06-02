@@ -1,6 +1,7 @@
 package com.onlive.trackify
 
 import android.app.Application
+import android.content.ComponentCallbacks2
 import androidx.work.Configuration
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
@@ -104,7 +105,7 @@ class TrackifyApplication : Application(), Configuration.Provider {
 
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
-        if (level >= TRIM_MEMORY_RUNNING_LOW) {
+        if (level >= ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW) {
             MemoryUtils.handleLowMemory(this)
             cacheService.trimCache()
         }

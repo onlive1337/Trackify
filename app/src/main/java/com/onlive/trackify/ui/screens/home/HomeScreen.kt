@@ -8,10 +8,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.ViewList
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -47,7 +47,7 @@ fun HomeScreen(
                 actions = {
                     IconButton(onClick = { isGridMode = !isGridMode }) {
                         Icon(
-                            imageVector = if (isGridMode) Icons.Filled.ViewList else Icons.Filled.GridView,
+                            imageVector = if (isGridMode) Icons.AutoMirrored.Filled.ViewList else Icons.Filled.GridView,
                             contentDescription = stringResource(R.string.toggle_view_mode)
                         )
                     }
@@ -71,19 +71,25 @@ fun HomeScreen(
                 .padding(paddingValues)
         ) {
             SearchBar(
-                query = query,
-                onQueryChange = { newQuery ->
-                    query = newQuery
-                    if (newQuery.isEmpty()) {
-                    } else {
-                        viewModel.searchSubscriptions(newQuery)
-                    }
+                inputField = {
+                    SearchBarDefaults.InputField(
+                        query = query,
+                        onQueryChange = { newQuery ->
+                            query = newQuery
+                            if (newQuery.isEmpty()) {
+                            } else {
+                                viewModel.searchSubscriptions(newQuery)
+                            }
+                        },
+                        onSearch = { },
+                        expanded = false,
+                        onExpandedChange = { },
+                        placeholder = { Text(stringResource(R.string.search_subscriptions)) },
+                        leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) }
+                    )
                 },
-                onSearch = { },
-                active = false,
-                onActiveChange = { },
-                placeholder = { Text(stringResource(R.string.search_subscriptions)) },
-                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                expanded = false,
+                onExpandedChange = { },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp)

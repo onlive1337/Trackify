@@ -4,7 +4,6 @@ import java.io.FileInputStream
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
 }

@@ -40,7 +40,7 @@ fun SubscriptionSelector(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .menuAnchor(),
+                    .menuAnchor(MenuAnchorType.PrimaryNotEditable),
                 isError = isError,
                 supportingText = if (isError) {
                     { Text(errorMessage) }

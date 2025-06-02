@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.core.view.WindowCompat
 import com.onlive.trackify.ui.theme.TrackifyTheme
 import com.onlive.trackify.utils.LocaleHelper
@@ -24,11 +25,9 @@ class MainActivity : ComponentActivity(), PreferenceManager.OnPreferenceChangedL
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        window.navigationBarColor = getColor(R.color.md_theme_dark_surface)
+        enableEdgeToEdge()
 
-        WindowCompat.getInsetsController(window, window.decorView).apply {
-            isAppearanceLightNavigationBars = false
-        }
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         themeManager = ThemeManager(this)
         preferenceManager.addOnPreferenceChangedListener(this)

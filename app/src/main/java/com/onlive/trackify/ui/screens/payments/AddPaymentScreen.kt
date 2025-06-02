@@ -42,7 +42,7 @@ fun AddPaymentScreen(
 
     val isEditing = paymentId != -1L && existingPayment != null
 
-    var selectedSubscriptionId by remember { mutableStateOf(subscriptionId) }
+    var selectedSubscriptionId by remember { mutableLongStateOf(subscriptionId) }
     var amount by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
     var paymentDate by remember { mutableStateOf(Date()) }
