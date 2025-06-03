@@ -11,6 +11,8 @@ import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.viewmodel.StatisticsViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -26,11 +28,8 @@ class LiveStatisticsUpdater(
 ) {
     val totalMonthlySpending = MediatorLiveData<Double>()
     val totalYearlySpending = MediatorLiveData<Double>()
-
     val spendingByCategory = MediatorLiveData<List<StatisticsViewModel.CategorySpending>>()
-
     val monthlySpendingHistory = MediatorLiveData<List<StatisticsViewModel.MonthlySpending>>()
-
     val subscriptionTypeSpending = MediatorLiveData<List<StatisticsViewModel.SubscriptionTypeSpending>>()
 
     private val subscriptions = ConcurrentHashMap<Long, Subscription>()
@@ -38,57 +37,133 @@ class LiveStatisticsUpdater(
     private val categories = ConcurrentHashMap<Long, Category>()
 
     private val calculationScope = CoroutineScope(Dispatchers.Default)
+    private var debounceJob: Job? = null
+
+    private var cachedMonthlySpending: Double? = null
+    private var cachedYearlySpending: Double? = null
+    private var lastCalculationTime = 0L
+    private val cacheValidTime = 30_000L
+
+    companion object {
+        private const val TAG = "LiveStatisticsUpdater"
+        private const val DEBOUNCE_DELAY = 300L
+    }
 
     init {
         totalMonthlySpending.addSource(subscriptionsLiveData) { subs ->
             updateSubscriptions(subs)
-            calculateMonthlySpending()
+            debouncedCalculateMonthlySpending()
         }
 
         totalYearlySpending.addSource(subscriptionsLiveData) { subs ->
             updateSubscriptions(subs)
-            calculateYearlySpending()
+            debouncedCalculateYearlySpending()
         }
 
         spendingByCategory.apply {
             addSource(subscriptionsLiveData) { subs ->
                 updateSubscriptions(subs)
-                calculateSpendingByCategory()
+                debouncedCalculateSpendingByCategory()
             }
             addSource(categoriesLiveData) { cats ->
                 updateCategories(cats)
-                calculateSpendingByCategory()
+                debouncedCalculateSpendingByCategory()
             }
         }
 
         monthlySpendingHistory.addSource(subscriptionsLiveData) { subs ->
             updateSubscriptions(subs)
-            calculateMonthlySpendingHistory()
+            debouncedCalculateMonthlySpendingHistory()
         }
 
         subscriptionTypeSpending.addSource(subscriptionsLiveData) { subs ->
             updateSubscriptions(subs)
-            calculateSpendingBySubscriptionType()
+            debouncedCalculateSpendingBySubscriptionType()
         }
     }
 
     private fun updateSubscriptions(subs: List<Subscription>) {
-        subscriptions.clear()
-        subs.forEach { subscription ->
-            subscriptions[subscription.subscriptionId] = subscription
+        try {
+            subscriptions.clear()
+            subs.forEach { subscription ->
+                subscriptions[subscription.subscriptionId] = subscription
+            }
+            invalidateCache()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error updating subscriptions", e)
         }
     }
 
     private fun updateCategories(cats: List<Category>) {
-        categories.clear()
-        cats.forEach { category ->
-            category.categoryId.let { categories[it] = category }
+        try {
+            categories.clear()
+            cats.forEach { category ->
+                category.categoryId.let { categories[it] = category }
+            }
+            invalidateCache()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error updating categories", e)
+        }
+    }
+
+    private fun invalidateCache() {
+        cachedMonthlySpending = null
+        cachedYearlySpending = null
+        lastCalculationTime = 0L
+    }
+
+    private fun isCacheValid(): Boolean {
+        return System.currentTimeMillis() - lastCalculationTime < cacheValidTime
+    }
+
+    private fun debouncedCalculateMonthlySpending() {
+        debounceJob?.cancel()
+        debounceJob = calculationScope.launch {
+            delay(DEBOUNCE_DELAY)
+            calculateMonthlySpending()
+        }
+    }
+
+    private fun debouncedCalculateYearlySpending() {
+        debounceJob?.cancel()
+        debounceJob = calculationScope.launch {
+            delay(DEBOUNCE_DELAY)
+            calculateYearlySpending()
+        }
+    }
+
+    private fun debouncedCalculateSpendingByCategory() {
+        debounceJob?.cancel()
+        debounceJob = calculationScope.launch {
+            delay(DEBOUNCE_DELAY)
+            calculateSpendingByCategory()
+        }
+    }
+
+    private fun debouncedCalculateMonthlySpendingHistory() {
+        debounceJob?.cancel()
+        debounceJob = calculationScope.launch {
+            delay(DEBOUNCE_DELAY)
+            calculateMonthlySpendingHistory()
+        }
+    }
+
+    private fun debouncedCalculateSpendingBySubscriptionType() {
+        debounceJob?.cancel()
+        debounceJob = calculationScope.launch {
+            delay(DEBOUNCE_DELAY)
+            calculateSpendingBySubscriptionType()
         }
     }
 
     fun calculateMonthlySpending() {
         calculationScope.launch {
             try {
+                if (isCacheValid() && cachedMonthlySpending != null) {
+                    totalMonthlySpending.postValue(cachedMonthlySpending!!)
+                    return@launch
+                }
+
                 var monthlyCost = 0.0
 
                 for (subscription in subscriptions.values) {
@@ -100,9 +175,11 @@ class LiveStatisticsUpdater(
                     }
                 }
 
+                cachedMonthlySpending = monthlyCost
+                lastCalculationTime = System.currentTimeMillis()
                 totalMonthlySpending.postValue(monthlyCost)
             } catch (e: Exception) {
-                Log.e("LiveStatisticsUpdater", "Error calculating monthly spending", e)
+                Log.e(TAG, "Error calculating monthly spending", e)
                 totalMonthlySpending.postValue(0.0)
             }
         }
@@ -111,6 +188,11 @@ class LiveStatisticsUpdater(
     fun calculateYearlySpending() {
         calculationScope.launch {
             try {
+                if (isCacheValid() && cachedYearlySpending != null) {
+                    totalYearlySpending.postValue(cachedYearlySpending!!)
+                    return@launch
+                }
+
                 var yearlyCost = 0.0
 
                 for (subscription in subscriptions.values) {
@@ -122,9 +204,11 @@ class LiveStatisticsUpdater(
                     }
                 }
 
+                cachedYearlySpending = yearlyCost
+                lastCalculationTime = System.currentTimeMillis()
                 totalYearlySpending.postValue(yearlyCost)
             } catch (e: Exception) {
-                Log.e("LiveStatisticsUpdater", "Error calculating yearly spending", e)
+                Log.e(TAG, "Error calculating yearly spending", e)
                 totalYearlySpending.postValue(0.0)
             }
         }
@@ -165,7 +249,7 @@ class LiveStatisticsUpdater(
 
                 spendingByCategory.postValue(result)
             } catch (e: Exception) {
-                Log.e("LiveStatisticsUpdater", "Error calculating spending by category", e)
+                Log.e(TAG, "Error calculating spending by category", e)
                 spendingByCategory.postValue(emptyList())
             }
         }
@@ -201,7 +285,9 @@ class LiveStatisticsUpdater(
 
                         if ((year > startYear) || (year == startYear && month >= startMonth)) {
                             if (subscription.endDate != null) {
-                                val subscriptionEnd = Calendar.getInstance().apply { time = subscription.endDate!! }
+                                val subscriptionEnd = Calendar.getInstance().apply { time =
+                                    subscription.endDate
+                                }
                                 val endYear = subscriptionEnd.get(Calendar.YEAR)
                                 val endMonth = subscriptionEnd.get(Calendar.MONTH)
 
@@ -210,14 +296,14 @@ class LiveStatisticsUpdater(
                                 }
                             }
 
-                            when (subscription.billingFrequency) {
-                                BillingFrequency.MONTHLY -> totalAmount += subscription.price
+                            totalAmount += when (subscription.billingFrequency) {
+                                BillingFrequency.MONTHLY -> subscription.price
                                 BillingFrequency.YEARLY -> {
                                     val paymentMonth = subscriptionStart.get(Calendar.MONTH)
                                     if (month == paymentMonth) {
-                                        totalAmount += subscription.price
+                                        subscription.price
                                     } else {
-                                        totalAmount += subscription.price / 12
+                                        subscription.price / 12
                                     }
                                 }
                             }
@@ -230,7 +316,7 @@ class LiveStatisticsUpdater(
                 monthlyData.reverse()
                 monthlySpendingHistory.postValue(monthlyData)
             } catch (e: Exception) {
-                Log.e("LiveStatisticsUpdater", "Error calculating monthly spending history", e)
+                Log.e(TAG, "Error calculating monthly spending history", e)
                 monthlySpendingHistory.postValue(emptyList())
             }
         }
@@ -266,16 +352,21 @@ class LiveStatisticsUpdater(
 
                 subscriptionTypeSpending.postValue(result)
             } catch (e: Exception) {
-                Log.e("LiveStatisticsUpdater", "Error calculating subscription type spending", e)
+                Log.e(TAG, "Error calculating subscription type spending", e)
                 subscriptionTypeSpending.postValue(emptyList())
             }
         }
     }
 
     private fun getMonthName(month: Int): String {
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.MONTH, month)
-        val dateFormat = SimpleDateFormat("MMM", Locale.getDefault())
-        return dateFormat.format(calendar.time)
+        return try {
+            val calendar = Calendar.getInstance()
+            calendar.set(Calendar.MONTH, month)
+            val dateFormat = SimpleDateFormat("MMM", Locale.getDefault())
+            dateFormat.format(calendar.time)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting month name", e)
+            "Month $month"
+        }
     }
 }

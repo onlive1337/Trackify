@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
+import android.util.Log
 
 class PaymentRepository(
     private val paymentDao: PaymentDao,
@@ -23,26 +24,43 @@ class PaymentRepository(
     private val cacheTime = TimeUnit.MINUTES.toMillis(5)
 
     val allPayments: LiveData<List<Payment>> = paymentDao.getAllPayments()
-
     val pendingPayments: LiveData<List<Payment>> = paymentDao.getPaymentsByStatus(PaymentStatus.PENDING)
     val pendingPaymentsCount: LiveData<Int> = paymentDao.getPaymentsCountByStatus(PaymentStatus.PENDING)
 
     private val _totalMonthlyAmount = MediatorLiveData<Double>()
     val totalMonthlyAmount: LiveData<Double> = _totalMonthlyAmount
 
+    companion object {
+        private const val TAG = "PaymentRepository"
+    }
+
     init {
-        updateTotalMonthlyAmount()
+        try {
+            updateTotalMonthlyAmount()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error initializing PaymentRepository", e)
+        }
     }
 
     private fun updateTotalMonthlyAmount() {
-        val calendar = Calendar.getInstance()
-        val year = calendar.get(Calendar.YEAR)
-        val month = calendar.get(Calendar.MONTH)
+        try {
+            val calendar = Calendar.getInstance()
+            val year = calendar.get(Calendar.YEAR)
+            val month = calendar.get(Calendar.MONTH)
 
-        val totalAmount = getTotalAmountForMonth(year, month)
+            val totalAmount = getTotalAmountForMonth(year, month)
 
-        _totalMonthlyAmount.addSource(totalAmount) { amount ->
-            _totalMonthlyAmount.value = amount ?: 0.0
+            _totalMonthlyAmount.addSource(totalAmount) { amount ->
+                try {
+                    _totalMonthlyAmount.value = amount ?: 0.0
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error updating total monthly amount", e)
+                    _totalMonthlyAmount.value = 0.0
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in updateTotalMonthlyAmount", e)
+            _totalMonthlyAmount.value = 0.0
         }
     }
 
@@ -50,8 +68,10 @@ class PaymentRepository(
         return@withContext try {
             val id = paymentDao.insert(payment)
             clearPaymentCaches(payment)
+            Log.d(TAG, "Payment inserted successfully with ID: $id")
             Result.Success(id)
         } catch (e: Exception) {
+            Log.e(TAG, "Error inserting payment", e)
             Result.Error(context.getString(R.string.error_creating_payment), e)
         }
     }
@@ -60,8 +80,10 @@ class PaymentRepository(
         return@withContext try {
             paymentDao.update(payment)
             clearPaymentCaches(payment)
+            Log.d(TAG, "Payment updated successfully: ${payment.paymentId}")
             Result.Success(Unit)
         } catch (e: Exception) {
+            Log.e(TAG, "Error updating payment: ${payment.paymentId}", e)
             Result.Error(context.getString(R.string.error_updating_payment), e)
         }
     }
@@ -70,50 +92,74 @@ class PaymentRepository(
         return@withContext try {
             paymentDao.delete(payment)
             clearPaymentCaches(payment)
+            Log.d(TAG, "Payment deleted successfully: ${payment.paymentId}")
             Result.Success(Unit)
         } catch (e: Exception) {
+            Log.e(TAG, "Error deleting payment: ${payment.paymentId}", e)
             Result.Error(context.getString(R.string.error_deleting_payment), e)
         }
     }
 
     fun getPaymentsBySubscription(subscriptionId: Long): LiveData<List<Payment>> {
-        return paymentDao.getPaymentsBySubscription(subscriptionId)
+        return try {
+            paymentDao.getPaymentsBySubscription(subscriptionId)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting payments by subscription: $subscriptionId", e)
+            MediatorLiveData<List<Payment>>().apply { value = emptyList() }
+        }
     }
 
     fun getPaymentsForMonth(year: Int, month: Int): LiveData<List<Payment>> {
-        val calendar = Calendar.getInstance()
-        calendar.set(year, month, 1, 0, 0, 0)
-        val startDate = calendar.time
+        return try {
+            val calendar = Calendar.getInstance()
+            calendar.set(year, month, 1, 0, 0, 0)
+            val startDate = calendar.time
 
-        calendar.add(Calendar.MONTH, 1)
-        val endDate = calendar.time
+            calendar.add(Calendar.MONTH, 1)
+            val endDate = calendar.time
 
-        return paymentDao.getPaymentsBetweenDates(startDate, endDate)
+            paymentDao.getPaymentsBetweenDates(startDate, endDate)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting payments for month: $year-$month", e)
+            MediatorLiveData<List<Payment>>().apply { value = emptyList() }
+        }
     }
 
     fun getTotalAmountForMonth(year: Int, month: Int): LiveData<Double> {
-        val calendar = Calendar.getInstance()
-        calendar.set(year, month, 1, 0, 0, 0)
-        val startDate = calendar.time
+        return try {
+            val calendar = Calendar.getInstance()
+            calendar.set(year, month, 1, 0, 0, 0)
+            val startDate = calendar.time
 
-        calendar.add(Calendar.MONTH, 1)
-        val endDate = calendar.time
+            calendar.add(Calendar.MONTH, 1)
+            val endDate = calendar.time
 
-        return paymentDao.getTotalAmountBetweenDatesNullSafe(startDate, endDate)
+            paymentDao.getTotalAmountBetweenDatesNullSafe(startDate, endDate)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting total amount for month: $year-$month", e)
+            MediatorLiveData<Double>().apply { value = 0.0 }
+        }
     }
 
     fun getRecentPendingPayments(): LiveData<List<Payment>> {
-        val calendar = Calendar.getInstance()
-        calendar.add(Calendar.DAY_OF_YEAR, 7)
-        return paymentDao.getPendingPaymentsBeforeDate(PaymentStatus.PENDING, calendar.time)
+        return try {
+            val calendar = Calendar.getInstance()
+            calendar.add(Calendar.DAY_OF_YEAR, 7)
+            paymentDao.getPendingPaymentsBeforeDate(PaymentStatus.PENDING, calendar.time)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting recent pending payments", e)
+            MediatorLiveData<List<Payment>>().apply { value = emptyList() }
+        }
     }
 
     suspend fun confirmPayment(paymentId: Long): Result<Unit> = withContext(Dispatchers.IO) {
         return@withContext try {
             paymentDao.updatePaymentStatus(paymentId, PaymentStatus.CONFIRMED)
             cacheService.clearCache("pending_payments")
+            Log.d(TAG, "Payment confirmed successfully: $paymentId")
             Result.Success(Unit)
         } catch (e: Exception) {
+            Log.e(TAG, "Error confirming payment: $paymentId", e)
             Result.Error(context.getString(R.string.error_confirming_payment), e)
         }
     }
@@ -123,8 +169,10 @@ class PaymentRepository(
             val updatedPayment = payment.copy(status = PaymentStatus.CONFIRMED)
             paymentDao.update(updatedPayment)
             clearPaymentCaches(updatedPayment)
+            Log.d(TAG, "Payment confirmed successfully: ${payment.paymentId}")
             Result.Success(Unit)
         } catch (e: Exception) {
+            Log.e(TAG, "Error confirming payment: ${payment.paymentId}", e)
             Result.Error(context.getString(R.string.error_confirming_payment), e)
         }
     }
@@ -135,30 +183,39 @@ class PaymentRepository(
 
             val cachedData = cacheService.getList<Payment>(cacheKey)
             if (cachedData != null) {
+                Log.d(TAG, "Returning cached payments page: limit=$limit, offset=$offset")
                 return@withContext Result.Success(cachedData)
             }
 
             val page = paymentDao.getPaymentsPage(limit, offset)
             cacheService.putList(cacheKey, page, cacheTime)
+            Log.d(TAG, "Loaded payments page: limit=$limit, offset=$offset, size=${page.size}")
             Result.Success(page)
         } catch (e: Exception) {
+            Log.e(TAG, "Error loading payments page: limit=$limit, offset=$offset", e)
             Result.Error(context.getString(R.string.error_loading_payments_page), e)
         }
     }
 
     private fun clearPaymentCaches(payment: Payment) {
-        cacheService.clearCache("all_payments")
-        cacheService.clearCache("payment_${payment.paymentId}")
-        cacheService.clearCache("subscription_payments_${payment.subscriptionId}")
+        try {
+            cacheService.clearCache("all_payments")
+            cacheService.clearCache("payment_${payment.paymentId}")
+            cacheService.clearCache("subscription_payments_${payment.subscriptionId}")
 
-        if (payment.status == PaymentStatus.PENDING) {
-            cacheService.clearCache("pending_payments")
+            if (payment.status == PaymentStatus.PENDING) {
+                cacheService.clearCache("pending_payments")
+            }
+
+            val calendar = Calendar.getInstance()
+            calendar.time = payment.date
+            val year = calendar.get(Calendar.YEAR)
+            val month = calendar.get(Calendar.MONTH)
+            cacheService.clearCache("payments_${year}_${month}")
+
+            Log.d(TAG, "Payment caches cleared for payment: ${payment.paymentId}")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error clearing payment caches", e)
         }
-
-        val calendar = Calendar.getInstance()
-        calendar.time = payment.date
-        val year = calendar.get(Calendar.YEAR)
-        val month = calendar.get(Calendar.MONTH)
-        cacheService.clearCache("payments_${year}_${month}")
     }
 }

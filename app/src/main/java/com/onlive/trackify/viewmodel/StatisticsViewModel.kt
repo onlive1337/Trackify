@@ -32,8 +32,8 @@ class StatisticsViewModel(application: Application) : AndroidViewModel(applicati
         val paymentDao = database.paymentDao()
         val categoryDao = database.categoryDao()
 
-        subscriptionRepository = SubscriptionRepository(subscriptionDao, categoryDao, application)
-        paymentRepository = PaymentRepository(paymentDao)
+        subscriptionRepository = SubscriptionRepository(subscriptionDao, categoryDao, application.applicationContext)
+        paymentRepository = PaymentRepository(paymentDao, application.applicationContext)
         categoryRepository = CategoryRepository(categoryDao)
 
         categories = categoryRepository.allCategories

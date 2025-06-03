@@ -40,9 +40,7 @@ class DataExportImportManager(private val context: Context) {
         val notificationFrequency: String = "DAILY",
         val currencyCode: String = "RUB",
         val languageCode: String = "",
-
         val themeMode: Int = 0,
-
         val gridModeEnabled: Boolean = false
     )
 
@@ -57,7 +55,7 @@ class DataExportImportManager(private val context: Context) {
 
     suspend fun exportData(uri: Uri): Boolean = withContext(Dispatchers.IO) {
         try {
-            Log.d(tag, "Starting data export")
+            Log.d(tag, "Starting data export using Scoped Storage")
 
             val subscriptions = database.subscriptionDao().getAllSubscriptionsSync()
             val payments = database.paymentDao().getAllPaymentsSync()
@@ -94,10 +92,11 @@ class DataExportImportManager(private val context: Context) {
             Log.d(tag, "JSON data generated, length: ${jsonData.length}")
 
             context.contentResolver.openOutputStream(uri)?.use { outputStream ->
-                BufferedWriter(OutputStreamWriter(outputStream)).use { writer ->
+                BufferedWriter(OutputStreamWriter(outputStream, "UTF-8")).use { writer ->
                     writer.write(jsonData)
+                    writer.flush()
                 }
-            }
+            } ?: return@withContext false
 
             Log.d(tag, "Data exported successfully to ${uri.path}")
             return@withContext true
@@ -109,17 +108,22 @@ class DataExportImportManager(private val context: Context) {
 
     suspend fun importData(uri: Uri): Boolean = withContext(Dispatchers.IO) {
         try {
-            Log.d(tag, "Starting data import from ${uri.path}")
+            Log.d(tag, "Starting data import from ${uri.path} using Scoped Storage")
 
             val jsonData = context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                BufferedReader(InputStreamReader(inputStream)).use { reader ->
+                BufferedReader(InputStreamReader(inputStream, "UTF-8")).use { reader ->
                     reader.readText()
                 }
             } ?: return@withContext false
 
             Log.d(tag, "Read JSON data, length: ${jsonData.length}")
 
-            val importedData = gson.fromJson(jsonData, ExportData::class.java)
+            val importedData = try {
+                gson.fromJson(jsonData, ExportData::class.java)
+            } catch (e: Exception) {
+                Log.e(tag, "Error parsing JSON data", e)
+                return@withContext false
+            }
 
             val subscriptions = importedData.subscriptions
             val payments = importedData.payments

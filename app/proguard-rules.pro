@@ -20,7 +20,6 @@
 -dontwarn sun.misc.**
 -keep class com.google.gson.** { *; }
 -keep class com.google.gson.stream.** { *; }
-
 -keep class com.onlive.trackify.utils.DataExportImportManager$** { *; }
 
 -keep class kotlin.Metadata { *; }
@@ -69,7 +68,6 @@
 -keep class * implements androidx.lifecycle.LifecycleObserver {
     <init>(...);
 }
-
 -keepclassmembers class * extends androidx.lifecycle.ViewModel {
     <init>(...);
 }
@@ -87,12 +85,10 @@
 
 -keep class com.github.mikephil.charting.** { *; }
 -dontwarn com.github.mikephil.charting.**
-
 -keep class com.patrykandpatrick.vico.** { *; }
 -dontwarn com.patrykandpatrick.vico.**
 
 -keep class com.onlive.trackify.TrackifyApplication { *; }
-
 -keep class com.onlive.trackify.MainActivity { *; }
 
 -keepclassmembers enum * {
@@ -113,7 +109,7 @@
     public static final android.os.Parcelable$Creator *;
 }
 
--repackageclasses
+-repackageclasses 'a'
 -allowaccessmodification
 -optimizations !code/simplification/arithmetic,!code/simplification/cast,!field/*,!class/merging/*
 
@@ -127,10 +123,19 @@
     public static int e(...);
 }
 
-
 -keepclassmembers class com.onlive.trackify.utils.** {
     public <methods>;
 }
 
-# remove in release
--keepattributes SourceFile,LineNumberTable
+-keep class com.onlive.trackify.data.repository.** { 
+    public <methods>; 
+}
+-keep class com.onlive.trackify.data.database.** { 
+    public <methods>; 
+}
+
+-dontwarn java.lang.invoke.**
+-dontwarn **$$serializer
+-keepclassmembers class **$Companion {
+    public <methods>;
+}

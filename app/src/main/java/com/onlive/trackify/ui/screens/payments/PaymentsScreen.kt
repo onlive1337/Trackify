@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -33,6 +34,7 @@ import com.onlive.trackify.utils.CurrencyFormatter
 import com.onlive.trackify.utils.DateUtils
 import com.onlive.trackify.viewmodel.PaymentViewModel
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun PaymentsScreen(
@@ -49,8 +51,38 @@ fun PaymentsScreen(
 
     var paymentToDelete by remember { mutableStateOf<Payment?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
-
     var selectedPayment by remember { mutableStateOf<Payment?>(null) }
+
+    val listState = rememberLazyListState()
+    val pageSize = 20
+    var displayedPayments by remember { mutableStateOf(payments.take(pageSize)) }
+    var isLoadingMore by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(payments) {
+        displayedPayments = payments.take(pageSize)
+    }
+
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
+            .collect { lastVisibleIndex ->
+                if (lastVisibleIndex != null &&
+                    lastVisibleIndex >= displayedPayments.size - 5 &&
+                    displayedPayments.size < payments.size &&
+                    !isLoadingMore) {
+
+                    isLoadingMore = true
+                    coroutineScope.launch {
+                        try {
+                            val nextPageEnd = minOf(displayedPayments.size + pageSize, payments.size)
+                            displayedPayments = payments.take(nextPageEnd)
+                        } finally {
+                            isLoadingMore = false
+                        }
+                    }
+                }
+            }
+    }
 
     Scaffold(
         topBar = {
@@ -109,10 +141,11 @@ fun PaymentsScreen(
                 }
             } else {
                 LazyColumn(
+                    state = listState,
                     contentPadding = PaddingValues(vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(payments) { payment ->
+                    items(displayedPayments, key = { it.paymentId }) { payment ->
                         val subscription = subscriptions.find { it.subscriptionId == payment.subscriptionId }
                         PaymentItem(
                             payment = payment,
@@ -130,6 +163,19 @@ fun PaymentsScreen(
                                 showDeleteDialog = true
                             }
                         )
+                    }
+
+                    if (isLoadingMore) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                            }
+                        }
                     }
                 }
             }
