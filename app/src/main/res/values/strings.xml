@@ -297,4 +297,9 @@
     <string name="notification_week_description">Уведомление за 7 дней до платежа или окончания подписки</string>
     <string name="notification_two_weeks_description">Уведомление за 14 дней до платежа или окончания подписки</string>
     <string name="notification_month_description">Уведомление за 30 дней до платежа или окончания подписки</string>
+
+    <string name="and_more_count">…и ещё %d</string>
+    <string name="month_fallback">Месяц %d</string>
+    <string name="app_crashed_title">Ошибка приложения</string>
+    <string name="app_crashed_message">Приложение неожиданно закрылось. Пожалуйста, перезапустите его.</string>
 </resources>

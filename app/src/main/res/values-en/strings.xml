@@ -297,4 +297,9 @@
     <string name="notification_week_description">Notification 7 days before payment or subscription expiration</string>
     <string name="notification_two_weeks_description">Notification 14 days before payment or subscription expiration</string>
     <string name="notification_month_description">Notification 30 days before payment or subscription expiration</string>
+
+    <string name="and_more_count">…and %d more</string>
+    <string name="month_fallback">Month %d</string>
+    <string name="app_crashed_title">Application Error</string>
+    <string name="app_crashed_message">The application closed unexpectedly. Please restart it.</string>
 </resources>

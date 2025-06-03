@@ -366,7 +366,7 @@ class LiveStatisticsUpdater(
             dateFormat.format(calendar.time)
         } catch (e: Exception) {
             Log.e(TAG, "Error getting month name", e)
-            "Month $month"
+            context.getString(R.string.month_fallback, month)
         }
     }
 }

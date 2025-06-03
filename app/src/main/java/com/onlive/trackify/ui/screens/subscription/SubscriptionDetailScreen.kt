@@ -503,7 +503,7 @@ fun PaymentHistorySection(payments: List<Payment>) {
         if (payments.size > 5) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "...и ещё ${payments.size - 5}",
+                text = stringResource(R.string.and_more_count, payments.size - 5),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.align(Alignment.CenterHorizontally)

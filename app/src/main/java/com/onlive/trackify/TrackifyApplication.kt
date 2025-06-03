@@ -1,7 +1,7 @@
 package com.onlive.trackify
 
 import android.app.Application
-import android.content.ComponentCallbacks2
+import android.util.Log
 import androidx.work.Configuration
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
@@ -33,6 +33,8 @@ class TrackifyApplication : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
 
+        setupGlobalExceptionHandler()
+
         try {
             errorHandler = ErrorHandler.getInstance(this)
 
@@ -44,13 +46,35 @@ class TrackifyApplication : Application(), Configuration.Provider {
         }
     }
 
+    private fun setupGlobalExceptionHandler() {
+        val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
+
+        Thread.setDefaultUncaughtExceptionHandler { thread, exception ->
+            try {
+                Log.e("TrackifyApplication", "Uncaught exception in thread ${thread.name}", exception)
+
+                exception.printStackTrace()
+
+                try {
+                    cacheService.clearCache()
+                } catch (e: Exception) {
+                    Log.e("TrackifyApplication", "Error clearing cache during crash", e)
+                }
+
+            } catch (e: Exception) {
+                Log.e("TrackifyApplication", "Error in exception handler", e)
+            } finally {
+                defaultHandler?.uncaughtException(thread, exception)
+            }
+        }
+    }
+
     private fun initializeComponents() {
         themeManager = ThemeManager(this)
 
         preferenceManager = PreferenceManager(this)
 
         databaseInitializer = DatabaseInitializer(this)
-        databaseInitializer.initializeCategories()
 
         notificationHelper = NotificationHelper(this)
         notificationHelper.createNotificationChannel()
@@ -89,6 +113,7 @@ class TrackifyApplication : Application(), Configuration.Provider {
     }
 
     private fun handleFatalError(e: Exception) {
+        Log.e("TrackifyApplication", "Fatal error during initialization", e)
         e.printStackTrace()
         exitProcess(1)
     }
@@ -106,7 +131,7 @@ class TrackifyApplication : Application(), Configuration.Provider {
 
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
-        if (level >= ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW) {
+        if (level >= TRIM_MEMORY_RUNNING_LOW) {
             MemoryUtils.handleLowMemory(this)
             cacheService.trimCache()
         }
@@ -114,6 +139,6 @@ class TrackifyApplication : Application(), Configuration.Provider {
 
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
-            .setMinimumLoggingLevel(android.util.Log.INFO)
+            .setMinimumLoggingLevel(Log.INFO)
             .build()
 }

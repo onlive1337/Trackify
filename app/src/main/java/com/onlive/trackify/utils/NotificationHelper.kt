@@ -98,7 +98,7 @@ class NotificationHelper(private val context: Context) {
         val notificationTextWithAmount = "$notificationText ($formattedAmount)"
 
         val builder = NotificationCompat.Builder(context, PAYMENT_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_subscriptions)
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle(context.getString(R.string.notification_upcoming_payment_title))
             .setContentText(notificationTextWithAmount)
             .setStyle(NotificationCompat.BigTextStyle().bigText(notificationTextWithAmount))
@@ -145,7 +145,7 @@ class NotificationHelper(private val context: Context) {
         }
 
         val builder = NotificationCompat.Builder(context, EXPIRATION_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_subscriptions)
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle(context.getString(R.string.notification_channel_expiration))
             .setContentText(notificationText)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
