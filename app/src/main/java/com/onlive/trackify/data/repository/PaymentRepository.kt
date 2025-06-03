@@ -1,7 +1,9 @@
 package com.onlive.trackify.data.repository
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
+import com.onlive.trackify.R
 import com.onlive.trackify.data.cache.CacheService
 import com.onlive.trackify.data.database.PaymentDao
 import com.onlive.trackify.data.model.Payment
@@ -12,7 +14,10 @@ import kotlinx.coroutines.withContext
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
-class PaymentRepository(private val paymentDao: PaymentDao) {
+class PaymentRepository(
+    private val paymentDao: PaymentDao,
+    private val context: Context
+) {
 
     private val cacheService = CacheService.getInstance()
     private val cacheTime = TimeUnit.MINUTES.toMillis(5)
@@ -47,7 +52,7 @@ class PaymentRepository(private val paymentDao: PaymentDao) {
             clearPaymentCaches(payment)
             Result.Success(id)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Ошибка при создании платежа")
+            Result.Error(context.getString(R.string.error_creating_payment), e)
         }
     }
 
@@ -57,7 +62,7 @@ class PaymentRepository(private val paymentDao: PaymentDao) {
             clearPaymentCaches(payment)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Ошибка при обновлении платежа")
+            Result.Error(context.getString(R.string.error_updating_payment), e)
         }
     }
 
@@ -67,7 +72,7 @@ class PaymentRepository(private val paymentDao: PaymentDao) {
             clearPaymentCaches(payment)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Ошибка при удалении платежа")
+            Result.Error(context.getString(R.string.error_deleting_payment), e)
         }
     }
 
@@ -109,7 +114,7 @@ class PaymentRepository(private val paymentDao: PaymentDao) {
             cacheService.clearCache("pending_payments")
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Ошибка при подтверждении платежа")
+            Result.Error(context.getString(R.string.error_confirming_payment), e)
         }
     }
 
@@ -120,7 +125,7 @@ class PaymentRepository(private val paymentDao: PaymentDao) {
             clearPaymentCaches(updatedPayment)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Ошибка при подтверждении платежа")
+            Result.Error(context.getString(R.string.error_confirming_payment), e)
         }
     }
 
@@ -134,10 +139,10 @@ class PaymentRepository(private val paymentDao: PaymentDao) {
             }
 
             val page = paymentDao.getPaymentsPage(limit, offset)
-            cacheService.putList<Payment>(cacheKey, page, cacheTime)
+            cacheService.putList(cacheKey, page, cacheTime)
             Result.Success(page)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Ошибка при загрузке страницы платежей")
+            Result.Error(context.getString(R.string.error_loading_payments_page), e)
         }
     }
 

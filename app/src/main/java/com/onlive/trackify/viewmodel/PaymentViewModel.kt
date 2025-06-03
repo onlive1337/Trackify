@@ -20,7 +20,7 @@ class PaymentViewModel(application: Application) : AndroidViewModel(application)
 
     init {
         val paymentDao = AppDatabase.getDatabase(application).paymentDao()
-        repository = PaymentRepository(paymentDao)
+        repository = PaymentRepository(paymentDao, application.applicationContext)
         allPayments = repository.allPayments
         pendingPayments = repository.pendingPayments
         pendingPaymentsCount = repository.pendingPaymentsCount

@@ -1,73 +1,153 @@
-# Trackify
+# Trackify 📱
 
-Trackify - это приложение для отслеживания ваших подписок и регулярных платежей. Контролируйте ежемесячные расходы, получайте уведомления о предстоящих платежах и анализируйте свои траты.
+<div align="center">
 
-![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+**Modern subscription management app for Android**
 
-## Возможности
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Android](https://img.shields.io/badge/Platform-Android-green.svg)](https://android.com)
+[![Kotlin](https://img.shields.io/badge/Language-Kotlin-purple.svg)](https://kotlinlang.org)
+[![Material 3](https://img.shields.io/badge/Design-Material%203-blue.svg)](https://m3.material.io)
 
-- 📱 Управление подписками и их платежами
-- 📊 Подробная статистика расходов по категориям и времени
-- 📅 Напоминания о предстоящих платежах
-- 🗂️ Организация подписок по категориям
-- 💼 Экспорт и импорт данных для резервного копирования
-- 🌙 Поддержка светлой и тёмной темы
-- 🎨 Динамические цвета Material You (Android 12+)
+</div>
 
-## Скриншоты
+## ✨ Features
 
-[Здесь будут скриншоты приложения]
+- **📱 Modern Material 3 Design** - Beautiful, intuitive interface with dynamic colors
+- **💰 Subscription Tracking** - Manage all your recurring payments in one place
+- **📊 Statistics & Analytics** - Visualize your spending patterns with charts
+- **🔔 Smart Notifications** - Get reminders before payments are due
+- **🏷️ Categories** - Organize subscriptions with custom categories and colors
+- **💳 Payment History** - Track all your payments with detailed history
+- **🌍 Multi-language** - Available in English and Russian
+- **💱 Multi-currency** - Support for multiple currencies (USD, EUR, RUB, etc.)
+- **📤 Data Export/Import** - Backup and restore your data
+- **🌙 Dark/Light Theme** - Automatic theme switching based on system preferences
 
-## Установка
+## 🛠️ Tech Stack
 
-### F-Droid
+- **Language**: Kotlin
+- **UI**: Jetpack Compose with Material 3
+- **Architecture**: MVVM with Repository pattern
+- **Database**: Room (SQLite)
+- **Async**: Coroutines + Flow
+- **DI**: Manual dependency injection
+- **Background**: WorkManager
+- **Charts**: Custom Compose charts
+- **Navigation**: Navigation Compose
 
-Trackify скоро будет доступен в репозитории F-Droid.
+## 📋 Requirements
 
-### Сборка из исходников
+- **Android 9.0 (API 28)** or higher
+- **Target Android 14 (API 35)**
+- **Kotlin 2.1.21**
+- **Compile SDK 35**
 
-1. Клонируйте репозиторий:
+## 🚀 Installation
+
+### From Source
+
+1. **Clone the repository**
    ```bash
    git clone https://github.com/onlive1337/trackify.git
+   cd trackify
    ```
 
-2. Откройте проект в Android Studio
+2. **Open in Android Studio**
+   - Open Android Studio
+   - Select "Open an existing project"
+   - Navigate to the cloned directory
 
-3. Выполните сборку проекта:
-   ```bash
-   ./gradlew assembleDebug
-   ```
+3. **Build and run**
+   - Wait for Gradle sync to complete
+   - Click "Run" or press `Ctrl+R`
 
-4. Полученный APK файл будет находиться в папке `app/build/outputs/apk/debug/`
+### Release APK
 
-## Требования
+Download the latest APK from the [Releases](https://github.com/onlive1337/trackify/releases) page.
 
-- Android 6.0+ (API 24)
-- Компилируется с использованием Android SDK 34
-- Kotlin 1.9+
+## 📁 Project Structure
 
-## Технологии
+```
+app/src/main/java/com/onlive/trackify/
+├── data/                   # Data layer
+│   ├── database/          # Room database
+│   ├── model/             # Data models
+│   ├── repository/        # Repository implementations
+│   └── cache/             # Caching service
+├── ui/                    # UI layer
+│   ├── components/        # Reusable Compose components
+│   ├── screens/           # Screen implementations
+│   ├── navigation/        # Navigation setup
+│   └── theme/             # App theming
+├── utils/                 # Utility classes
+├── viewmodel/             # ViewModels
+└── workers/               # Background workers
+```
 
-- **Архитектура**: MVVM с использованием Android Architecture Components
-- **Хранение данных**: Room Database
-- **Асинхронность**: Kotlin Coroutines & Flow
-- **UI компоненты**: Material Design 3
-- **Навигация**: Navigation Component
-- **Визуализация данных**: MPAndroidChart
-- **Зависимости**: View Binding, WorkManager
+## 🎨 Screenshots
 
-## Планы развития
+<!-- Add screenshots here when available -->
+*Screenshots will be added soon*
 
-- [ ] Поддержка нескольких валют
-- [ ] Возможность создания шаблонов подписок
-- [ ] Виджет для Android
-- [ ] Синхронизация с облачными сервисами
-- [ ] Экспорт в различные форматы (CSV, PDF)
+## 🌐 Localization
 
-## Участие в разработке
+Currently supported languages:
+- 🇺🇸 English
+- 🇷🇺 Russian
 
-Мы приветствуем вклад сообщества! Если у вас есть идеи или исправления, пожалуйста, ознакомьтесь с [руководством по участию](CONTRIBUTING.md).
+Want to help translate? Check out our [localization guide](CONTRIBUTING.md#localization).
 
-## Лицензия
+## 🤝 Contributing
 
-Этот проект распространяется под лицензией MIT. Подробности в файле [LICENSE](LICENSE).
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+### Development Setup
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes
+4. Run tests: `./gradlew test`
+5. Commit changes: `git commit -m 'Add amazing feature'`
+6. Push to branch: `git push origin feature/amazing-feature`
+7. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🛡️ Privacy
+
+Trackify is designed with privacy in mind:
+- **No telemetry** - We don't collect any usage data
+- **Local storage** - All data is stored locally on your device
+- **No ads** - Completely ad-free experience
+- **No tracking** - No analytics or tracking libraries
+
+## 🐛 Bug Reports & Feature Requests
+
+- **Bug reports**: [Open an issue](https://github.com/onlive1337/trackify/issues/new?template=bug_report.md)
+- **Feature requests**: [Open an issue](https://github.com/onlive1337/trackify/issues/new?template=feature_request.md)
+- **Questions**: Use [Discussions](https://github.com/onlive1337/trackify/discussions)
+
+## 📞 Contact
+
+- **Telegram**: [@onlivedev](https://t.me/onswix)
+- **Issues**: [GitHub Issues](https://github.com/onlive1337/trackify/issues)
+
+## 🙏 Acknowledgments
+
+- Material Design team for the amazing design system
+- JetBrains for Kotlin and excellent tools
+- Android team for Jetpack Compose
+- All contributors who help improve this project
+
+---
+
+<div align="center">
+
+**Made with ❤️ for the open source community**
+
+[⭐ Star this repo](https://github.com/onlive1337/trackify) • [🐛 Report Bug](https://github.com/onlive1337/trackify/issues) • [💡 Request Feature](https://github.com/onlive1337/trackify/issues)
+
+</div>

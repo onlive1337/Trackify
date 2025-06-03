@@ -11,6 +11,23 @@
     <string name="enter_price">Enter price</string>
     <string name="enter_correct_price">Enter the correct price</string>
 
+    <!-- Error messages -->
+    <string name="error_creating_payment">Error creating payment</string>
+    <string name="error_updating_payment">Error updating payment</string>
+    <string name="error_deleting_payment">Error deleting payment</string>
+    <string name="error_confirming_payment">Error confirming payment</string>
+    <string name="error_loading_payments_page">Error loading payments page</string>
+    <string name="error_creating_subscription">Error creating subscription</string>
+    <string name="error_updating_subscription">Error updating subscription</string>
+    <string name="error_deleting_subscription">Error deleting subscription</string>
+    <string name="error_loading_subscriptions">Error loading subscriptions</string>
+    <string name="error_loading_subscriptions_page">Error loading subscriptions page</string>
+    <string name="error_database_migration">Database migration error</string>
+    <string name="error_network_connection">Network connection error</string>
+    <string name="error_file_not_found">File not found</string>
+    <string name="error_permission_denied">Permission denied</string>
+    <string name="error_storage_full">Not enough storage space</string>
+
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="delete">Delete</string>

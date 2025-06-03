@@ -61,7 +61,7 @@ class SubscriptionRepository(
             cacheService.clearCache("active_subscriptions")
             Result.Success(id)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Ошибка при создании подписки")
+            Result.Error(context.getString(R.string.error_creating_subscription), e)
         }
     }
 
@@ -72,7 +72,7 @@ class SubscriptionRepository(
             cacheService.clearCache("subscription_${subscription.subscriptionId}")
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Ошибка при обновлении подписки")
+            Result.Error(context.getString(R.string.error_updating_subscription), e)
         }
     }
 
@@ -83,7 +83,7 @@ class SubscriptionRepository(
             cacheService.clearCache("subscription_${subscription.subscriptionId}")
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Ошибка при удалении подписки")
+            Result.Error(context.getString(R.string.error_deleting_subscription), e)
         }
     }
 
@@ -98,7 +98,7 @@ class SubscriptionRepository(
                 val category = sub.categoryId?.let { catId ->
                     cats.find { it.categoryId == catId }
                 }
-                sub.categoryName = category?.name ?: "Без категории"
+                sub.categoryName = category?.name ?: context.getString(R.string.without_category)
                 sub.categoryColor = category?.colorCode
                 result.value = sub
             }
@@ -110,7 +110,7 @@ class SubscriptionRepository(
                 val category = sub.categoryId?.let { catId ->
                     cats.find { it.categoryId == catId }
                 }
-                sub.categoryName = category?.name ?: "Без категории"
+                sub.categoryName = category?.name ?: context.getString(R.string.without_category)
                 sub.categoryColor = category?.colorCode
                 result.value = sub
             }
@@ -172,7 +172,7 @@ class SubscriptionRepository(
                     val category = subscription.categoryId?.let { id ->
                         categories.find { it.categoryId == id }
                     }
-                    categoryName = category?.name ?: "Без категории"
+                    categoryName = category?.name ?: context.getString(R.string.without_category)
                     categoryColor = category?.colorCode
                 }
             }
@@ -180,7 +180,7 @@ class SubscriptionRepository(
             cacheService.putList("active_subscriptions", result, cacheTime)
             Result.Success(result)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Ошибка при получении подписок")
+            Result.Error(context.getString(R.string.error_loading_subscriptions), e)
         }
     }
 
@@ -217,7 +217,7 @@ class SubscriptionRepository(
                     val category = subscription.categoryId?.let { id ->
                         categories.find { it.categoryId == id }
                     }
-                    categoryName = category?.name ?: "Без категории"
+                    categoryName = category?.name ?: context.getString(R.string.without_category)
                     categoryColor = category?.colorCode
                 }
             }
@@ -225,7 +225,7 @@ class SubscriptionRepository(
             cacheService.putList(cacheKey, result, cacheTime)
             Result.Success(result)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Ошибка при загрузке страницы подписок")
+            Result.Error(context.getString(R.string.error_loading_subscriptions_page), e)
         }
     }
 }

@@ -11,6 +11,23 @@
     <string name="enter_price">Введите цену</string>
     <string name="enter_correct_price">Введите корректную цену</string>
 
+    <!-- Error messages -->
+    <string name="error_creating_payment">Ошибка при создании платежа</string>
+    <string name="error_updating_payment">Ошибка при обновлении платежа</string>
+    <string name="error_deleting_payment">Ошибка при удалении платежа</string>
+    <string name="error_confirming_payment">Ошибка при подтверждении платежа</string>
+    <string name="error_loading_payments_page">Ошибка при загрузке страницы платежей</string>
+    <string name="error_creating_subscription">Ошибка при создании подписки</string>
+    <string name="error_updating_subscription">Ошибка при обновлении подписки</string>
+    <string name="error_deleting_subscription">Ошибка при удалении подписки</string>
+    <string name="error_loading_subscriptions">Ошибка при получении подписок</string>
+    <string name="error_loading_subscriptions_page">Ошибка при загрузке страницы подписок</string>
+    <string name="error_database_migration">Ошибка миграции базы данных</string>
+    <string name="error_network_connection">Ошибка подключения к сети</string>
+    <string name="error_file_not_found">Файл не найден</string>
+    <string name="error_permission_denied">Доступ запрещен</string>
+    <string name="error_storage_full">Недостаточно места на устройстве</string>
+
     <string name="save">Сохранить</string>
     <string name="cancel">Отмена</string>
     <string name="delete">Удалить</string>
@@ -135,7 +152,7 @@
     <string name="data_export_error">Ошибка при экспорте данных</string>
     <string name="data_exported_success">Данные успешно экспортированы в %1$s</string>
     <string name="default_file_name">файл</string>
-    <string name="app_description">Trackify помогает отслеживать ваши подписки и регулярные платежи. Следите за расходами, получайте уведомления о предстоящих платежах ианализируйте свои траты по категориям.</string>\
+    <string name="app_description">Trackify помогает отслеживать ваши подписки и регулярные платежи. Следите за расходами, получайте уведомления о предстоящих платежах и анализируйте свои траты по категориям.</string>
     <string name="links">Полезные ссылки</string>
     <string name="telegram">Telegram</string>
     <string name="github">Github</string>

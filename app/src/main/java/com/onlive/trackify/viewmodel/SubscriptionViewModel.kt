@@ -35,7 +35,7 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
         val subscriptionDao = database.subscriptionDao()
         val categoryDao = database.categoryDao()
 
-        repository = SubscriptionRepository(subscriptionDao, categoryDao, application)
+        repository = SubscriptionRepository(subscriptionDao, categoryDao, application.applicationContext)
 
         allActiveSubscriptions = repository.allActiveSubscriptions
         activeSubscriptionsCount = repository.activeSubscriptionsCount
@@ -52,7 +52,11 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
                 errorHandler.handleError(result.message, true)
             }
         } catch (e: Exception) {
-            _operationResult.value = Result.Error("Ошибка при добавлении подписки", e)
+            _operationResult.value = Result.Error(
+                getApplication<Application>().getString(
+                    com.onlive.trackify.R.string.error_creating_subscription
+                ), e
+            )
             errorHandler.handleError(e, true)
         } finally {
             _isLoading.value = false
@@ -70,7 +74,11 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
                 errorHandler.handleError(result.message, true)
             }
         } catch (e: Exception) {
-            _operationResult.value = Result.Error("Ошибка при обновлении подписки", e)
+            _operationResult.value = Result.Error(
+                getApplication<Application>().getString(
+                    com.onlive.trackify.R.string.error_updating_subscription
+                ), e
+            )
             errorHandler.handleError(e, true)
         } finally {
             _isLoading.value = false
@@ -88,7 +96,11 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
                 errorHandler.handleError(result.message, true)
             }
         } catch (e: Exception) {
-            _operationResult.value = Result.Error("Ошибка при удалении подписки", e)
+            _operationResult.value = Result.Error(
+                getApplication<Application>().getString(
+                    com.onlive.trackify.R.string.error_deleting_subscription
+                ), e
+            )
             errorHandler.handleError(e, true)
         } finally {
             _isLoading.value = false
@@ -107,7 +119,11 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
                 errorHandler.handleError(result.message, true)
             }
         } catch (e: Exception) {
-            _operationResult.value = Result.Error("Ошибка при деактивации подписки", e)
+            _operationResult.value = Result.Error(
+                getApplication<Application>().getString(
+                    com.onlive.trackify.R.string.error_updating_subscription
+                ), e
+            )
             errorHandler.handleError(e, true)
         } finally {
             _isLoading.value = false
@@ -141,7 +157,11 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
                 errorHandler.handleError(result.message, false)
             }
         } catch (e: Exception) {
-            _operationResult.value = Result.Error("Ошибка при загрузке подписок", e)
+            _operationResult.value = Result.Error(
+                getApplication<Application>().getString(
+                    com.onlive.trackify.R.string.error_loading_subscriptions_page
+                ), e
+            )
             errorHandler.handleError(e, false)
         } finally {
             _isLoading.value = false

@@ -21,7 +21,7 @@ import java.util.Date
 import java.util.Locale
 
 class DataExportImportManager(private val context: Context) {
-    private val TAG = "DataExportImportManager"
+    private val tag = "DataExportImportManager"
     private val database = AppDatabase.getDatabase(context)
     private val gson: Gson = GsonBuilder()
         .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
@@ -57,14 +57,14 @@ class DataExportImportManager(private val context: Context) {
 
     suspend fun exportData(uri: Uri): Boolean = withContext(Dispatchers.IO) {
         try {
-            Log.d(TAG, "Starting data export")
+            Log.d(tag, "Starting data export")
 
             val subscriptions = database.subscriptionDao().getAllSubscriptionsSync()
             val payments = database.paymentDao().getAllPaymentsSync()
             val categories = database.categoryDao().getAllCategoriesSync()
             val categoryGroups = database.categoryGroupDao().getAllGroupsSync()
 
-            Log.d(TAG, "Fetched data: ${subscriptions.size} subscriptions, ${payments.size} payments, ${categories.size} categories, ${categoryGroups.size} groups")
+            Log.d(tag, "Fetched data: ${subscriptions.size} subscriptions, ${payments.size} payments, ${categories.size} categories, ${categoryGroups.size} groups")
 
             val userPreferences = UserPreferences(
                 notificationsEnabled = preferenceManager.areNotificationsEnabled(),
@@ -91,7 +91,7 @@ class DataExportImportManager(private val context: Context) {
             )
 
             val jsonData = gson.toJson(exportData)
-            Log.d(TAG, "JSON data generated, length: ${jsonData.length}")
+            Log.d(tag, "JSON data generated, length: ${jsonData.length}")
 
             context.contentResolver.openOutputStream(uri)?.use { outputStream ->
                 BufferedWriter(OutputStreamWriter(outputStream)).use { writer ->
@@ -99,17 +99,17 @@ class DataExportImportManager(private val context: Context) {
                 }
             }
 
-            Log.d(TAG, "Data exported successfully to ${uri.path}")
+            Log.d(tag, "Data exported successfully to ${uri.path}")
             return@withContext true
         } catch (e: Exception) {
-            Log.e(TAG, "Error exporting data", e)
+            Log.e(tag, "Error exporting data", e)
             return@withContext false
         }
     }
 
     suspend fun importData(uri: Uri): Boolean = withContext(Dispatchers.IO) {
         try {
-            Log.d(TAG, "Starting data import from ${uri.path}")
+            Log.d(tag, "Starting data import from ${uri.path}")
 
             val jsonData = context.contentResolver.openInputStream(uri)?.use { inputStream ->
                 BufferedReader(InputStreamReader(inputStream)).use { reader ->
@@ -117,7 +117,7 @@ class DataExportImportManager(private val context: Context) {
                 }
             } ?: return@withContext false
 
-            Log.d(TAG, "Read JSON data, length: ${jsonData.length}")
+            Log.d(tag, "Read JSON data, length: ${jsonData.length}")
 
             val importedData = gson.fromJson(jsonData, ExportData::class.java)
 
@@ -127,64 +127,64 @@ class DataExportImportManager(private val context: Context) {
             val categoryGroups = importedData.categoryGroups
             val userPreferences = importedData.userPreferences
 
-            Log.d(TAG, "Parsed data: ${subscriptions.size} subscriptions, ${payments.size} payments, ${categories.size} categories, ${categoryGroups.size} groups")
+            Log.d(tag, "Parsed data: ${subscriptions.size} subscriptions, ${payments.size} payments, ${categories.size} categories, ${categoryGroups.size} groups")
 
             try {
                 database.runInTransaction {
-                    Log.d(TAG, "Clearing database before import")
+                    Log.d(tag, "Clearing database before import")
                     try {
                         database.paymentDao().deleteAllSync()
                         database.subscriptionDao().deleteAllSync()
                         database.categoryDao().deleteAllSync()
                         database.categoryGroupDao().deleteAllSync()
                     } catch (e: Exception) {
-                        Log.e(TAG, "Error clearing database", e)
+                        Log.e(tag, "Error clearing database", e)
                     }
 
-                    Log.d(TAG, "Importing category groups")
+                    Log.d(tag, "Importing category groups")
                     for (group in categoryGroups) {
                         try {
                             database.categoryGroupDao().insertSync(group)
                         } catch (e: Exception) {
-                            Log.e(TAG, "Error inserting category group: ${group.groupId}", e)
+                            Log.e(tag, "Error inserting category group: ${group.groupId}", e)
                         }
                     }
 
-                    Log.d(TAG, "Importing categories")
+                    Log.d(tag, "Importing categories")
                     for (category in categories) {
                         try {
                             database.categoryDao().insertSync(category)
                         } catch (e: Exception) {
-                            Log.e(TAG, "Error inserting category: ${category.categoryId}", e)
+                            Log.e(tag, "Error inserting category: ${category.categoryId}", e)
                         }
                     }
 
-                    Log.d(TAG, "Importing subscriptions")
+                    Log.d(tag, "Importing subscriptions")
                     for (subscription in subscriptions) {
                         try {
                             database.subscriptionDao().insertSync(subscription)
                         } catch (e: Exception) {
-                            Log.e(TAG, "Error inserting subscription: ${subscription.subscriptionId}", e)
+                            Log.e(tag, "Error inserting subscription: ${subscription.subscriptionId}", e)
                         }
                     }
 
-                    Log.d(TAG, "Importing payments")
+                    Log.d(tag, "Importing payments")
                     for (payment in payments) {
                         try {
                             database.paymentDao().insertSync(payment)
                         } catch (e: Exception) {
-                            Log.e(TAG, "Error inserting payment: ${payment.paymentId}", e)
+                            Log.e(tag, "Error inserting payment: ${payment.paymentId}", e)
                         }
                     }
                 }
-                Log.d(TAG, "Database transaction completed successfully")
+                Log.d(tag, "Database transaction completed successfully")
             } catch (e: Exception) {
-                Log.e(TAG, "Error during database transaction", e)
+                Log.e(tag, "Error during database transaction", e)
                 return@withContext false
             }
 
             try {
-                Log.d(TAG, "Restoring user preferences")
+                Log.d(tag, "Restoring user preferences")
                 preferenceManager.setNotificationsEnabled(userPreferences.notificationsEnabled)
                 preferenceManager.setReminderDays(userPreferences.reminderDays)
                 preferenceManager.setNotificationTime(userPreferences.notificationHour, userPreferences.notificationMinute)
@@ -193,7 +193,7 @@ class DataExportImportManager(private val context: Context) {
                     val frequency = NotificationFrequency.valueOf(userPreferences.notificationFrequency)
                     preferenceManager.setNotificationFrequency(frequency)
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error setting notification frequency", e)
+                    Log.e(tag, "Error setting notification frequency", e)
                     preferenceManager.setNotificationFrequency(NotificationFrequency.DAILY)
                 }
 
@@ -203,13 +203,13 @@ class DataExportImportManager(private val context: Context) {
                 themeManager.setThemeMode(userPreferences.themeMode)
                 viewModePreference.setGridModeEnabled(userPreferences.gridModeEnabled)
             } catch (e: Exception) {
-                Log.e(TAG, "Error restoring user preferences", e)
+                Log.e(tag, "Error restoring user preferences", e)
             }
 
-            Log.d(TAG, "Data import completed successfully")
+            Log.d(tag, "Data import completed successfully")
             return@withContext true
         } catch (e: Exception) {
-            Log.e(TAG, "Error importing data", e)
+            Log.e(tag, "Error importing data", e)
             return@withContext false
         }
     }

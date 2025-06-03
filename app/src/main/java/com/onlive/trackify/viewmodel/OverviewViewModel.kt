@@ -33,8 +33,8 @@ class OverviewViewModel(application: Application) : AndroidViewModel(application
         val categoryDao = database.categoryDao()
         val paymentDao = database.paymentDao()
 
-        subscriptionRepository = SubscriptionRepository(subscriptionDao, categoryDao, application)
-        paymentRepository = PaymentRepository(paymentDao)
+        subscriptionRepository = SubscriptionRepository(subscriptionDao, categoryDao, application.applicationContext)
+        paymentRepository = PaymentRepository(paymentDao, application.applicationContext)
 
         loadDashboardData()
     }
