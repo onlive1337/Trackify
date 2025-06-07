@@ -15,7 +15,6 @@ import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.ThemeManager
 import com.onlive.trackify.workers.DatabaseCleanupWorker
-import com.onlive.trackify.workers.SubscriptionReminderWorker
 import java.util.concurrent.TimeUnit
 import kotlin.system.exitProcess
 
@@ -29,6 +28,7 @@ class TrackifyApplication : Application(), Configuration.Provider {
     private lateinit var preferenceManager: PreferenceManager
     private lateinit var databaseInitializer: DatabaseInitializer
     private lateinit var cacheService: CacheService
+    private lateinit var notificationScheduler: NotificationScheduler
 
     override fun onCreate() {
         super.onCreate()
@@ -37,9 +37,7 @@ class TrackifyApplication : Application(), Configuration.Provider {
 
         try {
             errorHandler = ErrorHandler.getInstance(this)
-
             cacheService = CacheService.getInstance()
-
             initializeComponents()
         } catch (e: Exception) {
             handleFatalError(e)
@@ -52,7 +50,6 @@ class TrackifyApplication : Application(), Configuration.Provider {
         Thread.setDefaultUncaughtExceptionHandler { thread, exception ->
             try {
                 Log.e("TrackifyApplication", "Uncaught exception in thread ${thread.name}", exception)
-
                 exception.printStackTrace()
 
                 try {
@@ -71,33 +68,18 @@ class TrackifyApplication : Application(), Configuration.Provider {
 
     private fun initializeComponents() {
         themeManager = ThemeManager(this)
-
         preferenceManager = PreferenceManager(this)
-
         databaseInitializer = DatabaseInitializer(this)
 
         notificationHelper = NotificationHelper(this)
         notificationHelper.createNotificationChannel()
 
-        val notificationScheduler = NotificationScheduler(this)
+        notificationScheduler = NotificationScheduler(this)
         if (preferenceManager.areNotificationsEnabled()) {
-            notificationScheduler.rescheduleNotifications()
+            notificationScheduler.scheduleNotifications()
         }
 
-        setupSubscriptionReminders()
         setupDatabaseCleanup()
-    }
-
-    private fun setupSubscriptionReminders() {
-        val reminderWorkRequest = PeriodicWorkRequestBuilder<SubscriptionReminderWorker>(
-            1, TimeUnit.DAYS
-        ).build()
-
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "subscription_reminders",
-            ExistingPeriodicWorkPolicy.UPDATE,
-            reminderWorkRequest
-        )
     }
 
     private fun setupDatabaseCleanup() {

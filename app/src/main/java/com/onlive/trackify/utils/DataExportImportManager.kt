@@ -33,10 +33,9 @@ class DataExportImportManager(private val context: Context) {
 
     data class UserPreferences(
         val notificationsEnabled: Boolean = true,
-        val reminderDays: Set<Int> = setOf(0, 1, 3, 7),
+        val reminderDays: Set<Int> = setOf(0, 1, 3),
         val notificationHour: Int = 9,
         val notificationMinute: Int = 0,
-        val notificationFrequency: String = "DAILY",
         val currencyCode: String = "RUB",
         val languageCode: String = "",
         val themeMode: Int = 0,
@@ -66,7 +65,6 @@ class DataExportImportManager(private val context: Context) {
                 reminderDays = preferenceManager.getReminderDays(),
                 notificationHour = preferenceManager.getNotificationTime().first,
                 notificationMinute = preferenceManager.getNotificationTime().second,
-                notificationFrequency = preferenceManager.getNotificationFrequency().name,
                 currencyCode = preferenceManager.getCurrencyCode(),
                 languageCode = preferenceManager.getLanguageCode(),
                 themeMode = themeManager.getThemeMode(),
@@ -177,15 +175,6 @@ class DataExportImportManager(private val context: Context) {
                 preferenceManager.setNotificationsEnabled(userPreferences.notificationsEnabled)
                 preferenceManager.setReminderDays(userPreferences.reminderDays)
                 preferenceManager.setNotificationTime(userPreferences.notificationHour, userPreferences.notificationMinute)
-
-                try {
-                    val frequency = NotificationFrequency.valueOf(userPreferences.notificationFrequency)
-                    preferenceManager.setNotificationFrequency(frequency)
-                } catch (e: Exception) {
-                    Log.e(tag, "Error setting notification frequency", e)
-                    preferenceManager.setNotificationFrequency(NotificationFrequency.DAILY)
-                }
-
                 preferenceManager.setCurrencyCode(userPreferences.currencyCode)
                 preferenceManager.setLanguageCode(userPreferences.languageCode)
 

@@ -76,6 +76,7 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     val preferenceManager = remember { PreferenceManager(context) }
+    val notificationScheduler = remember { NotificationScheduler(context) }
 
     var notificationsEnabled by remember {
         mutableStateOf(preferenceManager.areNotificationsEnabled())
@@ -160,14 +161,13 @@ fun SettingsScreen(
                             modifier = Modifier.weight(1f)
                         )
 
-                        val notificationScheduler = remember { NotificationScheduler(context) }
                         Switch(
                             checked = notificationsEnabled,
                             onCheckedChange = {
                                 notificationsEnabled = it
                                 preferenceManager.setNotificationsEnabled(it)
                                 if (it) {
-                                    notificationScheduler.rescheduleNotifications()
+                                    notificationScheduler.scheduleNotifications()
 
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                         if (ContextCompat.checkSelfPermission(
@@ -182,7 +182,7 @@ fun SettingsScreen(
                                         }
                                     }
                                 } else {
-                                    notificationScheduler.cancelAllReminders()
+                                    notificationScheduler.cancelNotifications()
                                 }
                             }
                         )

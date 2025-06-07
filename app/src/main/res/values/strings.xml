@@ -5,10 +5,8 @@
     <string name="title_payments">Платежи</string>
     <string name="title_statistics">Статистика</string>
     <string name="title_settings">Настройки</string>
-    <string name="settings_saved">Настройки сохранены</string>
     <string name="yes">Да</string>
     <string name="enter_name">Введите название</string>
-    <string name="enter_price">Введите цену</string>
     <string name="enter_correct_price">Введите корректную цену</string>
 
     <!-- Error messages -->
@@ -22,11 +20,6 @@
     <string name="error_deleting_subscription">Ошибка при удалении подписки</string>
     <string name="error_loading_subscriptions">Ошибка при получении подписок</string>
     <string name="error_loading_subscriptions_page">Ошибка при загрузке страницы подписок</string>
-    <string name="error_database_migration">Ошибка миграции базы данных</string>
-    <string name="error_network_connection">Ошибка подключения к сети</string>
-    <string name="error_file_not_found">Файл не найден</string>
-    <string name="error_permission_denied">Доступ запрещен</string>
-    <string name="error_storage_full">Недостаточно места на устройстве</string>
 
     <string name="save">Сохранить</string>
     <string name="cancel">Отмена</string>
@@ -36,7 +29,6 @@
     <string name="done">Готово</string>
 
     <string name="add_subscription">Добавить подписку</string>
-    <string name="edit_subscription">Редактировать подписку</string>
     <string name="subscription_name">Название</string>
     <string name="subscription_price">Цена</string>
     <string name="subscription_description">Описание</string>
@@ -54,40 +46,20 @@
     <string name="payment_date">Дата</string>
     <string name="payment_subscription">Подписка</string>
     <string name="payment_notes">Примечания</string>
-    <string name="payment_status_pending">Ожидает</string>
-    <string name="payment_status_confirmed">Подтвержден</string>
-    <string name="payment_status_manual">Ручной</string>
-    <string name="pending_payments">Ожидающие платежи</string>
-    <string name="confirm_payment">Подтвердить</string>
-    <string name="bulk_payment_actions">Групповые операции</string>
-    <string name="payments_select_all">Выбрать все</string>
-    <string name="payments_selected_count">Выбрано: %d</string>
-    <string name="confirm_selected">Подтвердить выбранные</string>
-    <string name="delete_selected">Удалить выбранные</string>
     <string name="no_payments">У вас пока нет платежей</string>
-    <string name="next_payment">Следующий платеж: %s</string>
-    <string name="no_pending_payments">Нет ожидающих подтверждения платежей</string>
 
     <string name="add_category">Добавить категорию</string>
     <string name="edit_category">Редактировать категорию</string>
-    <string name="editing_category">Редактирование категории</string>
     <string name="category_name">Название категории</string>
     <string name="category_color">Цвет</string>
-    <string name="categories">Категории</string>
-    <string name="category_groups">Группы категорий</string>
     <string name="no_categories">У вас пока нет категорий</string>
     <string name="manage_categories">Управление категориями</string>
-    <string name="select_color">Выберите цвет</string>
 
     <string name="monthly_spending">Ежемесячные расходы</string>
-    <string name="yearly_spending">Ежегодные расходы</string>
     <string name="spending_by_category">Расходы по категориям</string>
     <string name="spending_over_time">Динамика расходов</string>
     <string name="subscription_types">Расходы по типам подписок</string>
-    <string name="monthly_type">Ежемесячные</string>
     <string name="yearly_type">Ежегодные (в месяц)</string>
-    <string name="no_data">Нет данных для отображения</string>
-    <string name="total">всего</string>
     <string name="per_month">в месяц</string>
     <string name="total_category">Всего:</string>
 
@@ -95,52 +67,52 @@
     <string name="system_theme">Системная тема</string>
     <string name="light_theme">Светлая тема</string>
     <string name="dark_theme">Темная тема</string>
-    <string name="dynamic_colors_enabled">Динамические цвета включены</string>
-    <string name="dynamic_colors_unavailable">Динамические цвета недоступны (требуется Android 12+)</string>
 
+    <!-- Notifications -->
     <string name="notification_channel_name">Напоминания о подписках</string>
     <string name="notification_channel_description">Уведомления о предстоящих платежах по подпискам</string>
-    <string name="notification_upcoming_payment_title">Предстоящий платеж</string>
+    <string name="notification_payment_reminder_title">Напоминание о платеже</string>
+    <string name="notification_expiration_reminder_title">Истекает подписка</string>
     <string name="notification_payment_today">Сегодня платеж за %1$s</string>
     <string name="notification_payment_tomorrow">Завтра платеж за %1$s</string>
-    <string name="notification_payment_upcoming">Через %2$d дней платеж за %1$s</string>
-    <string name="notifications_enabled">Уведомления включены</string>
-    <string name="notifications_disabled">Уведомления отключены</string>
-    <string name="notifications_permission_denied">Разрешение на уведомления отклонено</string>
-    <string name="notifications_permission_rationale">Разрешение на уведомления необходимо для отправки напоминаний о платежах</string>
+    <string name="notification_payment_in_days">Через %2$d дней платеж за %1$s</string>
+    <string name="notification_expires_today">Подписка %1$s истекает сегодня</string>
+    <string name="notification_expires_tomorrow">Подписка %1$s истекает завтра</string>
+    <string name="notification_expires_in_days">Подписка %1$s истекает через %2$d дней</string>
+    <string name="enable_notifications">Включить уведомления</string>
+    <string name="notification_description">Получать напоминания о платежах и истекающих подписках</string>
+    <string name="select_time">Выберите время</string>
+    <string name="permission_required">Требуется разрешение</string>
+    <string name="notification_permission_required">Для отправки уведомлений необходимо разрешение</string>
+    <string name="open_settings">Открыть настройки</string>
+    <string name="notify_on_payment_day">Уведомление в день платежа</string>
+    <string name="notify_one_day_before">Уведомление за день до платежа</string>
+    <string name="notify_three_days_before">Уведомление за 3 дня до платежа</string>
+    <string name="notify_week_before">Уведомление за неделю до платежа</string>
+
     <string name="notification_settings">Настройки уведомлений</string>
     <string name="notification_time">Время уведомлений</string>
-    <string name="notification_frequency">Частота уведомлений</string>
-    <string name="daily">Ежедневно</string>
-    <string name="weekly">Еженедельно (по понедельникам)</string>
-    <string name="monthly">Ежемесячно (1-го числа)</string>
-    <string name="custom">Настраиваемая</string>
+    <string name="notification_time_description">Выберите время, когда вы хотите получать уведомления о подписках</string>
     <string name="reminder_days">Дни напоминаний</string>
-    <string name="day_of_payment">В день платежа</string>
+    <string name="reminder_days_description">Выберите, за сколько дней до платежа вы хотите получать уведомления</string>
     <string name="one_day_before">За 1 день</string>
     <string name="three_days_before">За 3 дня</string>
     <string name="week_before">За 7 дней</string>
-    <string name="two_weeks_before">За 14 дней</string>
-    <string name="month_before">За 30 дней</string>
 
     <string name="currency_settings">Настройки валюты</string>
     <string name="currency_description">Выберите валюту для отображения сумм в приложении</string>
-    <string name="currency_saved">Валюта изменена на %s</string>
     <string name="currency">Валюта</string>
     <string name="choose_currency">Выбор валюты</string>
 
     <string name="language_settings">Настройки языка</string>
     <string name="language_description">Выберите язык приложения</string>
     <string name="language_changed">Язык изменен. Изменения вступят в силу после перезапуска приложения</string>
-    <string name="app_language">Язык приложения</string>
     <string name="choose_language">Выбор языка</string>
-    <string name="system_language">Системный язык</string>
 
     <string name="theme">Тема</string>
     <string name="general_settings">Общие настройки</string>
     <string name="notifications">Уведомления</string>
     <string name="data_management">Управление данными</string>
-    <string name="export_import_data">Экспорт и импорт данных</string>
     <string name="about_app">О приложении</string>
     <string name="app_version">Версия</string>
     <string name="export_data">Экспортировать данные</string>
@@ -148,10 +120,7 @@
     <string name="export_description">Сохраните все данные приложения в JSON файл. Это позволит вам восстановить данные в случае необходимости или перенести их на другое устройство.</string>
     <string name="import_description">Восстановите данные из ранее созданного JSON файла. Внимание! Импорт данных заменит все существующие данные в приложении.</string>
     <string name="data_import_error">Ошибка при импорте данных</string>
-    <string name="data_imported_success">Данные успешно импортированы</string>
     <string name="data_export_error">Ошибка при экспорте данных</string>
-    <string name="data_exported_success">Данные успешно экспортированы в %1$s</string>
-    <string name="default_file_name">файл</string>
     <string name="app_description">Trackify помогает отслеживать ваши подписки и регулярные платежи. Следите за расходами, получайте уведомления о предстоящих платежах и анализируйте свои траты по категориям.</string>
     <string name="links">Полезные ссылки</string>
     <string name="telegram">Telegram</string>
@@ -159,15 +128,12 @@
     <string name="report_error">Сообщить об ошибке</string>
     <string name="credits">© 2025 Trackify\nВсе права защищены</string>
 
-    <string name="upcoming_payments">Предстоящие платежи</string>
     <string name="today">Сегодня</string>
     <string name="tomorrow">Завтра</string>
-    <string name="days_until">Через %d дней</string>
     <string name="week">Неделя</string>
     <string name="month">Месяц</string>
     <string name="year">Год</string>
     <string name="all">Все</string>
-    <string name="no_upcoming_payments">Нет предстоящих платежей</string>
 
     <string name="date">01.01.2023</string>
     <string name="choose">Выбрать</string>
@@ -175,25 +141,10 @@
     <string name="in_a_week">Через неделю</string>
     <string name="in_a_month">Через месяц</string>
     <string name="one_year_later">Через год</string>
-    <string name="confirm_payments_title">Подтверждение платежей</string>
-    <string name="confirm_payments_message">Вы действительно хотите подтвердить все ожидающие платежи (%d)?</string>
-    <string name="confirm_all_payments_title">Подтверждение всех платежей</string>
-    <string name="confirm_all_payments_message">Вы действительно хотите подтвердить все ожидающие платежи (%d)?</string>
     <string name="unknown_error">Произошла неизвестная ошибка</string>
-    <string name="delete_payments_message">Вы уверены, что хотите удалить %d платежей? Это действие нельзя отменить.</string>
-    <string name="confirmed_count">Подтверждено %d платежей</string>
-    <string name="deleted_count">Удалено %d платежей</string>
     <string name="more_actions">Дополнительные действия</string>
     <string name="notes">Примечания</string>
     <string name="import_restart_message">Для применения всех изменений рекомендуется перезапустить приложение.</string>
-    <string name="notification_channel_payment_due">Просроченные платежи</string>
-    <string name="notification_channel_payment_due_description">Уведомления о просроченных платежах по подпискам</string>
-    <string name="notification_channel_expiration">Истекающие подписки</string>
-    <string name="notification_channel_expiration_description">Уведомления об истекающих подписках</string>
-    <string name="subscription_expires_today">Подписка %1$s истекает сегодня</string>
-    <string name="subscription_expires_tomorrow">Подписка %1$s истекает завтра</string>
-    <string name="subscription_expires_days">Подписка %1$s истекает через %2$d дней</string>
-    <string name="payment_auto_generated">Автоматически создан системой</string>
 
     <string name="per_year">в год</string>
 
@@ -202,79 +153,24 @@
     <string name="subscriptions_not_found">Подписки не найдены</string>
 
     <string name="payment_history">История платежей</string>
-    <string name="no_payment_history">Нет платежей</string>
-    <string name="add_payment_button">Добавить платеж</string>
 
     <string name="delete_payment_confirmation">Удаление платежа</string>
     <string name="delete_payment_message">Вы уверены, что хотите удалить этот платеж?</string>
-    <string name="payment_deleted">Платеж удален</string>
-    <string name="payment_added">Платеж добавлен</string>
-    <string name="payment_updated">Платеж обновлен</string>
-    <string name="payment_confirmed">Платеж подтвержден</string>
 
     <string name="delete_subscription_confirmation">Удаление подписки</string>
     <string name="delete_subscription_message">Вы уверены, что хотите удалить эту подписку? Это действие нельзя отменить.</string>
-    <string name="subscription_deleted">Подписка удалена</string>
-    <string name="subscription_added">Подписка добавлена</string>
-    <string name="subscription_updated">Подписка обновлена</string>
 
     <string name="delete_category">Удалить категорию</string>
     <string name="delete_category_confirmation">Удаление категории</string>
     <string name="delete_category_message">Вы уверены, что хотите удалить эту категорию?</string>
-    <string name="category_deleted">Категория удалена</string>
-    <string name="category_added">Категория создана</string>
-    <string name="category_updated">Категория обновлена</string>
-    <string name="enter_category_name">Введите название категории</string>
     <string name="category_no_name">Введите название категории</string>
 
     <string name="without_category">Без категории</string>
     <string name="unknown">Неизвестно</string>
 
-    <string name="upcoming_payment_title">Предстоящие платежи</string>
-    <string name="filter_by_time">Фильтр по времени</string>
-    <string name="category_select_title">Выбор категории</string>
-    <string name="payment_history_title">История платежей</string>
     <string name="no_payments_for_subscription">Нет платежей для этой подписки</string>
-    <string name="category_group_title">Группы категорий</string>
-    <string name="category_group_description">Группы позволяют организовать ваши категории и фильтровать подписки по группам</string>
-    <string name="no_category_groups">У вас пока нет групп категорий</string>
-    <string name="add_category_group">Добавить группу</string>
-    <string name="manage_category_groups">Управление группами категорий</string>
-    <string name="category_group_name">Название группы</string>
-    <string name="editing_group">Редактирование группы</string>
-    <string name="category_group_description_hint">Описание (необязательно)</string>
-    <string name="category_group_color">Цвет группы</string>
-    <string name="select_group_color">Выберите цвет</string>
-    <string name="categories_in_group">Категории в группе</string>
-    <string name="no_categories_in_group">В этой группе пока нет категорий</string>
-    <string name="delete_group">Удалить группу</string>
-    <string name="delete_group_confirmation">Удаление группы</string>
-    <string name="delete_group_message">Вы уверены, что хотите удалить эту группу? Категории в этой группе не будут удалены, но потеряют привязку к группе.</string>
-    <string name="group_deleted">Группа удалена</string>
-    <string name="group_added">Группа создана</string>
-    <string name="group_updated">Группа обновлена</string>
-    <string name="sort_options">Параметры сортировки</string>
-    <string name="sort_by_name_asc">По имени (А-Я)</string>
-    <string name="sort_by_name_desc">По имени (Я-А)</string>
-    <string name="sort_by_color">По цвету</string>
-    <string name="bulk_payment_title">Групповые операции с платежами</string>
-    <string name="bulk_payment_instruction">Выберите платежи для выполнения групповых операций</string>
     <string name="all_payments">Все платежи</string>
-    <string name="payments_pending_confirmation">Ожидают подтверждения</string>
-    <string name="manual_payments">Ручные</string>
-    <string name="confirmed_payments">Подтвержденные</string>
-    <string name="selected_count">Выбрано: %d</string>
-    <string name="no_payments_for_bulk">Нет платежей для групповых операций</string>
-    <string name="pending_payments_card_title">Платежи, ожидающие подтверждения</string>
-    <string name="notification_settings_title">Настройки уведомлений</string>
-    <string name="notification_time_title">Время уведомлений</string>
-    <string name="notification_time_description">Выберите время, когда вы хотите получать уведомления о подписках</string>
-    <string name="notification_frequency_title">Частота уведомлений</string>
-    <string name="notification_frequency_description">Выберите, как часто вы хотите получать напоминания о подписках</string>
-    <string name="reminder_days_title">Дни напоминаний</string>
-    <string name="reminder_days_description">Выберите, за сколько дней до платежа вы хотите получать уведомления</string>
     <string name="on_payment_day">В день платежа</string>
-    <string name="data_management_title">Управление данными</string>
     <string name="export_title">Экспорт данных</string>
     <string name="import_title">Импорт данных</string>
     <string name="export_button">Экспортировать данные</string>
@@ -287,19 +183,9 @@
     <string name="import_error">Ошибка при импорте данных</string>
     <string name="toggle_view_mode">Переключить режим просмотра</string>
     <string name="subscription_types_spending">Расходы по типам подписок</string>
-    <string name="no_payments_selected">Не выбрано ни одного платежа</string>
     <string name="enter_correct_amount">Введите корректную сумму</string>
-    <string name="enter_amount">Введите сумму</string>
     <string name="select_subscription">Выберите подписку</string>
-    <string name="notification_on_day_description">Уведомление в день платежа или окончания подписки</string>
-    <string name="notification_one_day_description">Уведомление за 1 день до платежа или окончания подписки</string>
-    <string name="notification_three_days_description">Уведомление за 3 дня до платежа или окончания подписки</string>
-    <string name="notification_week_description">Уведомление за 7 дней до платежа или окончания подписки</string>
-    <string name="notification_two_weeks_description">Уведомление за 14 дней до платежа или окончания подписки</string>
-    <string name="notification_month_description">Уведомление за 30 дней до платежа или окончания подписки</string>
 
     <string name="and_more_count">…и ещё %d</string>
     <string name="month_fallback">Месяц %d</string>
-    <string name="app_crashed_title">Ошибка приложения</string>
-    <string name="app_crashed_message">Приложение неожиданно закрылось. Пожалуйста, перезапустите его.</string>
 </resources>
