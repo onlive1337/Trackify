@@ -36,4 +36,12 @@ class CategoryViewModel(application: Application) : AndroidViewModel(application
     fun getCategoryById(id: Long): LiveData<Category> {
         return repository.getCategoryById(id)
     }
+
+    fun searchCategories(query: String): LiveData<List<Category>> {
+        return repository.searchCategories(query)
+    }
+
+    fun getCategoriesWithActiveSubscriptions(): LiveData<List<Category>> {
+        return repository.getCategoriesWithActiveSubscriptions()
+    }
 }

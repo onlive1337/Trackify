@@ -7,7 +7,6 @@ import com.onlive.trackify.R
 import com.onlive.trackify.data.cache.CacheService
 import com.onlive.trackify.data.database.PaymentDao
 import com.onlive.trackify.data.model.Payment
-import com.onlive.trackify.data.model.PaymentStatus
 import com.onlive.trackify.utils.Result
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -24,8 +23,6 @@ class PaymentRepository(
     private val cacheTime = TimeUnit.MINUTES.toMillis(5)
 
     val allPayments: LiveData<List<Payment>> = paymentDao.getAllPayments()
-    val pendingPayments: LiveData<List<Payment>> = paymentDao.getPaymentsByStatus(PaymentStatus.PENDING)
-    val pendingPaymentsCount: LiveData<Int> = paymentDao.getPaymentsCountByStatus(PaymentStatus.PENDING)
 
     private val _totalMonthlyAmount = MediatorLiveData<Double>()
     val totalMonthlyAmount: LiveData<Double> = _totalMonthlyAmount
@@ -141,42 +138,6 @@ class PaymentRepository(
         }
     }
 
-    fun getRecentPendingPayments(): LiveData<List<Payment>> {
-        return try {
-            val calendar = Calendar.getInstance()
-            calendar.add(Calendar.DAY_OF_YEAR, 7)
-            paymentDao.getPendingPaymentsBeforeDate(PaymentStatus.PENDING, calendar.time)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting recent pending payments", e)
-            MediatorLiveData<List<Payment>>().apply { value = emptyList() }
-        }
-    }
-
-    suspend fun confirmPayment(paymentId: Long): Result<Unit> = withContext(Dispatchers.IO) {
-        return@withContext try {
-            paymentDao.updatePaymentStatus(paymentId, PaymentStatus.CONFIRMED)
-            cacheService.clearCache("pending_payments")
-            Log.d(TAG, "Payment confirmed successfully: $paymentId")
-            Result.Success(Unit)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error confirming payment: $paymentId", e)
-            Result.Error(context.getString(R.string.error_confirming_payment), e)
-        }
-    }
-
-    suspend fun confirmPayment(payment: Payment): Result<Unit> = withContext(Dispatchers.IO) {
-        return@withContext try {
-            val updatedPayment = payment.copy(status = PaymentStatus.CONFIRMED)
-            paymentDao.update(updatedPayment)
-            clearPaymentCaches(updatedPayment)
-            Log.d(TAG, "Payment confirmed successfully: ${payment.paymentId}")
-            Result.Success(Unit)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error confirming payment: ${payment.paymentId}", e)
-            Result.Error(context.getString(R.string.error_confirming_payment), e)
-        }
-    }
-
     suspend fun getPaymentsPage(limit: Int, offset: Int): Result<List<Payment>> = withContext(Dispatchers.IO) {
         return@withContext try {
             val cacheKey = "payments_page_${limit}_${offset}"
@@ -202,10 +163,6 @@ class PaymentRepository(
             cacheService.clearCache("all_payments")
             cacheService.clearCache("payment_${payment.paymentId}")
             cacheService.clearCache("subscription_payments_${payment.subscriptionId}")
-
-            if (payment.status == PaymentStatus.PENDING) {
-                cacheService.clearCache("pending_payments")
-            }
 
             val calendar = Calendar.getInstance()
             calendar.time = payment.date

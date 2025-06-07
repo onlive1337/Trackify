@@ -98,7 +98,7 @@ class LiveStatisticsUpdater(
         try {
             categories.clear()
             cats.forEach { category ->
-                category.categoryId.let { categories[it] = category }
+                categories[category.categoryId] = category
             }
             invalidateCache()
         } catch (e: Exception) {

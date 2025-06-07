@@ -1,7 +1,5 @@
 package com.onlive.trackify.ui.navigation
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -17,9 +15,7 @@ import com.onlive.trackify.ui.screens.category.CategoryDetailScreen
 import com.onlive.trackify.ui.screens.category.CategoryManagementScreen
 import com.onlive.trackify.ui.screens.home.HomeScreen
 import com.onlive.trackify.ui.screens.payments.AddPaymentScreen
-import com.onlive.trackify.ui.screens.payments.BulkPaymentActionsScreen
 import com.onlive.trackify.ui.screens.payments.PaymentsScreen
-import com.onlive.trackify.ui.screens.payments.PendingPaymentsScreen
 import com.onlive.trackify.ui.screens.settings.CurrencySettingsScreen
 import com.onlive.trackify.ui.screens.settings.DataManagementScreen
 import com.onlive.trackify.ui.screens.settings.LanguageSettingsScreen
@@ -60,8 +56,6 @@ sealed class Screen(val route: String) {
     object LanguageSettings : Screen("language_settings")
     object NotificationSettings : Screen("notification_settings")
     object DataManagement : Screen("data_management")
-    object PendingPayments : Screen("pending_payments")
-    object BulkPaymentActions : Screen("bulk_payment_actions")
     object AboutApp : Screen("about_app")
 }
 
@@ -138,14 +132,6 @@ class NavigationActions(navController: NavHostController) {
         navController.navigate(Screen.DataManagement.route)
     }
 
-    val navigateToPendingPayments: () -> Unit = {
-        navController.navigate(Screen.PendingPayments.route)
-    }
-
-    val navigateToBulkPaymentActions: () -> Unit = {
-        navController.navigate(Screen.BulkPaymentActions.route)
-    }
-
     val navigateToAboutApp: () -> Unit = {
         navController.navigate(Screen.AboutApp.route)
     }
@@ -155,7 +141,6 @@ class NavigationActions(navController: NavHostController) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.P)
 @Composable
 fun TrackifyNavGraph(
     modifier: Modifier = Modifier,
@@ -181,9 +166,7 @@ fun TrackifyNavGraph(
 
         composable(Screen.Payments.route) {
             PaymentsScreen(
-                onAddPayment = navigationActions.navigateToAddPayment,
-                onNavigateToBulkActions = navigationActions.navigateToBulkPaymentActions,
-                onNavigateToPendingPayments = navigationActions.navigateToPendingPayments
+                onAddPayment = navigationActions.navigateToAddPayment
             )
         }
 
@@ -251,9 +234,7 @@ fun TrackifyNavGraph(
             CategoryManagementScreen(
                 onNavigateBack = navigationActions.navigateBack,
                 onAddCategory = { navigationActions.navigateToCategoryDetail(-1L) },
-                onEditCategory = navigationActions.navigateToCategoryDetail,
-                onAddCategoryGroup = { navigationActions.navigateToCategoryGroupDetail(-1L) },
-                onEditCategoryGroup = navigationActions.navigateToCategoryGroupDetail
+                onEditCategory = navigationActions.navigateToCategoryDetail
             )
         }
 
@@ -303,21 +284,6 @@ fun TrackifyNavGraph(
 
         composable(Screen.DataManagement.route) {
             DataManagementScreen(
-                onNavigateBack = navigationActions.navigateBack
-            )
-        }
-
-        composable(Screen.PendingPayments.route) {
-            PendingPaymentsScreen(
-                onNavigateBack = navigationActions.navigateBack,
-                onAddPayment = { subscriptionId, paymentId ->
-                    navigationActions.navigateToAddPayment(subscriptionId, paymentId)
-                }
-            )
-        }
-
-        composable(Screen.BulkPaymentActions.route) {
-            BulkPaymentActionsScreen(
                 onNavigateBack = navigationActions.navigateBack
             )
         }

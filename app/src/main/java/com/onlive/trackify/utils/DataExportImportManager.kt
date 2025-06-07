@@ -7,7 +7,6 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.onlive.trackify.data.database.AppDatabase
 import com.onlive.trackify.data.model.Category
-import com.onlive.trackify.data.model.CategoryGroup
 import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.data.model.Subscription
 import kotlinx.coroutines.Dispatchers
@@ -48,7 +47,6 @@ class DataExportImportManager(private val context: Context) {
         val subscriptions: List<Subscription> = emptyList(),
         val payments: List<Payment> = emptyList(),
         val categories: List<Category> = emptyList(),
-        val categoryGroups: List<CategoryGroup> = emptyList(),
         val userPreferences: UserPreferences = UserPreferences(),
         val exportDate: String = ""
     )
@@ -60,9 +58,8 @@ class DataExportImportManager(private val context: Context) {
             val subscriptions = database.subscriptionDao().getAllSubscriptionsSync()
             val payments = database.paymentDao().getAllPaymentsSync()
             val categories = database.categoryDao().getAllCategoriesSync()
-            val categoryGroups = database.categoryGroupDao().getAllGroupsSync()
 
-            Log.d(tag, "Fetched data: ${subscriptions.size} subscriptions, ${payments.size} payments, ${categories.size} categories, ${categoryGroups.size} groups")
+            Log.d(tag, "Fetched data: ${subscriptions.size} subscriptions, ${payments.size} payments, ${categories.size} categories")
 
             val userPreferences = UserPreferences(
                 notificationsEnabled = preferenceManager.areNotificationsEnabled(),
@@ -83,7 +80,6 @@ class DataExportImportManager(private val context: Context) {
                 subscriptions = subscriptions,
                 payments = payments,
                 categories = categories,
-                categoryGroups = categoryGroups,
                 userPreferences = userPreferences,
                 exportDate = currentDateStr
             )
@@ -128,10 +124,9 @@ class DataExportImportManager(private val context: Context) {
             val subscriptions = importedData.subscriptions
             val payments = importedData.payments
             val categories = importedData.categories
-            val categoryGroups = importedData.categoryGroups
             val userPreferences = importedData.userPreferences
 
-            Log.d(tag, "Parsed data: ${subscriptions.size} subscriptions, ${payments.size} payments, ${categories.size} categories, ${categoryGroups.size} groups")
+            Log.d(tag, "Parsed data: ${subscriptions.size} subscriptions, ${payments.size} payments, ${categories.size} categories")
 
             try {
                 database.runInTransaction {
@@ -140,18 +135,8 @@ class DataExportImportManager(private val context: Context) {
                         database.paymentDao().deleteAllSync()
                         database.subscriptionDao().deleteAllSync()
                         database.categoryDao().deleteAllSync()
-                        database.categoryGroupDao().deleteAllSync()
                     } catch (e: Exception) {
                         Log.e(tag, "Error clearing database", e)
-                    }
-
-                    Log.d(tag, "Importing category groups")
-                    for (group in categoryGroups) {
-                        try {
-                            database.categoryGroupDao().insertSync(group)
-                        } catch (e: Exception) {
-                            Log.e(tag, "Error inserting category group: ${group.groupId}", e)
-                        }
                     }
 
                     Log.d(tag, "Importing categories")

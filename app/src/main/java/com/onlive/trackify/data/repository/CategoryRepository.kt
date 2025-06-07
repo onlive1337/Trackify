@@ -3,12 +3,10 @@ package com.onlive.trackify.data.repository
 import androidx.lifecycle.LiveData
 import com.onlive.trackify.data.database.CategoryDao
 import com.onlive.trackify.data.model.Category
-import com.onlive.trackify.data.model.CategoryWithGroup
 
 class CategoryRepository(private val categoryDao: CategoryDao) {
 
     val allCategories: LiveData<List<Category>> = categoryDao.getAllCategories()
-    val categoriesWithGroups: LiveData<List<CategoryWithGroup>> = categoryDao.getCategoriesWithGroups()
 
     suspend fun insert(category: Category): Long {
         return categoryDao.insert(category)
@@ -26,11 +24,11 @@ class CategoryRepository(private val categoryDao: CategoryDao) {
         return categoryDao.getCategoryById(id)
     }
 
-    fun getCategoriesByGroup(groupId: Long): LiveData<List<Category>> {
-        return categoryDao.getCategoriesByGroup(groupId)
+    fun searchCategories(query: String): LiveData<List<Category>> {
+        return categoryDao.searchCategories(query)
     }
 
-    fun getCategoriesWithoutGroup(): LiveData<List<Category>> {
-        return categoryDao.getCategoriesWithoutGroup()
+    fun getCategoriesWithActiveSubscriptions(): LiveData<List<Category>> {
+        return categoryDao.getCategoriesWithActiveSubscriptions()
     }
 }

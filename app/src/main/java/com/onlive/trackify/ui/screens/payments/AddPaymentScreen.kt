@@ -16,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Payment
-import com.onlive.trackify.data.model.PaymentStatus
 import com.onlive.trackify.ui.components.SubscriptionSelector
 import com.onlive.trackify.ui.components.TrackifyDatePicker
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
@@ -175,7 +174,7 @@ fun AddPaymentScreen(
                         return@Button
                     }
 
-                    if (isEditing && existingPayment != null) {
+                    if (isEditing) {
                         val updatedPayment = existingPayment.copy(
                             subscriptionId = selectedSubscriptionId,
                             amount = amountValue,
@@ -188,8 +187,7 @@ fun AddPaymentScreen(
                             subscriptionId = selectedSubscriptionId,
                             amount = amountValue,
                             date = paymentDate,
-                            notes = notes.takeIf { it.isNotEmpty() },
-                            status = PaymentStatus.MANUAL
+                            notes = notes.takeIf { it.isNotEmpty() }
                         )
                         paymentViewModel.insert(payment)
                     }

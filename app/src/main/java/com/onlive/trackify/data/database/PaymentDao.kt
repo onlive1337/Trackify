@@ -3,7 +3,6 @@ package com.onlive.trackify.data.database
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.onlive.trackify.data.model.Payment
-import com.onlive.trackify.data.model.PaymentStatus
 import java.util.Date
 
 @Dao
@@ -46,18 +45,6 @@ interface PaymentDao {
 
     @Query("SELECT * FROM payments WHERE subscriptionId = :subscriptionId AND date BETWEEN :startDate AND :endDate")
     suspend fun getPaymentsForSubscriptionBetweenDatesSync(subscriptionId: Long, startDate: Date, endDate: Date): List<Payment>
-
-    @Query("SELECT * FROM payments WHERE status = :status ORDER BY date DESC")
-    fun getPaymentsByStatus(status: PaymentStatus): LiveData<List<Payment>>
-
-    @Query("SELECT COUNT(*) FROM payments WHERE status = :status")
-    fun getPaymentsCountByStatus(status: PaymentStatus): LiveData<Int>
-
-    @Query("UPDATE payments SET status = :newStatus WHERE paymentId = :paymentId")
-    suspend fun updatePaymentStatus(paymentId: Long, newStatus: PaymentStatus)
-
-    @Query("SELECT * FROM payments WHERE status = :status AND date <= :date ORDER BY date DESC")
-    fun getPendingPaymentsBeforeDate(status: PaymentStatus = PaymentStatus.PENDING, date: Date): LiveData<List<Payment>>
 
     @Query("SELECT COUNT(*) FROM payments WHERE strftime('%Y-%m', date / 1000, 'unixepoch') = :yearMonth")
     fun getPaymentsCountByMonth(yearMonth: String): LiveData<Int>

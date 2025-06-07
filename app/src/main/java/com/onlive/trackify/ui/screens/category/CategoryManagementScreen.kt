@@ -23,9 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Category
-import com.onlive.trackify.data.model.CategoryGroup
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
-import com.onlive.trackify.viewmodel.CategoryGroupViewModel
 import com.onlive.trackify.viewmodel.CategoryViewModel
 import androidx.core.graphics.toColorInt
 
@@ -34,17 +32,10 @@ fun CategoryManagementScreen(
     onNavigateBack: () -> Unit,
     onAddCategory: () -> Unit,
     onEditCategory: (Long) -> Unit,
-    onAddCategoryGroup: () -> Unit,
-    onEditCategoryGroup: (Long) -> Unit,
-    categoryViewModel: CategoryViewModel = viewModel(),
-    categoryGroupViewModel: CategoryGroupViewModel = viewModel()
+    categoryViewModel: CategoryViewModel = viewModel()
 ) {
     val categories by categoryViewModel.allCategories.observeAsState(emptyList())
-    val categoryGroups by categoryGroupViewModel.allGroups.observeAsState(emptyList())
-
-    var selectedTab by remember { mutableStateOf(0) }
     var showDeleteCategoryDialog by remember { mutableStateOf<Category?>(null) }
-    var showDeleteGroupDialog by remember { mutableStateOf<CategoryGroup?>(null) }
 
     Scaffold(
         topBar = {
@@ -56,13 +47,7 @@ fun CategoryManagementScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = {
-                    if (selectedTab == 0) {
-                        onAddCategory()
-                    } else {
-                        onAddCategoryGroup()
-                    }
-                },
+                onClick = onAddCategory,
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = RoundedCornerShape(16.dp)
@@ -75,50 +60,20 @@ fun CategoryManagementScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .padding(horizontal = 16.dp)
         ) {
-            TabRow(
-                selectedTabIndex = selectedTab
-            ) {
-                Tab(
-                    selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 },
-                    text = { Text(stringResource(R.string.categories)) }
-                )
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Tab(
-                    selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 },
-                    text = { Text(stringResource(R.string.category_groups)) }
+            if (categories.isEmpty()) {
+                EmptyCategoriesView()
+            } else {
+                CategoriesList(
+                    categories = categories,
+                    onEditCategory = onEditCategory,
+                    onDeleteCategory = { category ->
+                        showDeleteCategoryDialog = category
+                    }
                 )
-            }
-
-            when (selectedTab) {
-                0 -> {
-                    if (categories.isEmpty()) {
-                        EmptyCategoriesView()
-                    } else {
-                        CategoriesList(
-                            categories = categories,
-                            onEditCategory = onEditCategory,
-                            onDeleteCategory = { category ->
-                                showDeleteCategoryDialog = category
-                            }
-                        )
-                    }
-                }
-                1 -> {
-                    if (categoryGroups.isEmpty()) {
-                        EmptyGroupsView()
-                    } else {
-                        CategoryGroupsList(
-                            groups = categoryGroups,
-                            onEditGroup = onEditCategoryGroup,
-                            onDeleteGroup = { group ->
-                                showDeleteGroupDialog = group
-                            }
-                        )
-                    }
-                }
             }
         }
     }
@@ -148,32 +103,6 @@ fun CategoryManagementScreen(
             }
         )
     }
-
-    showDeleteGroupDialog?.let { group ->
-        AlertDialog(
-            onDismissRequest = { showDeleteGroupDialog = null },
-            title = { Text(stringResource(R.string.delete_group_confirmation)) },
-            text = { Text(stringResource(R.string.delete_group_message)) },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        categoryGroupViewModel.delete(group)
-                        showDeleteGroupDialog = null
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Text(stringResource(R.string.delete))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteGroupDialog = null }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
-        )
-    }
 }
 
 @Composable
@@ -191,27 +120,13 @@ fun EmptyCategoriesView() {
 }
 
 @Composable
-fun EmptyGroupsView() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = stringResource(R.string.no_category_groups),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-        )
-    }
-}
-
-@Composable
 fun CategoriesList(
     categories: List<Category>,
     onEditCategory: (Long) -> Unit,
     onDeleteCategory: (Category) -> Unit
 ) {
     LazyColumn(
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(categories) { category ->
@@ -256,95 +171,16 @@ fun CategoryItem(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            Text(
-                text = category.name,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.weight(1f)
-            )
-
-            IconButton(onClick = onEditClick) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = stringResource(R.string.edit_category),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            IconButton(onClick = onDeleteClick) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = stringResource(R.string.delete_category),
-                    tint = MaterialTheme.colorScheme.error
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun CategoryGroupsList(
-    groups: List<CategoryGroup>,
-    onEditGroup: (Long) -> Unit,
-    onDeleteGroup: (CategoryGroup) -> Unit
-) {
-    LazyColumn(
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(groups) { group ->
-            CategoryGroupItem(
-                group = group,
-                onEditClick = { onEditGroup(group.groupId) },
-                onDeleteClick = { onDeleteGroup(group) }
-            )
-        }
-    }
-}
-
-@Composable
-fun CategoryGroupItem(
-    group: CategoryGroup,
-    onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onEditClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = MaterialTheme.shapes.medium
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape)
-                    .background(
-                        try {
-                            Color(group.colorCode.toColorInt())
-                        } catch (e: Exception) {
-                            Color.Gray
-                        }
-                    )
-            )
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = group.name,
+                    text = category.name,
                     style = MaterialTheme.typography.titleMedium
                 )
 
-                if (!group.description.isNullOrEmpty()) {
+                if (!category.description.isNullOrEmpty()) {
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = group.description,
+                        text = category.description,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -362,7 +198,7 @@ fun CategoryGroupItem(
             IconButton(onClick = onDeleteClick) {
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = stringResource(R.string.delete_group),
+                    contentDescription = stringResource(R.string.delete_category),
                     tint = MaterialTheme.colorScheme.error
                 )
             }

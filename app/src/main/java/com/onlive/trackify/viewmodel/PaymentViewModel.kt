@@ -14,17 +14,11 @@ class PaymentViewModel(application: Application) : AndroidViewModel(application)
 
     private val repository: PaymentRepository
     val allPayments: LiveData<List<Payment>>
-    val pendingPayments: LiveData<List<Payment>>
-    val pendingPaymentsCount: LiveData<Int>
-    val recentPendingPayments: LiveData<List<Payment>>
 
     init {
         val paymentDao = AppDatabase.getDatabase(application).paymentDao()
         repository = PaymentRepository(paymentDao, application.applicationContext)
         allPayments = repository.allPayments
-        pendingPayments = repository.pendingPayments
-        pendingPaymentsCount = repository.pendingPaymentsCount
-        recentPendingPayments = repository.getRecentPendingPayments()
     }
 
     fun insert(payment: Payment) = viewModelScope.launch(Dispatchers.IO) {
@@ -49,13 +43,5 @@ class PaymentViewModel(application: Application) : AndroidViewModel(application)
 
     fun getTotalAmountForMonth(year: Int, month: Int): LiveData<Double> {
         return repository.getTotalAmountForMonth(year, month)
-    }
-
-    fun confirmPayment(payment: Payment) = viewModelScope.launch(Dispatchers.IO) {
-        repository.confirmPayment(payment)
-    }
-
-    fun confirmPayment(paymentId: Long) = viewModelScope.launch(Dispatchers.IO) {
-        repository.confirmPayment(paymentId)
     }
 }

@@ -3,7 +3,6 @@ package com.onlive.trackify.data.database
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.onlive.trackify.data.model.Category
-import com.onlive.trackify.data.model.CategoryWithGroup
 
 @Dao
 interface CategoryDao {
@@ -34,12 +33,6 @@ interface CategoryDao {
     @Query("SELECT * FROM categories WHERE categoryId = :id")
     fun getCategoryById(id: Long): LiveData<Category>
 
-    @Query("SELECT * FROM categories WHERE groupId = :groupId ORDER BY name ASC")
-    fun getCategoriesByGroup(groupId: Long): LiveData<List<Category>>
-
-    @Query("SELECT * FROM categories WHERE groupId IS NULL ORDER BY name ASC")
-    fun getCategoriesWithoutGroup(): LiveData<List<Category>>
-
     @Query("SELECT COUNT(*) FROM categories")
     suspend fun getCategoriesCountSync(): Int
 
@@ -48,10 +41,6 @@ interface CategoryDao {
 
     @Query("DELETE FROM categories")
     suspend fun deleteAllSync()
-
-    @Transaction
-    @Query("SELECT * FROM categories ORDER BY groupId, name")
-    fun getCategoriesWithGroups(): LiveData<List<CategoryWithGroup>>
 
     @Query("SELECT c.* FROM categories c JOIN subscriptions s ON c.categoryId = s.categoryId WHERE s.active = 1 GROUP BY c.categoryId ORDER BY COUNT(s.subscriptionId) DESC")
     fun getCategoriesWithActiveSubscriptions(): LiveData<List<Category>>

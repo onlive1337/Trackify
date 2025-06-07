@@ -8,17 +8,13 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -28,7 +24,6 @@ import androidx.compose.ui.window.Popup
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Payment
-import com.onlive.trackify.data.model.PaymentStatus
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.CurrencyFormatter
 import com.onlive.trackify.utils.DateUtils
@@ -39,19 +34,15 @@ import kotlinx.coroutines.launch
 @Composable
 fun PaymentsScreen(
     onAddPayment: (Long, Long) -> Unit,
-    onNavigateToBulkActions: () -> Unit = {},
-    onNavigateToPendingPayments: () -> Unit = {},
     paymentViewModel: PaymentViewModel = viewModel(),
     subscriptionViewModel: SubscriptionViewModel = viewModel()
 ) {
     val payments by paymentViewModel.allPayments.observeAsState(emptyList())
     val subscriptions by subscriptionViewModel.allActiveSubscriptions.observeAsState(emptyList())
-    val pendingPaymentsCount by paymentViewModel.pendingPaymentsCount.observeAsState(0)
     val context = LocalContext.current
 
     var paymentToDelete by remember { mutableStateOf<Payment?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var selectedPayment by remember { mutableStateOf<Payment?>(null) }
 
     val listState = rememberLazyListState()
     val pageSize = 20
@@ -110,24 +101,6 @@ fun PaymentsScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp)
         ) {
-            if (pendingPaymentsCount > 0) {
-                PendingPaymentsCard(
-                    pendingCount = pendingPaymentsCount,
-                    onClick = onNavigateToPendingPayments
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-
-            OutlinedButton(
-                onClick = onNavigateToBulkActions,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.bulk_payment_actions))
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             if (payments.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -152,11 +125,7 @@ fun PaymentsScreen(
                             subscriptionName = subscription?.name ?: stringResource(R.string.unknown),
                             formatAmount = { amount -> CurrencyFormatter.formatAmount(context, amount) },
                             onPaymentClick = {
-                                selectedPayment = payment
                                 onAddPayment(payment.subscriptionId, payment.paymentId)
-                            },
-                            onConfirmClick = {
-                                paymentViewModel.confirmPayment(payment)
                             },
                             onDeleteClick = {
                                 paymentToDelete = payment
@@ -221,67 +190,11 @@ fun PaymentsScreen(
 }
 
 @Composable
-fun PendingPaymentsCard(
-    pendingCount: Int,
-    onClick: () -> Unit
-) {
-    ElevatedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Warning,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimary
-            )
-
-            Text(
-                text = stringResource(R.string.pending_payments_card_title),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 16.dp)
-            )
-
-            Badge(
-                containerColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ) {
-                Text(
-                    text = pendingCount.toString(),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-        }
-    }
-}
-
-private data class StatusInfo(
-    val backgroundColor: Color,
-    val contentColor: Color,
-    val text: String,
-    val icon: ImageVector?
-)
-
-@Composable
 fun PaymentItem(
     payment: Payment,
     subscriptionName: String,
     formatAmount: (Double) -> String,
     onPaymentClick: () -> Unit,
-    onConfirmClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -293,7 +206,7 @@ fun PaymentItem(
             .padding(vertical = 4.dp),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF1E2630),
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
             contentColor = MaterialTheme.colorScheme.onSurface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -364,72 +277,13 @@ fun PaymentItem(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            if (!payment.notes.isNullOrEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                val statusInfo = when (payment.status) {
-                    PaymentStatus.PENDING -> StatusInfo(
-                        backgroundColor = MaterialTheme.colorScheme.errorContainer,
-                        contentColor = MaterialTheme.colorScheme.error,
-                        text = stringResource(R.string.payment_status_pending),
-                        icon = Icons.Filled.Warning
-                    )
-                    PaymentStatus.CONFIRMED -> StatusInfo(
-                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.primary,
-                        text = stringResource(R.string.payment_status_confirmed),
-                        icon = Icons.Filled.CheckCircle
-                    )
-                    PaymentStatus.MANUAL -> StatusInfo(
-                        backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.secondary,
-                        text = stringResource(R.string.payment_status_manual),
-                        icon = null
-                    )
-                }
-
-                Surface(
-                    color = statusInfo.backgroundColor,
-                    contentColor = statusInfo.contentColor,
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.height(28.dp)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        statusInfo.icon?.let {
-                            Icon(
-                                imageVector = it,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                        }
-
-                        Text(
-                            text = statusInfo.text,
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    }
-                }
-
-                if (payment.status == PaymentStatus.PENDING) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    TextButton(
-                        onClick = onConfirmClick,
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
-                    ) {
-                        Text(stringResource(R.string.confirm_payment))
-                    }
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                if (!payment.notes.isNullOrEmpty()) {
                     Box {
                         var showNotes by remember { mutableStateOf(false) }
 
