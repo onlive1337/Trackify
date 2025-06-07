@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.NavigateNext
 import androidx.compose.material.icons.filled.*
@@ -41,7 +42,9 @@ fun TrackifyDatePicker(
 ) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
+    val screenWidth = configuration.screenWidthDp.dp
     val isLargeScreen = screenHeight > 600.dp
+    val isWideScreen = screenWidth > 400.dp
 
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = selectedDate.time
@@ -107,15 +110,15 @@ fun TrackifyDatePicker(
     ) {
         Surface(
             modifier = modifier
-                .fillMaxWidth(0.92f)
+                .fillMaxWidth(if (isWideScreen) 0.92f else 0.98f)
                 .wrapContentHeight()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = if (isWideScreen) 16.dp else 8.dp),
             shape = RoundedCornerShape(24.dp),
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 6.dp
         ) {
             Column(
-                modifier = Modifier.padding(24.dp)
+                modifier = Modifier.padding(if (isWideScreen) 24.dp else 16.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -124,7 +127,8 @@ fun TrackifyDatePicker(
                 ) {
                     Text(
                         text = stringResource(R.string.select_date),
-                        style = MaterialTheme.typography.headlineSmall,
+                        style = if (isWideScreen) MaterialTheme.typography.headlineSmall
+                        else MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -138,7 +142,7 @@ fun TrackifyDatePicker(
                                 Icon(
                                     imageVector = Icons.Default.CalendarToday,
                                     contentDescription = "Календарь",
-                                    modifier = Modifier.size(18.dp)
+                                    modifier = Modifier.size(if (isWideScreen) 18.dp else 16.dp)
                                 )
                             },
                             selected = showCalendar,
@@ -154,7 +158,7 @@ fun TrackifyDatePicker(
                                 Icon(
                                     imageVector = Icons.Default.Apps,
                                     contentDescription = "Быстрый выбор",
-                                    modifier = Modifier.size(18.dp)
+                                    modifier = Modifier.size(if (isWideScreen) 18.dp else 16.dp)
                                 )
                             },
                             selected = !showCalendar,
@@ -169,36 +173,44 @@ fun TrackifyDatePicker(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 if (showCalendar) {
-                    DatePicker(
-                        state = datePickerState,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = DatePickerDefaults.colors(
-                            containerColor = Color.Transparent,
-                            titleContentColor = MaterialTheme.colorScheme.onSurface,
-                            headlineContentColor = MaterialTheme.colorScheme.onSurface,
-                            weekdayContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            subheadContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            yearContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            currentYearContentColor = MaterialTheme.colorScheme.primary,
-                            selectedYearContentColor = MaterialTheme.colorScheme.onPrimary,
-                            selectedYearContainerColor = MaterialTheme.colorScheme.primary,
-                            dayContentColor = MaterialTheme.colorScheme.onSurface,
-                            selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
-                            selectedDayContainerColor = MaterialTheme.colorScheme.primary,
-                            todayContentColor = MaterialTheme.colorScheme.primary,
-                            todayDateBorderColor = MaterialTheme.colorScheme.primary,
-                            dayInSelectionRangeContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                            dayInSelectionRangeContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                            disabledDayContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-                            navigationContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            dateTextFieldColors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                                focusedLabelColor = MaterialTheme.colorScheme.primary,
-                                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
+                    ) {
+                        DatePicker(
+                            state = datePickerState,
+                            modifier = Modifier
+                                .widthIn(min = 320.dp)
+                                .wrapContentWidth(),
+                            colors = DatePickerDefaults.colors(
+                                containerColor = Color.Transparent,
+                                titleContentColor = MaterialTheme.colorScheme.onSurface,
+                                headlineContentColor = MaterialTheme.colorScheme.onSurface,
+                                weekdayContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                subheadContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                yearContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                currentYearContentColor = MaterialTheme.colorScheme.primary,
+                                selectedYearContentColor = MaterialTheme.colorScheme.onPrimary,
+                                selectedYearContainerColor = MaterialTheme.colorScheme.primary,
+                                dayContentColor = MaterialTheme.colorScheme.onSurface,
+                                selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
+                                selectedDayContainerColor = MaterialTheme.colorScheme.primary,
+                                todayContentColor = MaterialTheme.colorScheme.primary,
+                                todayDateBorderColor = MaterialTheme.colorScheme.primary,
+                                dayInSelectionRangeContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                dayInSelectionRangeContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                disabledDayContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                navigationContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                dateTextFieldColors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                                    focusedLabelColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             )
                         )
-                    )
+                    }
                 } else {
                     QuickPickSection(
                         options = quickPickOptions,
@@ -207,6 +219,7 @@ fun TrackifyDatePicker(
                             onDismiss()
                         },
                         isLargeScreen = isLargeScreen,
+                        isWideScreen = isWideScreen,
                         modifier = Modifier
                             .fillMaxWidth()
                             .heightIn(max = if (isLargeScreen) 400.dp else 350.dp)
@@ -258,6 +271,7 @@ private fun QuickPickSection(
     options: List<QuickPickOption>,
     onOptionSelected: (QuickPickOption) -> Unit,
     isLargeScreen: Boolean,
+    isWideScreen: Boolean,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -272,29 +286,31 @@ private fun QuickPickSection(
     ) {
         Text(
             text = stringResource(R.string.quick_pick),
-            style = MaterialTheme.typography.titleMedium,
+            style = if (isWideScreen) MaterialTheme.typography.titleMedium
+            else MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        val columns = if (isLargeScreen) 2 else 1
+        val columns = if (isLargeScreen && isWideScreen) 2 else 1
         val chunkedOptions = options.chunked(columns)
 
         Column(
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(if (isWideScreen) 12.dp else 8.dp)
         ) {
             chunkedOptions.forEach { rowOptions ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(if (isWideScreen) 12.dp else 8.dp)
                 ) {
                     rowOptions.forEach { option ->
                         QuickPickCard(
                             option = option,
                             onClick = { onOptionSelected(option) },
                             modifier = Modifier.weight(1f),
-                            isLargeScreen = isLargeScreen
+                            isLargeScreen = isLargeScreen,
+                            isWideScreen = isWideScreen
                         )
                     }
 
@@ -312,10 +328,20 @@ private fun QuickPickCard(
     option: QuickPickOption,
     onClick: () -> Unit,
     isLargeScreen: Boolean,
+    isWideScreen: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val cardHeight = if (isLargeScreen) 80.dp else 64.dp
-    val iconSize = if (isLargeScreen) 24.dp else 20.dp
+    val cardHeight = when {
+        isLargeScreen && isWideScreen -> 80.dp
+        isWideScreen -> 64.dp
+        else -> 56.dp
+    }
+
+    val iconSize = when {
+        isLargeScreen && isWideScreen -> 24.dp
+        isWideScreen -> 20.dp
+        else -> 18.dp
+    }
 
     val cardColors = if (option.isSpecial) {
         CardDefaults.cardColors(
@@ -342,9 +368,12 @@ private fun QuickPickCard(
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(
+                    horizontal = if (isWideScreen) 16.dp else 12.dp,
+                    vertical = if (isWideScreen) 12.dp else 8.dp
+                ),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(if (isWideScreen) 12.dp else 8.dp)
         ) {
             Icon(
                 imageVector = option.icon,
@@ -359,10 +388,10 @@ private fun QuickPickCard(
 
             Text(
                 text = option.label,
-                style = if (isLargeScreen) {
-                    MaterialTheme.typography.bodyMedium
-                } else {
-                    MaterialTheme.typography.bodySmall
+                style = when {
+                    isLargeScreen && isWideScreen -> MaterialTheme.typography.bodyMedium
+                    isWideScreen -> MaterialTheme.typography.bodySmall
+                    else -> MaterialTheme.typography.labelLarge
                 },
                 fontWeight = FontWeight.Medium,
                 color = if (option.isSpecial) {
@@ -370,7 +399,8 @@ private fun QuickPickCard(
                 } else {
                     MaterialTheme.colorScheme.onPrimaryContainer
                 },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                maxLines = 1
             )
         }
     }
