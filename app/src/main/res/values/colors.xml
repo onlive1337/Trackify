@@ -28,7 +28,6 @@
     <color name="md_theme_light_outline">#6F797A</color>
     <color name="md_theme_light_inverseOnSurface">#EFF1F1</color>
     <color name="md_theme_light_inverseSurface">#2E3132</color>
-    <color name="md_theme_light_outlineVariant">#E0E0E0</color>
 
     <!-- Material 3 default color scheme (dark theme) -->
     <color name="md_theme_dark_primary">#4FD8EB</color>
@@ -56,5 +55,4 @@
     <color name="md_theme_dark_outline">#899294</color>
     <color name="md_theme_dark_inverseOnSurface">#191C1D</color>
     <color name="md_theme_dark_inverseSurface">#E1E3E3</color>
-    <color name="md_theme_dark_outlineVariant">#444444</color>
 </resources>

@@ -130,10 +130,8 @@
 
     <string name="today">Сегодня</string>
     <string name="tomorrow">Завтра</string>
-    <string name="week">Неделя</string>
     <string name="month">Месяц</string>
     <string name="year">Год</string>
-    <string name="all">Все</string>
 
     <string name="date">01.01.2023</string>
     <string name="choose">Выбрать</string>
@@ -181,7 +179,6 @@
     <string name="export_error">Ошибка при экспорте данных</string>
     <string name="import_success">Данные успешно импортированы</string>
     <string name="import_error">Ошибка при импорте данных</string>
-    <string name="toggle_view_mode">Переключить режим просмотра</string>
     <string name="subscription_types_spending">Расходы по типам подписок</string>
     <string name="enter_correct_amount">Введите корректную сумму</string>
     <string name="select_subscription">Выберите подписку</string>

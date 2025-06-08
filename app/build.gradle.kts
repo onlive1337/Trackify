@@ -101,10 +101,7 @@ android {
         compose = true
         buildConfig = true
     }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.6.0"
-    }
+    
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -153,10 +150,6 @@ dependencies {
 
     implementation(libs.androidx.work.runtime.ktx)
 
-    implementation(libs.charts)
-
-    implementation(libs.accompanist.systemuicontroller)
-    implementation(libs.accompanist.permissions)
 
     implementation(libs.gson)
 
@@ -168,5 +161,4 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    implementation(libs.coil.compose)
 }

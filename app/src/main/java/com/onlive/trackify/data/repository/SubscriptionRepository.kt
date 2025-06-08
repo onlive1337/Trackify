@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import com.onlive.trackify.R
-import com.onlive.trackify.data.cache.CacheService
 import com.onlive.trackify.data.database.CategoryDao
 import com.onlive.trackify.data.database.SubscriptionDao
 import com.onlive.trackify.data.model.Category
@@ -13,16 +12,12 @@ import com.onlive.trackify.utils.Result
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Calendar
-import java.util.concurrent.TimeUnit
 
 class SubscriptionRepository(
     private val subscriptionDao: SubscriptionDao,
     private val categoryDao: CategoryDao,
     private val context: Context
 ) {
-
-    private val cacheService = CacheService.getInstance()
-    private val cacheTime = TimeUnit.MINUTES.toMillis(5)
 
     private val _allActiveSubscriptions = MediatorLiveData<List<Subscription>>()
     val allActiveSubscriptions: LiveData<List<Subscription>> = _allActiveSubscriptions
@@ -58,7 +53,6 @@ class SubscriptionRepository(
     suspend fun insert(subscription: Subscription): Result<Long> = withContext(Dispatchers.IO) {
         return@withContext try {
             val id = subscriptionDao.insert(subscription)
-            cacheService.clearCache("active_subscriptions")
             Result.Success(id)
         } catch (e: Exception) {
             Result.Error(context.getString(R.string.error_creating_subscription), e)
@@ -68,8 +62,6 @@ class SubscriptionRepository(
     suspend fun update(subscription: Subscription): Result<Unit> = withContext(Dispatchers.IO) {
         return@withContext try {
             subscriptionDao.update(subscription)
-            cacheService.clearCache("active_subscriptions")
-            cacheService.clearCache("subscription_${subscription.subscriptionId}")
             Result.Success(Unit)
         } catch (e: Exception) {
             Result.Error(context.getString(R.string.error_updating_subscription), e)
@@ -79,8 +71,6 @@ class SubscriptionRepository(
     suspend fun delete(subscription: Subscription): Result<Unit> = withContext(Dispatchers.IO) {
         return@withContext try {
             subscriptionDao.delete(subscription)
-            cacheService.clearCache("active_subscriptions")
-            cacheService.clearCache("subscription_${subscription.subscriptionId}")
             Result.Success(Unit)
         } catch (e: Exception) {
             Result.Error(context.getString(R.string.error_deleting_subscription), e)
@@ -159,11 +149,6 @@ class SubscriptionRepository(
 
     suspend fun getActiveSubscriptionsSync(): Result<List<Subscription>> = withContext(Dispatchers.IO) {
         return@withContext try {
-            val cachedData: List<Subscription>? = cacheService.getList<Subscription>("active_subscriptions")
-            if (cachedData != null) {
-                return@withContext Result.Success(cachedData)
-            }
-
             val subscriptions = subscriptionDao.getActiveSubscriptionsSync()
             val categories = categoryDao.getAllCategoriesSync()
 
@@ -177,7 +162,6 @@ class SubscriptionRepository(
                 }
             }
 
-            cacheService.putList("active_subscriptions", result, cacheTime)
             Result.Success(result)
         } catch (e: Exception) {
             Result.Error(context.getString(R.string.error_loading_subscriptions), e)
@@ -202,13 +186,6 @@ class SubscriptionRepository(
 
     suspend fun getActiveSubscriptionsPage(limit: Int, offset: Int): Result<List<Subscription>> = withContext(Dispatchers.IO) {
         return@withContext try {
-            val cacheKey = "active_subscriptions_page_${limit}_${offset}"
-
-            val cachedData: List<Subscription>? = cacheService.getList<Subscription>(cacheKey)
-            if (cachedData != null) {
-                return@withContext Result.Success(cachedData)
-            }
-
             val subscriptions = subscriptionDao.getActiveSubscriptionsPage(limit, offset)
             val categories = categoryDao.getAllCategoriesSync()
 
@@ -222,7 +199,6 @@ class SubscriptionRepository(
                 }
             }
 
-            cacheService.putList(cacheKey, result, cacheTime)
             Result.Success(result)
         } catch (e: Exception) {
             Result.Error(context.getString(R.string.error_loading_subscriptions_page), e)

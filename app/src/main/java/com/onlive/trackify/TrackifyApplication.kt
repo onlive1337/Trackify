@@ -6,10 +6,8 @@ import androidx.work.Configuration
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.onlive.trackify.data.cache.CacheService
 import com.onlive.trackify.data.database.DatabaseInitializer
 import com.onlive.trackify.utils.ErrorHandler
-import com.onlive.trackify.utils.MemoryUtils
 import com.onlive.trackify.utils.NotificationHelper
 import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
@@ -27,7 +25,6 @@ class TrackifyApplication : Application(), Configuration.Provider {
     private lateinit var notificationHelper: NotificationHelper
     private lateinit var preferenceManager: PreferenceManager
     private lateinit var databaseInitializer: DatabaseInitializer
-    private lateinit var cacheService: CacheService
     private lateinit var notificationScheduler: NotificationScheduler
 
     override fun onCreate() {
@@ -37,7 +34,6 @@ class TrackifyApplication : Application(), Configuration.Provider {
 
         try {
             errorHandler = ErrorHandler.getInstance(this)
-            cacheService = CacheService.getInstance()
             initializeComponents()
         } catch (e: Exception) {
             handleFatalError(e)
@@ -51,13 +47,6 @@ class TrackifyApplication : Application(), Configuration.Provider {
             try {
                 Log.e("TrackifyApplication", "Uncaught exception in thread ${thread.name}", exception)
                 exception.printStackTrace()
-
-                try {
-                    cacheService.clearCache()
-                } catch (e: Exception) {
-                    Log.e("TrackifyApplication", "Error clearing cache during crash", e)
-                }
-
             } catch (e: Exception) {
                 Log.e("TrackifyApplication", "Error in exception handler", e)
             } finally {
@@ -98,25 +87,6 @@ class TrackifyApplication : Application(), Configuration.Provider {
         Log.e("TrackifyApplication", "Fatal error during initialization", e)
         e.printStackTrace()
         exitProcess(1)
-    }
-
-    override fun onTerminate() {
-        super.onTerminate()
-        cacheService.clearCache()
-    }
-
-    override fun onLowMemory() {
-        super.onLowMemory()
-        MemoryUtils.handleLowMemory(this)
-        cacheService.clearCache()
-    }
-
-    override fun onTrimMemory(level: Int) {
-        super.onTrimMemory(level)
-        if (level >= TRIM_MEMORY_RUNNING_LOW) {
-            MemoryUtils.handleLowMemory(this)
-            cacheService.trimCache()
-        }
     }
 
     override val workManagerConfiguration: Configuration

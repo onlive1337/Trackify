@@ -29,7 +29,6 @@ class DataExportImportManager(private val context: Context) {
 
     private val preferenceManager = PreferenceManager(context)
     private val themeManager = ThemeManager(context)
-    private val viewModePreference = ViewModePreference(context)
 
     data class UserPreferences(
         val notificationsEnabled: Boolean = true,
@@ -39,7 +38,6 @@ class DataExportImportManager(private val context: Context) {
         val currencyCode: String = "RUB",
         val languageCode: String = "",
         val themeMode: Int = 0,
-        val gridModeEnabled: Boolean = false
     )
 
     data class ExportData(
@@ -68,7 +66,6 @@ class DataExportImportManager(private val context: Context) {
                 currencyCode = preferenceManager.getCurrencyCode(),
                 languageCode = preferenceManager.getLanguageCode(),
                 themeMode = themeManager.getThemeMode(),
-                gridModeEnabled = viewModePreference.isGridModeEnabled()
             )
 
             val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
@@ -179,7 +176,6 @@ class DataExportImportManager(private val context: Context) {
                 preferenceManager.setLanguageCode(userPreferences.languageCode)
 
                 themeManager.setThemeMode(userPreferences.themeMode)
-                viewModePreference.setGridModeEnabled(userPreferences.gridModeEnabled)
             } catch (e: Exception) {
                 Log.e(tag, "Error restoring user preferences", e)
             }

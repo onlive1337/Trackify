@@ -134,11 +134,5 @@ class NotificationHelper(private val context: Context) {
         return true
     }
 
-    fun cancelNotification(notificationId: Int) {
-        NotificationManagerCompat.from(context).cancel(notificationId)
-    }
 
-    fun cancelAllNotifications() {
-        NotificationManagerCompat.from(context).cancelAll()
-    }
 }

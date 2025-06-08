@@ -4,23 +4,18 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import com.onlive.trackify.R
-import com.onlive.trackify.data.cache.CacheService
 import com.onlive.trackify.data.database.PaymentDao
 import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.utils.Result
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Calendar
-import java.util.concurrent.TimeUnit
 import android.util.Log
 
 class PaymentRepository(
     private val paymentDao: PaymentDao,
     private val context: Context
 ) {
-
-    private val cacheService = CacheService.getInstance()
-    private val cacheTime = TimeUnit.MINUTES.toMillis(5)
 
     val allPayments: LiveData<List<Payment>> = paymentDao.getAllPayments()
 
@@ -64,7 +59,6 @@ class PaymentRepository(
     suspend fun insert(payment: Payment): Result<Long> = withContext(Dispatchers.IO) {
         return@withContext try {
             val id = paymentDao.insert(payment)
-            clearPaymentCaches(payment)
             Log.d(TAG, "Payment inserted successfully with ID: $id")
             Result.Success(id)
         } catch (e: Exception) {
@@ -76,7 +70,6 @@ class PaymentRepository(
     suspend fun update(payment: Payment): Result<Unit> = withContext(Dispatchers.IO) {
         return@withContext try {
             paymentDao.update(payment)
-            clearPaymentCaches(payment)
             Log.d(TAG, "Payment updated successfully: ${payment.paymentId}")
             Result.Success(Unit)
         } catch (e: Exception) {
@@ -88,7 +81,6 @@ class PaymentRepository(
     suspend fun delete(payment: Payment): Result<Unit> = withContext(Dispatchers.IO) {
         return@withContext try {
             paymentDao.delete(payment)
-            clearPaymentCaches(payment)
             Log.d(TAG, "Payment deleted successfully: ${payment.paymentId}")
             Result.Success(Unit)
         } catch (e: Exception) {
@@ -140,39 +132,12 @@ class PaymentRepository(
 
     suspend fun getPaymentsPage(limit: Int, offset: Int): Result<List<Payment>> = withContext(Dispatchers.IO) {
         return@withContext try {
-            val cacheKey = "payments_page_${limit}_${offset}"
-
-            val cachedData = cacheService.getList<Payment>(cacheKey)
-            if (cachedData != null) {
-                Log.d(TAG, "Returning cached payments page: limit=$limit, offset=$offset")
-                return@withContext Result.Success(cachedData)
-            }
-
             val page = paymentDao.getPaymentsPage(limit, offset)
-            cacheService.putList(cacheKey, page, cacheTime)
             Log.d(TAG, "Loaded payments page: limit=$limit, offset=$offset, size=${page.size}")
             Result.Success(page)
         } catch (e: Exception) {
             Log.e(TAG, "Error loading payments page: limit=$limit, offset=$offset", e)
             Result.Error(context.getString(R.string.error_loading_payments_page), e)
-        }
-    }
-
-    private fun clearPaymentCaches(payment: Payment) {
-        try {
-            cacheService.clearCache("all_payments")
-            cacheService.clearCache("payment_${payment.paymentId}")
-            cacheService.clearCache("subscription_payments_${payment.subscriptionId}")
-
-            val calendar = Calendar.getInstance()
-            calendar.time = payment.date
-            val year = calendar.get(Calendar.YEAR)
-            val month = calendar.get(Calendar.MONTH)
-            cacheService.clearCache("payments_${year}_${month}")
-
-            Log.d(TAG, "Payment caches cleared for payment: ${payment.paymentId}")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error clearing payment caches", e)
         }
     }
 }

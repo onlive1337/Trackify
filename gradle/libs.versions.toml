@@ -1,9 +1,6 @@
 [versions]
-accompanistPermissions = "0.36.0"
 activityCompose = "1.10.1"
 agp = "8.10.1"
-charts = "0.2.4-alpha"
-coilCompose = "2.7.0"
 composeBomVersion = "2025.06.00"
 coreKtxVersion = "1.16.0"
 gson = "2.11.0"
@@ -22,8 +19,6 @@ roomKtx = "2.7.1"
 workRuntimeKtx = "2.10.1"
 
 [libraries]
-accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
-accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanistPermissions" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
 androidx-core-ktx-v1150 = { module = "androidx.core:core-ktx", version.ref = "coreKtxVersion" }
 androidx-lifecycle-livedata-ktx = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycleLivedataKtx" }
@@ -44,8 +39,6 @@ androidx-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 androidx-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 androidx-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
-charts = { module = "com.github.tehras:charts", version.ref = "charts" }
-coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBomVersion" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }

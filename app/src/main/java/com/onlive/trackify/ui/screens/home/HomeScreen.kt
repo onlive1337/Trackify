@@ -1,16 +1,11 @@
 package com.onlive.trackify.ui.screens.home
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,7 +17,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Subscription
-import com.onlive.trackify.ui.components.SubscriptionGridItem
 import com.onlive.trackify.ui.components.SubscriptionListItem
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
@@ -38,7 +32,6 @@ fun HomeScreen(
     val loading by viewModel.isLoading.observeAsState(false)
 
     var query by remember { mutableStateOf("") }
-    var isGridMode by remember { mutableStateOf(false) }
 
     val filteredSubscriptions = remember(query, allActiveSubscriptions) {
         if (query.isEmpty()) {
@@ -53,15 +46,7 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TrackifyTopAppBar(
-                title = stringResource(R.string.title_subscriptions),
-                actions = {
-                    IconButton(onClick = { isGridMode = !isGridMode }) {
-                        Icon(
-                            imageVector = if (isGridMode) Icons.AutoMirrored.Filled.ViewList else Icons.Filled.GridView,
-                            contentDescription = stringResource(R.string.toggle_view_mode)
-                        )
-                    }
-                }
+                title = stringResource(R.string.title_subscriptions)
             )
         },
         floatingActionButton = {
@@ -122,17 +107,10 @@ fun HomeScreen(
                     )
                 }
             } else {
-                if (isGridMode) {
-                    SubscriptionsGrid(
-                        subscriptions = filteredSubscriptions,
-                        onSubscriptionClick = onSubscriptionClick
-                    )
-                } else {
-                    SubscriptionsList(
-                        subscriptions = filteredSubscriptions,
-                        onSubscriptionClick = onSubscriptionClick
-                    )
-                }
+                SubscriptionsList(
+                    subscriptions = filteredSubscriptions,
+                    onSubscriptionClick = onSubscriptionClick
+                )
             }
         }
     }
@@ -152,26 +130,6 @@ fun EmptySubscriptionsView() {
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
         )
-    }
-}
-
-@Composable
-fun SubscriptionsGrid(
-    subscriptions: List<Subscription>,
-    onSubscriptionClick: (Long) -> Unit
-) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        contentPadding = PaddingValues(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(subscriptions) { subscription ->
-            SubscriptionGridItem(
-                subscription = subscription,
-                onClick = { onSubscriptionClick(subscription.subscriptionId) }
-            )
-        }
     }
 }
 
