@@ -2,12 +2,12 @@ import java.util.Properties
 import java.io.FileInputStream
 
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("com.google.devtools.ksp")
-    id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
+    alias(libs.plugins.kotlin.ksp)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 android {
@@ -121,7 +121,7 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.core.ktx.v1150)
+    implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
@@ -153,10 +153,9 @@ dependencies {
 
     implementation(libs.gson)
 
-    // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
-    implementation("com.google.firebase:firebase-crashlytics-ktx")
-    implementation("com.google.firebase:firebase-analytics-ktx")
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.crashlytics.ktx)
+    implementation(libs.firebase.analytics.ktx)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

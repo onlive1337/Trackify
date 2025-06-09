@@ -2,6 +2,7 @@ package com.onlive.trackify.utils
 
 import android.content.Context
 import android.content.res.Configuration
+import com.onlive.trackify.R
 import java.util.Locale
 
 object LocaleHelper {
@@ -25,9 +26,9 @@ object LocaleHelper {
         return updateLocale(context, languageCode)
     }
 
-    fun getAvailableLanguages(): List<Language> {
+    fun getAvailableLanguages(context: Context): List<Language> {
         return listOf(
-            Language("", "Системный язык"),
+            Language("", context.getString(R.string.system_language)),
             Language("ru", "Русский"),
             Language("en", "English")
         )

@@ -21,6 +21,7 @@ import com.onlive.trackify.ui.components.TrackifyCard
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
+import java.util.Locale
 
 @Composable
 fun NotificationSettingsScreen(
@@ -335,7 +336,7 @@ fun NumberPicker(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = value.toString().padStart(2, '0'),
+            text = String.format(Locale.getDefault(), "%02d", value),
             style = MaterialTheme.typography.headlineSmall
         )
 
@@ -391,5 +392,5 @@ private fun ReminderDayOption(
 }
 
 private fun formatTime(hour: Int, minute: Int): String {
-    return String.format("%02d:%02d", hour, minute)
+    return String.format(Locale.getDefault(), "%02d:%02d", hour, minute)
 }

@@ -30,6 +30,10 @@ fun LanguageSettingsScreen(
 
     var showRestartDialog by remember { mutableStateOf(false) }
 
+    val availableLanguages = remember(context) {
+        LocaleHelper.getAvailableLanguages(context)
+    }
+
     Scaffold(
         topBar = {
             TrackifyTopAppBar(
@@ -69,7 +73,7 @@ fun LanguageSettingsScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             LazyColumn {
-                items(LocaleHelper.getAvailableLanguages()) { language ->
+                items(availableLanguages) { language ->
                     LanguageItem(
                         languageName = language.name,
                         selected = language.code == selectedLanguageCode,

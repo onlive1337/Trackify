@@ -31,7 +31,8 @@ data class Currency(
 
     fun format(amount: Double, includeSymbol: Boolean = true, maxDecimals: Int = 0): String {
         try {
-            val format = NumberFormat.getCurrencyInstance(getLocaleForCurrency())
+            val targetLocale = getLocaleForCurrency()
+            val format = NumberFormat.getCurrencyInstance(targetLocale)
             val javaCurrency = JavaCurrency.getInstance(code)
             format.currency = javaCurrency
             format.maximumFractionDigits = maxDecimals
@@ -43,8 +44,9 @@ data class Currency(
                 return formatted.replace(symbol, "").trim()
             }
         } catch (e: Exception) {
+            val targetLocale = getLocaleForCurrency()
             val formatPattern = if (maxDecimals > 0) "%.${maxDecimals}f" else "%.0f"
-            val formattedAmount = String.format(formatPattern, amount)
+            val formattedAmount = String.format(targetLocale, formatPattern, amount)
 
             return when {
                 !includeSymbol -> formattedAmount

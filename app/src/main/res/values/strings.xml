@@ -105,6 +105,7 @@
     <string name="language_description">Выберите язык приложения</string>
     <string name="language_changed">Язык изменен. Изменения вступят в силу после перезапуска приложения</string>
     <string name="choose_language">Выбор языка</string>
+    <string name="system_language">Системный язык</string>
 
     <string name="general_settings">Общие настройки</string>
     <string name="notifications">Уведомления</string>

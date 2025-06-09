@@ -7,10 +7,12 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.onlive.trackify.R
+import java.lang.ref.WeakReference
 
-class ErrorHandler private constructor(private val context: Context) {
+class ErrorHandler private constructor(context: Context) {
 
     companion object {
+        @Volatile
         private var INSTANCE: ErrorHandler? = null
         private const val TAG = "ErrorHandler"
 
@@ -23,15 +25,18 @@ class ErrorHandler private constructor(private val context: Context) {
         }
     }
 
+    private val contextRef = WeakReference(context.applicationContext)
     private val _errorEvent = MutableLiveData<Event<String>>()
     val errorEvent = _errorEvent
 
     fun handleError(error: Any?, showToast: Boolean = true, context: String? = null) {
+        val appContext = contextRef.get() ?: return
+
         val errorMessage = when (error) {
             is String -> error
-            is Exception -> getReadableErrorMessage(error)
+            is Exception -> getReadableErrorMessage(error, appContext)
             is Result.Error -> error.message
-            else -> this.context.getString(R.string.unknown_error)
+            else -> appContext.getString(R.string.unknown_error)
         }
 
         try {
@@ -61,7 +66,7 @@ class ErrorHandler private constructor(private val context: Context) {
         _errorEvent.postValue(Event(errorMessage))
     }
 
-    private fun getReadableErrorMessage(e: Exception): String {
+    private fun getReadableErrorMessage(e: Exception, context: Context): String {
         return when (e) {
             is java.net.UnknownHostException -> context.getString(R.string.no_internet_connection)
             is java.net.SocketTimeoutException -> context.getString(R.string.connection_timeout)
