@@ -6,7 +6,6 @@ import androidx.work.Configuration
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.onlive.trackify.data.database.DatabaseInitializer
 import com.onlive.trackify.utils.ErrorHandler
 import com.onlive.trackify.utils.NotificationHelper
 import com.onlive.trackify.utils.NotificationScheduler
@@ -24,7 +23,6 @@ class TrackifyApplication : Application(), Configuration.Provider {
     private lateinit var themeManager: ThemeManager
     private lateinit var notificationHelper: NotificationHelper
     private lateinit var preferenceManager: PreferenceManager
-    private lateinit var databaseInitializer: DatabaseInitializer
     private lateinit var notificationScheduler: NotificationScheduler
 
     override fun onCreate() {
@@ -58,7 +56,6 @@ class TrackifyApplication : Application(), Configuration.Provider {
     private fun initializeComponents() {
         themeManager = ThemeManager(this)
         preferenceManager = PreferenceManager(this)
-        databaseInitializer = DatabaseInitializer(this)
 
         notificationHelper = NotificationHelper(this)
         notificationHelper.createNotificationChannel()
