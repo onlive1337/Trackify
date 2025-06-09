@@ -185,23 +185,4 @@
 
     <string name="and_more_count">…and %d more</string>
     <string name="month_fallback">Month %d</string>
-
-    <string name="error_database_timeout">Database waiting time exceeded</string>
-    <string name="error_constraint_violation">Violation of database constraints</string>
-    <string name="error_database_operation">Database operation error</string>
-    <string name="error_subscription_name_empty">The name of the subscription cannot be empty</string>
-    <string name="error_subscription_name_too_long">The subscription name is too long</string>
-    <string name="error_subscription_price_negative">The price can\'t be negative</string>
-    <string name="error_subscription_price_too_large">The price is too high</string>
-    <string name="error_subscription_price_invalid">Incorrect price</string>
-    <string name="error_subscription_date_invalid">The end date cannot be earlier than the start date</string>
-    <string name="error_subscription_date_too_far">The date is too far in the future</string>
-    <string name="error_subscription_date_too_old">The date is too far in the past</string>
-    <string name="error_subscription_validation">Subscription validation error</string>
-    <string name="error_subscription_name_whitespace">The name should not begin or end with spaces</string>
-    <string name="error_subscription_name_invalid_chars">The name contains invalid characters</string>
-    <string name="error_subscription_description_too_long">Description is too long (maximum 500 characters)</string>
-    <string name="error_subscription_description_invalid_chars">Description contains invalid characters</string>
-    <string name="error_subscription_end_date_too_far">The end date is too far in the future</string>
-    <string name="error_subscription_invalid_category">Ineligible category</string>
 </resources>

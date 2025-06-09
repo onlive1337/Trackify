@@ -185,23 +185,4 @@
 
     <string name="and_more_count">…и ещё %d</string>
     <string name="month_fallback">Месяц %d</string>
-
-    <string name="error_database_timeout">Превышено время ожидания базы данных</string>
-    <string name="error_constraint_violation">Нарушение ограничений базы данных</string>
-    <string name="error_database_operation">Ошибка операции с базой данных</string>
-    <string name="error_subscription_name_empty">Название подписки не может быть пустым</string>
-    <string name="error_subscription_name_too_long">Название подписки слишком длинное</string>
-    <string name="error_subscription_price_negative">Цена не может быть отрицательной</string>
-    <string name="error_subscription_price_too_large">Цена слишком велика</string>
-    <string name="error_subscription_price_invalid">Некорректная цена</string>
-    <string name="error_subscription_date_invalid">Дата окончания не может быть раньше даты начала</string>
-    <string name="error_subscription_date_too_far">Дата слишком далеко в будущем</string>
-    <string name="error_subscription_date_too_old">Дата слишком далеко в прошлом</string>
-    <string name="error_subscription_validation">Ошибка валидации подписки</string>
-    <string name="error_subscription_name_whitespace">Название не должно начинаться или заканчиваться пробелами</string>
-    <string name="error_subscription_name_invalid_chars">Название содержит недопустимые символы</string>
-    <string name="error_subscription_description_too_long">Описание слишком длинное (максимум 500 символов)</string>
-    <string name="error_subscription_description_invalid_chars">Описание содержит недопустимые символы</string>
-    <string name="error_subscription_end_date_too_far">Дата окончания слишком далеко в будущем</string>
-    <string name="error_subscription_invalid_category">Недопустимая категория</string>
 </resources>
