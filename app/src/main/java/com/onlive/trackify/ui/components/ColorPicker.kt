@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.toColorInt
 
 @Composable
 fun ColorPicker(
@@ -47,7 +48,7 @@ fun ColorPickerItem(
 ) {
     val borderWidth = if (isSelected) 3.dp else 1.dp
     val color = try {
-        Color(android.graphics.Color.parseColor(colorCode))
+        Color(colorCode.toColorInt())
     } catch (e: Exception) {
         Color.Gray
     }

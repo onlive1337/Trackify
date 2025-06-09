@@ -13,7 +13,6 @@
     <string name="error_creating_payment">Error creating payment</string>
     <string name="error_updating_payment">Error updating payment</string>
     <string name="error_deleting_payment">Error deleting payment</string>
-    <string name="error_confirming_payment">Error confirming payment</string>
     <string name="error_loading_payments_page">Error loading payments page</string>
     <string name="error_creating_subscription">Error creating subscription</string>
     <string name="error_updating_subscription">Error updating subscription</string>
@@ -58,7 +57,6 @@
     <string name="monthly_spending">Monthly spending</string>
     <string name="spending_by_category">Spending by category</string>
     <string name="spending_over_time">Spending over time</string>
-    <string name="subscription_types">Subscription types expense</string>
     <string name="yearly_type">Yearly (per month)</string>
     <string name="total_category">Total:</string>
 
@@ -100,24 +98,19 @@
 
     <string name="currency_settings">Currency settings</string>
     <string name="currency_description">Choose the currency for displaying amounts in the app</string>
-    <string name="currency">Currency</string>
     <string name="choose_currency">Choose currency</string>
 
     <string name="language_settings">Language settings</string>
     <string name="language_description">Choose application language</string>
     <string name="language_changed">Language changed. Changes will take effect after application restart</string>
     <string name="choose_language">Choose language</string>>
-    <string name="system_language">System language</string>
 
-    <string name="theme">Theme</string>
     <string name="general_settings">General settings</string>
     <string name="notifications">Notifications</string>
     <string name="data_management">Data management</string>
     <string name="about_app">About app</string>
     <string name="app_version">Version</string>
     <string name="app_description">Trackify helps you track your subscriptions and recurring payments. Keep track of your expenses, receive notifications of upcoming payments and analyse your spending by category.</string>
-    <string name="export_data">Export data</string>
-    <string name="import_data">Import data</string>
     <string name="export_description">Save all application data to a JSON file. This will allow you to restore your data if necessary or transfer it to another device.</string>
     <string name="import_description">Restore data from a previously created JSON file. Warning! Importing data will replace all existing data in the application.</string>
     <string name="data_import_error">Error when importing data</string>
@@ -133,7 +126,6 @@
     <string name="month">Month</string>
     <string name="year">Year</string>
 
-    <string name="date">01.01.2023</string>
     <string name="choose">Choose</string>
     <string name="quick_pick">Quick pick:</string>
     <string name="in_a_week">A week from today</string>
@@ -168,7 +160,6 @@
     <string name="unknown">Unknown</string>
 
     <string name="no_payments_for_subscription">No payments for this subscription</string>
-    <string name="all_payments">All payments</string>
     <string name="on_payment_day">On payment day</string>
     <string name="export_title">Export data</string>
     <string name="import_title">Import data</string>
@@ -177,7 +168,6 @@
     <string name="import_confirmation_title">Import confirmation</string>
     <string name="import_confirmation_message">Importing data will replace all existing data in the application. Continue?</string>
     <string name="export_success">Data successfully exported to %s</string>
-    <string name="export_error">Error exporting data</string>
     <string name="import_success">Data successfully imported</string>
     <string name="import_error">Error importing data</string>
     <string name="subscription_types_spending">Spending by subscription types</string>

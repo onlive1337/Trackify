@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.onlive.trackify.viewmodel.StatisticsViewModel
+import androidx.core.graphics.toColorInt
 
 @Composable
 fun CategorySpendingBar(
@@ -52,7 +53,7 @@ fun CategoryBarItem(
     formatAmount: (Double) -> String
 ) {
     val categoryColor = try {
-        Color(android.graphics.Color.parseColor(category.colorCode))
+        Color(category.colorCode.toColorInt())
     } catch (e: Exception) {
         MaterialTheme.colorScheme.primary
     }

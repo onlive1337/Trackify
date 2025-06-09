@@ -19,10 +19,11 @@ import com.onlive.trackify.utils.CurrencyFormatter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.onlive.trackify.R
+import androidx.core.graphics.toColorInt
 
 private fun getCategoryColor(colorCode: String?, defaultColor: Color): Color {
     return try {
-        colorCode?.let { Color(android.graphics.Color.parseColor(it)) } ?: defaultColor
+        colorCode?.let { Color(it.toColorInt()) } ?: defaultColor
     } catch (e: Exception) {
         defaultColor
     }

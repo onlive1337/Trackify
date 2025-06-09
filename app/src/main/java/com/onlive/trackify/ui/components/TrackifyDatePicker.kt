@@ -35,11 +35,11 @@ data class QuickPickOption(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrackifyDatePicker(
+    modifier: Modifier = Modifier,
     selectedDate: Date,
     onDateSelected: (Date) -> Unit,
     onDismiss: () -> Unit,
     allowNull: Boolean = false,
-    modifier: Modifier = Modifier
 ) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp

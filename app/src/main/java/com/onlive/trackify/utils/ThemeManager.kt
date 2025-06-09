@@ -4,7 +4,8 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
 import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.core.content.edit
 
 class ThemeManager(context: Context) {
     companion object {
@@ -17,7 +18,7 @@ class ThemeManager(context: Context) {
     }
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-    private val _themeMode = mutableStateOf(getThemeMode())
+    private val _themeMode = mutableIntStateOf(getThemeMode())
     val themeMode: State<Int> = _themeMode
 
     fun getThemeMode(): Int {
@@ -25,12 +26,12 @@ class ThemeManager(context: Context) {
     }
 
     fun setThemeMode(mode: Int) {
-        prefs.edit().putInt(KEY_THEME_MODE, mode).apply()
-        _themeMode.value = mode
+        prefs.edit { putInt(KEY_THEME_MODE, mode) }
+        _themeMode.intValue = mode
     }
 
     fun isDarkTheme(systemIsDark: Boolean): Boolean {
-        return when (_themeMode.value) {
+        return when (_themeMode.intValue) {
             MODE_LIGHT -> false
             MODE_DARK -> true
             else -> systemIsDark
