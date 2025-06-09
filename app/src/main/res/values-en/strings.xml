@@ -107,6 +107,7 @@
     <string name="language_description">Choose application language</string>
     <string name="language_changed">Language changed. Changes will take effect after application restart</string>
     <string name="choose_language">Choose language</string>>
+    <string name="system_language">System language</string>
 
     <string name="theme">Theme</string>
     <string name="general_settings">General settings</string>
@@ -185,4 +186,9 @@
 
     <string name="and_more_count">…and %d more</string>
     <string name="month_fallback">Month %d</string>
+
+    <string name="no_internet_connection">No internet connection</string>
+    <string name="connection_timeout">Connection timeout</string>
+    <string name="database_constraint_error">Database constraint error</string>
+    <string name="file_not_found_error">File not found</string>
 </resources>

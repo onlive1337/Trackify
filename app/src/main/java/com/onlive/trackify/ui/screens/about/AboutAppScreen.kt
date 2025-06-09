@@ -14,6 +14,10 @@ import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.onlive.trackify.R
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import androidx.core.net.toUri
+import androidx.compose.foundation.clickable
 
 @Composable
 fun AboutAppScreen(
@@ -42,6 +47,7 @@ fun AboutAppScreen(
     }
 
     val versionName = packageInfo?.versionName ?: "1.0.0"
+    var logoTapCount by remember { mutableIntStateOf(0) }
 
     Scaffold(
         topBar = {
@@ -68,6 +74,12 @@ fun AboutAppScreen(
                 modifier = Modifier
                     .size(120.dp)
                     .clip(CircleShape)
+                    .clickable {
+                        logoTapCount++
+                        if (logoTapCount >= 7) {
+                            throw RuntimeException("🧪 Hidden test crash activated!")
+                        }
+                    }
                     .padding(8.dp)
             )
 

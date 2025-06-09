@@ -108,6 +108,7 @@
     <string name="language_description">Выберите язык приложения</string>
     <string name="language_changed">Язык изменен. Изменения вступят в силу после перезапуска приложения</string>
     <string name="choose_language">Выбор языка</string>
+    <string name="system_language">Системный язык</string>
 
     <string name="theme">Тема</string>
     <string name="general_settings">Общие настройки</string>
@@ -185,4 +186,9 @@
 
     <string name="and_more_count">…и ещё %d</string>
     <string name="month_fallback">Месяц %d</string>
+
+    <string name="no_internet_connection">Нет подключения к интернету</string>
+    <string name="connection_timeout">Превышено время ожидания</string>
+    <string name="database_constraint_error">Ошибка базы данных</string>
+    <string name="file_not_found_error">Файл не найден</string>
 </resources>

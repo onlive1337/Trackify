@@ -6,6 +6,8 @@ import androidx.work.Configuration
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.google.firebase.FirebaseApp
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.onlive.trackify.utils.ErrorHandler
 import com.onlive.trackify.utils.NotificationHelper
 import com.onlive.trackify.utils.NotificationScheduler
@@ -29,6 +31,7 @@ class TrackifyApplication : Application(), Configuration.Provider {
         super.onCreate()
 
         setupGlobalExceptionHandler()
+        initializeFirebase()
 
         try {
             errorHandler = ErrorHandler.getInstance(this)
@@ -38,15 +41,45 @@ class TrackifyApplication : Application(), Configuration.Provider {
         }
     }
 
+    private fun initializeFirebase() {
+        try {
+            FirebaseApp.initializeApp(this)
+
+            FirebaseCrashlytics.getInstance().apply {
+                setCrashlyticsCollectionEnabled(true)
+
+                setUserId("user_${System.currentTimeMillis()}")
+                setCustomKey("app_version", BuildConfig.VERSION_NAME)
+                setCustomKey("version_code", BuildConfig.VERSION_CODE)
+                setCustomKey("debug_build", BuildConfig.DEBUG)
+
+                // Только для первого релиза - потом убрать
+                if (BuildConfig.DEBUG) {
+                    log("🧪 Trackify Crashlytics initialized for testing")
+                    setCustomKey("test_build", true)
+                }
+            }
+
+            Log.i("TrackifyApp", "Firebase initialized successfully")
+        } catch (e: Exception) {
+            Log.e("TrackifyApp", "Firebase initialization failed", e)
+        }
+    }
+
     private fun setupGlobalExceptionHandler() {
         val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
 
         Thread.setDefaultUncaughtExceptionHandler { thread, exception ->
             try {
-                Log.e("TrackifyApplication", "Uncaught exception in thread ${thread.name}", exception)
-                exception.printStackTrace()
+                FirebaseCrashlytics.getInstance().apply {
+                    setCustomKey("crash_thread", thread.name)
+                    setCustomKey("crash_timestamp", System.currentTimeMillis())
+                    recordException(exception)
+                }
+
+                Log.e("TrackifyApp", "Uncaught exception", exception)
             } catch (e: Exception) {
-                Log.e("TrackifyApplication", "Error in exception handler", e)
+                Log.e("TrackifyApp", "Error in exception handler", e)
             } finally {
                 defaultHandler?.uncaughtException(thread, exception)
             }
@@ -66,22 +99,30 @@ class TrackifyApplication : Application(), Configuration.Provider {
         }
 
         setupDatabaseCleanup()
+
+        FirebaseCrashlytics.getInstance().log("Application initialized successfully")
     }
 
     private fun setupDatabaseCleanup() {
-        val cleanupWorkRequest = PeriodicWorkRequestBuilder<DatabaseCleanupWorker>(
-            7, TimeUnit.DAYS
-        ).build()
+        try {
+            val cleanupWorkRequest = PeriodicWorkRequestBuilder<DatabaseCleanupWorker>(
+                7, TimeUnit.DAYS
+            ).build()
 
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "database_cleanup",
-            ExistingPeriodicWorkPolicy.UPDATE,
-            cleanupWorkRequest
-        )
+            WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+                "database_cleanup",
+                ExistingPeriodicWorkPolicy.UPDATE,
+                cleanupWorkRequest
+            )
+        } catch (e: Exception) {
+            Log.e("TrackifyApp", "Failed to setup database cleanup", e)
+            FirebaseCrashlytics.getInstance().recordException(e)
+        }
     }
 
     private fun handleFatalError(e: Exception) {
-        Log.e("TrackifyApplication", "Fatal error during initialization", e)
+        Log.e("TrackifyApp", "Fatal error during initialization", e)
+        FirebaseCrashlytics.getInstance().recordException(e)
         e.printStackTrace()
         exitProcess(1)
     }
