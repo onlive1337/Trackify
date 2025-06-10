@@ -183,4 +183,28 @@
     <string name="connection_timeout">Connection timeout</string>
     <string name="database_constraint_error">Database constraint error</string>
     <string name="file_not_found_error">File not found</string>
+
+    <!-- Onboarding -->
+    <string name="welcome_to_trackify">Welcome to Trackify!</string>
+    <string name="welcome_description">Your personal assistant for tracking subscriptions and recurring payments. Never forget an important payment again!</string>
+    <string name="get_started">Get Started</string>
+    <string name="continue_text">Continue</string>
+    <string name="skip_for_now">Skip for now</string>
+
+    <string name="choose_your_language">Choose your language</string>
+    <string name="language_onboarding_description">Select your preferred language for using the app</string>
+
+    <string name="choose_your_currency">Choose your currency</string>
+    <string name="currency_onboarding_description">Select the main currency for displaying amounts in the app</string>
+
+    <string name="stay_notified">Stay notified</string>
+    <string name="notification_onboarding_description">Allow notifications so you never miss important payments</string>
+    <string name="notifications_already_enabled">Notifications already enabled</string>
+
+    <string name="timely_reminders">Timely reminders</string>
+    <string name="timely_reminders_description">Get notified before payment due dates</string>
+    <string name="never_miss_payment">Never miss a payment</string>
+    <string name="never_miss_payment_description">Automatic reminders help you stay on top of all payments</string>
+    <string name="expense_tracking">Expense tracking</string>
+    <string name="expense_tracking_description">Monitor your recurring expenses and budget</string>
 </resources>

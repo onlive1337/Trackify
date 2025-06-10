@@ -14,6 +14,7 @@ class PreferenceManager(context: Context) {
         const val KEY_NOTIFICATION_TIME_MINUTE = "notification_time_minute"
         const val KEY_CURRENCY_CODE = "currency_code"
         const val KEY_LANGUAGE_CODE = "language_code"
+        const val KEY_ONBOARDING_COMPLETED = "onboarding_completed"
     }
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -35,6 +36,15 @@ class PreferenceManager(context: Context) {
 
     private fun notifyListeners(key: String, value: Any?) {
         listeners.forEach { it.onPreferenceChanged(key, value) }
+    }
+
+    fun isOnboardingCompleted(): Boolean {
+        return prefs.getBoolean(KEY_ONBOARDING_COMPLETED, false)
+    }
+
+    fun setOnboardingCompleted(completed: Boolean) {
+        prefs.edit { putBoolean(KEY_ONBOARDING_COMPLETED, completed) }
+        notifyListeners(KEY_ONBOARDING_COMPLETED, completed)
     }
 
     fun areNotificationsEnabled(): Boolean {

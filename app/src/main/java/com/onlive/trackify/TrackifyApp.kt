@@ -6,15 +6,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.onlive.trackify.ui.components.TrackifyBottomBar
 import com.onlive.trackify.ui.navigation.Screen
 import com.onlive.trackify.ui.navigation.TrackifyNavGraph
+import com.onlive.trackify.utils.LocaleManager
+import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.ThemeManager
 
 @Composable
-fun TrackifyApp(themeManager: ThemeManager) {
+fun TrackifyApp(
+    themeManager: ThemeManager,
+    localeManager: LocaleManager
+) {
+    val context = LocalContext.current
+    val preferenceManager = remember { PreferenceManager(context) }
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -30,6 +38,12 @@ fun TrackifyApp(themeManager: ThemeManager) {
     }
 
     val bottomPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
+    val startDestination = if (preferenceManager.isOnboardingCompleted()) {
+        Screen.Home.route
+    } else {
+        Screen.Onboarding.route
+    }
 
     Scaffold(
         bottomBar = {
@@ -53,7 +67,9 @@ fun TrackifyApp(themeManager: ThemeManager) {
         ) {
             TrackifyNavGraph(
                 navController = navController,
-                themeManager = themeManager
+                startDestination = startDestination,
+                themeManager = themeManager,
+                localeManager = localeManager
             )
         }
     }

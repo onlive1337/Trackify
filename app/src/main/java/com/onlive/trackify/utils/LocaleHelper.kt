@@ -28,10 +28,30 @@ object LocaleHelper {
 
     fun getAvailableLanguages(context: Context): List<Language> {
         return listOf(
-            Language("", context.getString(R.string.system_language)),
+            Language("", getSystemLanguageName(context)),
             Language("ru", "Русский"),
             Language("en", "English")
         )
+    }
+
+    private fun getSystemLanguageName(context: Context): String {
+        return try {
+            context.getString(R.string.system_language)
+        } catch (e: Exception) {
+            "System language"
+        }
+    }
+
+    fun getLocalizedString(context: Context, languageCode: String, resourceId: Int): String {
+        return if (languageCode.isEmpty()) {
+            context.getString(resourceId)
+        } else {
+            val locale = Locale(languageCode)
+            val config = Configuration(context.resources.configuration)
+            config.setLocale(locale)
+            val localizedContext = context.createConfigurationContext(config)
+            localizedContext.getString(resourceId)
+        }
     }
 
     data class Language(

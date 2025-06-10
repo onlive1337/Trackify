@@ -183,4 +183,28 @@
     <string name="connection_timeout">Превышено время ожидания</string>
     <string name="database_constraint_error">Ошибка базы данных</string>
     <string name="file_not_found_error">Файл не найден</string>
+
+    <!-- Onboarding -->
+    <string name="welcome_to_trackify">Добро пожаловать в Trackify!</string>
+    <string name="welcome_description">Ваш персональный помощник для отслеживания подписок и регулярных платежей. Никогда больше не забывайте о важных платежах!</string>
+    <string name="get_started">Начать</string>
+    <string name="continue_text">Продолжить</string>
+    <string name="skip_for_now">Пропустить пока</string>
+
+    <string name="choose_your_language">Выберите язык</string>
+    <string name="language_onboarding_description">Выберите предпочитаемый язык для использования приложения</string>
+
+    <string name="choose_your_currency">Выберите валюту</string>
+    <string name="currency_onboarding_description">Выберите основную валюту для отображения сумм в приложении</string>
+
+    <string name="stay_notified">Будьте в курсе</string>
+    <string name="notification_onboarding_description">Разрешите уведомления, чтобы никогда не пропустить важные платежи</string>
+    <string name="notifications_already_enabled">Уведомления уже включены</string>
+
+    <string name="timely_reminders">Своевременные напоминания</string>
+    <string name="timely_reminders_description">Получайте уведомления перед датой оплаты</string>
+    <string name="never_miss_payment">Никогда не пропускайте платежи</string>
+    <string name="never_miss_payment_description">Автоматические напоминания помогут вам быть в курсе всех платежей</string>
+    <string name="expense_tracking">Отслеживание расходов</string>
+    <string name="expense_tracking_description">Контролируйте свои регулярные расходы и бюджет</string>
 </resources>

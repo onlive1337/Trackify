@@ -9,13 +9,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.onlive.trackify.R
 import com.onlive.trackify.ui.components.TrackifyCard
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.LocaleHelper
+import com.onlive.trackify.utils.LocalLocaleManager
 import com.onlive.trackify.utils.PreferenceManager
+import com.onlive.trackify.utils.stringResource
 
 @Composable
 fun LanguageSettingsScreen(
@@ -23,12 +24,11 @@ fun LanguageSettingsScreen(
 ) {
     val context = LocalContext.current
     val preferenceManager = remember { PreferenceManager(context) }
+    val localeManager = LocalLocaleManager.current
 
     var selectedLanguageCode by remember {
         mutableStateOf(preferenceManager.getLanguageCode())
     }
-
-    var showRestartDialog by remember { mutableStateOf(false) }
 
     val availableLanguages = remember(context) {
         LocaleHelper.getAvailableLanguages(context)
@@ -78,34 +78,14 @@ fun LanguageSettingsScreen(
                         languageName = language.name,
                         selected = language.code == selectedLanguageCode,
                         onClick = {
-                            if (language.code != selectedLanguageCode) {
-                                selectedLanguageCode = language.code
-                                preferenceManager.setLanguageCode(language.code)
-                                showRestartDialog = true
-                            }
+                            selectedLanguageCode = language.code
+                            preferenceManager.setLanguageCode(language.code)
+                            localeManager.setLocale(language.code)
                         }
                     )
                 }
             }
         }
-    }
-
-    if (showRestartDialog) {
-        AlertDialog(
-            onDismissRequest = { showRestartDialog = false },
-            title = { Text(stringResource(R.string.language_changed)) },
-            text = {
-                Text(stringResource(R.string.language_changed))
-            },
-            confirmButton = {
-                Button(onClick = {
-                    showRestartDialog = false
-                    onNavigateBack()
-                }) {
-                    Text(stringResource(R.string.done))
-                }
-            }
-        )
     }
 }
 

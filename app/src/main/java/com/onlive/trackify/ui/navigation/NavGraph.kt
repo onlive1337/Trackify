@@ -14,6 +14,7 @@ import com.onlive.trackify.ui.screens.about.AboutAppScreen
 import com.onlive.trackify.ui.screens.category.CategoryDetailScreen
 import com.onlive.trackify.ui.screens.category.CategoryManagementScreen
 import com.onlive.trackify.ui.screens.home.HomeScreen
+import com.onlive.trackify.ui.screens.onboarding.OnboardingScreen
 import com.onlive.trackify.ui.screens.payments.AddPaymentScreen
 import com.onlive.trackify.ui.screens.payments.PaymentsScreen
 import com.onlive.trackify.ui.screens.settings.CurrencySettingsScreen
@@ -23,9 +24,11 @@ import com.onlive.trackify.ui.screens.settings.NotificationSettingsScreen
 import com.onlive.trackify.ui.screens.settings.SettingsScreen
 import com.onlive.trackify.ui.screens.statistics.StatisticsScreen
 import com.onlive.trackify.ui.screens.subscription.SubscriptionDetailScreen
+import com.onlive.trackify.utils.LocaleManager
 import com.onlive.trackify.utils.ThemeManager
 
 sealed class Screen(val route: String) {
+    object Onboarding : Screen("onboarding")
     object Home : Screen("home")
     object Payments : Screen("payments")
     object Statistics : Screen("statistics")
@@ -48,9 +51,6 @@ sealed class Screen(val route: String) {
         fun createRoute(categoryId: Long) = "category_detail/$categoryId"
     }
 
-    object CategoryGroupDetail : Screen("category_group_detail/{groupId}") {
-        fun createRoute(groupId: Long) = "category_group_detail/$groupId"
-    }
 
     object CurrencySettings : Screen("currency_settings")
     object LanguageSettings : Screen("language_settings")
@@ -62,9 +62,7 @@ sealed class Screen(val route: String) {
 class NavigationActions(navController: NavHostController) {
     val navigateToHome: () -> Unit = {
         navController.navigate(Screen.Home.route) {
-            popUpTo(Screen.Home.route) {
-                inclusive = false
-            }
+            popUpTo(0) { inclusive = true }
         }
     }
 
@@ -112,9 +110,6 @@ class NavigationActions(navController: NavHostController) {
         navController.navigate(Screen.CategoryDetail.createRoute(categoryId))
     }
 
-    val navigateToCategoryGroupDetail: (Long) -> Unit = { groupId ->
-        navController.navigate(Screen.CategoryGroupDetail.createRoute(groupId))
-    }
 
     val navigateToCurrencySettings: () -> Unit = {
         navController.navigate(Screen.CurrencySettings.route)
@@ -145,8 +140,9 @@ class NavigationActions(navController: NavHostController) {
 fun TrackifyNavGraph(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    startDestination: String = Screen.Home.route,
-    themeManager: ThemeManager? = null
+    startDestination: String = Screen.Onboarding.route,
+    themeManager: ThemeManager? = null,
+    localeManager: LocaleManager
 ) {
     val navigationActions = remember(navController) {
         NavigationActions(navController)
@@ -157,6 +153,13 @@ fun TrackifyNavGraph(
         startDestination = startDestination,
         modifier = modifier
     ) {
+        composable(Screen.Onboarding.route) {
+            OnboardingScreen(
+                onComplete = navigationActions.navigateToHome,
+                localeManager = localeManager
+            )
+        }
+
         composable(Screen.Home.route) {
             HomeScreen(
                 onAddSubscription = navigationActions.navigateToAddSubscription,
@@ -247,19 +250,6 @@ fun TrackifyNavGraph(
             val categoryId = entry.arguments?.getLong("categoryId") ?: -1L
             CategoryDetailScreen(
                 categoryId = categoryId,
-                onNavigateBack = navigationActions.navigateBack
-            )
-        }
-
-        composable(
-            route = Screen.CategoryGroupDetail.route,
-            arguments = listOf(
-                navArgument("groupId") { type = NavType.LongType }
-            )
-        ) { entry ->
-            val groupId = entry.arguments?.getLong("groupId") ?: -1L
-            CategoryDetailScreen(
-                categoryId = groupId,
                 onNavigateBack = navigationActions.navigateBack
             )
         }

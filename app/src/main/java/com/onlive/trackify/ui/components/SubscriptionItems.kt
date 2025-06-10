@@ -17,7 +17,7 @@ import com.onlive.trackify.data.model.BillingFrequency
 import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.utils.CurrencyFormatter
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
+import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.R
 import androidx.core.graphics.toColorInt
 

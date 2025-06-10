@@ -6,7 +6,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.onlive.trackify.R
@@ -14,6 +13,7 @@ import com.onlive.trackify.ui.components.TrackifyCard
 import com.onlive.trackify.ui.components.charts.BarChart
 import com.onlive.trackify.ui.components.charts.BarChartData
 import com.onlive.trackify.ui.components.charts.CategorySpendingBar
+import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.StatisticsViewModel
 
 @Composable

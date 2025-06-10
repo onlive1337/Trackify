@@ -21,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.onlive.trackify.R
@@ -30,6 +29,7 @@ import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.ThemeManager
+import com.onlive.trackify.utils.stringResource
 import kotlinx.coroutines.launch
 
 @Composable

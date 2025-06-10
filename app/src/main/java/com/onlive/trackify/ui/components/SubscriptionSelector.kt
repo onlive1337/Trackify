@@ -6,7 +6,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Subscription
 
