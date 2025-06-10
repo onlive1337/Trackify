@@ -5,6 +5,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -23,46 +25,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.onlive.trackify.R
-import com.onlive.trackify.ui.components.TrackifyCard
+import com.onlive.trackify.ui.components.TrackifyOutlinedCard
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.ThemeManager
-
-@Composable
-fun ThemeOption(
-    title: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-    icon: ImageVector
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary
-        )
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f)
-        )
-
-        RadioButton(
-            selected = selected,
-            onClick = onClick
-        )
-    }
-}
+import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsScreen(
@@ -77,12 +45,51 @@ fun SettingsScreen(
     val context = LocalContext.current
     val preferenceManager = remember { PreferenceManager(context) }
     val notificationScheduler = remember { NotificationScheduler(context) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
+    val checkNotificationPermission = {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+    }
 
     var notificationsEnabled by remember {
-        mutableStateOf(preferenceManager.areNotificationsEnabled())
+        mutableStateOf(preferenceManager.areNotificationsEnabled() && checkNotificationPermission())
     }
+
     var selectedThemeMode by remember {
         mutableIntStateOf(themeManager.getThemeMode())
+    }
+
+    var waitingForPermission by remember { mutableStateOf(false) }
+
+    val settingsLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { _ ->
+        if (waitingForPermission) {
+            waitingForPermission = false
+
+            val permissionGranted = checkNotificationPermission()
+
+            if (permissionGranted) {
+                notificationsEnabled = true
+                preferenceManager.setNotificationsEnabled(true)
+                notificationScheduler.scheduleNotifications()
+            } else {
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = context.getString(R.string.notification_permission_denied),
+                        duration = SnackbarDuration.Long
+                    )
+                }
+            }
+        }
     }
 
     Scaffold(
@@ -90,6 +97,9 @@ fun SettingsScreen(
             TrackifyTopAppBar(
                 title = stringResource(R.string.title_settings)
             )
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
         }
     ) { paddingValues ->
         Column(
@@ -101,10 +111,12 @@ fun SettingsScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            TrackifyCard(
+            TrackifyOutlinedCard(
                 title = stringResource(R.string.theme_settings)
             ) {
-                Column {
+                Column(
+                    modifier = Modifier.padding(vertical = 4.dp)
+                ) {
                     ThemeOption(
                         title = stringResource(R.string.system_theme),
                         selected = selectedThemeMode == ThemeManager.MODE_SYSTEM,
@@ -139,57 +151,41 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TrackifyCard {
+            TrackifyOutlinedCard {
                 Column {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Notifications,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                    NotificationToggleRow(
+                        enabled = notificationsEnabled,
+                        onToggle = { enabled ->
+                            if (enabled) {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                    val permissionGranted = checkNotificationPermission()
 
-                        Spacer(modifier = Modifier.width(16.dp))
-
-                        Text(
-                            text = stringResource(R.string.notifications),
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        Switch(
-                            checked = notificationsEnabled,
-                            onCheckedChange = {
-                                notificationsEnabled = it
-                                preferenceManager.setNotificationsEnabled(it)
-                                if (it) {
-                                    notificationScheduler.scheduleNotifications()
-
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                        if (ContextCompat.checkSelfPermission(
-                                                context,
-                                                Manifest.permission.POST_NOTIFICATIONS
-                                            ) != PackageManager.PERMISSION_GRANTED) {
-
-                                            val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
-                                                putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-                                            }
-                                            context.startActivity(intent)
+                                    if (permissionGranted) {
+                                        notificationsEnabled = true
+                                        preferenceManager.setNotificationsEnabled(true)
+                                        notificationScheduler.scheduleNotifications()
+                                    } else {
+                                        waitingForPermission = true
+                                        val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                                            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
                                         }
+                                        settingsLauncher.launch(intent)
                                     }
                                 } else {
-                                    notificationScheduler.cancelNotifications()
+                                    notificationsEnabled = true
+                                    preferenceManager.setNotificationsEnabled(true)
+                                    notificationScheduler.scheduleNotifications()
                                 }
+                            } else {
+                                notificationsEnabled = false
+                                preferenceManager.setNotificationsEnabled(false)
+                                notificationScheduler.cancelNotifications()
                             }
-                        )
-                    }
+                        }
+                    )
 
                     if (notificationsEnabled) {
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                        SettingsDivider()
 
                         SettingsItem(
                             icon = Icons.Outlined.Notifications,
@@ -202,7 +198,7 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TrackifyCard(
+            TrackifyOutlinedCard(
                 title = stringResource(R.string.general_settings)
             ) {
                 Column {
@@ -212,7 +208,7 @@ fun SettingsScreen(
                         onClick = onNavigateToCategoryManagement
                     )
 
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                    SettingsDivider()
 
                     SettingsItem(
                         icon = Icons.Outlined.Payments,
@@ -220,7 +216,7 @@ fun SettingsScreen(
                         onClick = onNavigateToCurrencySettings
                     )
 
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                    SettingsDivider()
 
                     SettingsItem(
                         icon = Icons.Outlined.Language,
@@ -232,7 +228,7 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TrackifyCard {
+            TrackifyOutlinedCard {
                 SettingsItem(
                     icon = Icons.Outlined.DataObject,
                     title = stringResource(R.string.data_management),
@@ -242,7 +238,7 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TrackifyCard {
+            TrackifyOutlinedCard {
                 SettingsItem(
                     icon = Icons.Outlined.Info,
                     title = stringResource(R.string.about_app),
@@ -256,7 +252,89 @@ fun SettingsScreen(
 }
 
 @Composable
-fun SettingsItem(
+private fun ThemeOption(
+    title: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    icon: ImageVector
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(24.dp)
+        )
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyLarge,
+            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f)
+        )
+
+        RadioButton(
+            selected = selected,
+            onClick = onClick,
+            colors = RadioButtonDefaults.colors(
+                selectedColor = MaterialTheme.colorScheme.primary,
+                unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        )
+    }
+}
+
+@Composable
+private fun NotificationToggleRow(
+    enabled: Boolean,
+    onToggle: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Notifications,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp)
+        )
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.notifications),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        Switch(
+            checked = enabled,
+            onCheckedChange = onToggle,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                checkedTrackColor = MaterialTheme.colorScheme.primary,
+                uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        )
+    }
+}
+
+@Composable
+private fun SettingsItem(
     icon: ImageVector,
     title: String,
     onClick: () -> Unit
@@ -271,7 +349,8 @@ fun SettingsItem(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp)
         )
 
         Spacer(modifier = Modifier.width(16.dp))
@@ -279,13 +358,23 @@ fun SettingsItem(
         Text(
             text = title,
             style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )
 
         Icon(
             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(20.dp)
         )
     }
+}
+
+@Composable
+private fun SettingsDivider() {
+    HorizontalDivider(
+        modifier = Modifier.padding(vertical = 8.dp),
+        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+    )
 }

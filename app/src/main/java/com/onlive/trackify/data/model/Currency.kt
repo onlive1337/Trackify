@@ -12,10 +12,10 @@ data class Currency(
 ) {
     companion object {
         val POPULAR_CURRENCIES = listOf(
-            Currency("RUB", "₽", "Russian Ruble", CurrencyFormat.SYMBOL_AFTER),
             Currency("USD", "$", "US Dollar"),
             Currency("EUR", "€", "Euro"),
             Currency("GBP", "£", "British Pound"),
+            Currency("RUB", "₽", "Russian Ruble", CurrencyFormat.SYMBOL_AFTER),
             Currency("JPY", "¥", "Japanese Yen"),
             Currency("CNY", "¥", "Chinese Yuan"),
             Currency("INR", "₹", "Indian Rupee"),
@@ -58,10 +58,10 @@ data class Currency(
 
     private fun getLocaleForCurrency(): Locale {
         return when (code) {
-            "RUB" -> Locale("ru", "RU")
             "USD" -> Locale.US
             "EUR" -> Locale.GERMANY
             "GBP" -> Locale.UK
+            "RUB" -> Locale("ru", "RU")
             "JPY" -> Locale.JAPAN
             "CNY" -> Locale.CHINA
             "INR" -> Locale("hi", "IN")

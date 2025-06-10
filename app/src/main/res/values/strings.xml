@@ -89,6 +89,7 @@
     <string name="notify_week_before">Уведомление за неделю до платежа</string>
 
     <string name="notification_settings">Настройки уведомлений</string>
+    <string name="notification_permission_denied">Для работы уведомлений необходимо разрешение. Включите уведомления в настройках приложения.</string>
     <string name="notification_time">Время уведомлений</string>
     <string name="notification_time_description">Выберите время, когда вы хотите получать уведомления о подписках</string>
     <string name="reminder_days">Дни напоминаний</string>

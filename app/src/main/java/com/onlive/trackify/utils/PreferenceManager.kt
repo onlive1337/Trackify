@@ -72,7 +72,7 @@ class PreferenceManager(context: Context) {
     }
 
     fun getCurrencyCode(): String {
-        return prefs.getString(KEY_CURRENCY_CODE, "RUB") ?: "RUB"
+        return prefs.getString(KEY_CURRENCY_CODE, "USD") ?: "USD"
     }
 
     fun setCurrencyCode(currencyCode: String) {

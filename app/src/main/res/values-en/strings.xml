@@ -89,6 +89,7 @@
 
     <string name="notification_settings">Notification settings</string>
     <string name="notification_time">Notification time</string>
+    <string name="notification_permission_denied">Notification permission is required for reminders to work. Please enable notifications in app settings.</string>
     <string name="notification_time_description">Choose when you want to receive subscription notifications</string>
     <string name="reminder_days">Reminder days</string>
     <string name="reminder_days_description">Choose how many days before payment you want to receive notifications</string>
