@@ -82,7 +82,6 @@ fun OnboardingScreen(
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Background gradient
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -102,14 +101,12 @@ fun OnboardingScreen(
                     .fillMaxSize()
                     .padding(24.dp)
             ) {
-                // Progress indicator
                 OnboardingProgressIndicator(
                     currentStep = currentStep,
                     totalSteps = totalSteps,
                     modifier = Modifier.padding(vertical = 16.dp)
                 )
 
-                // Content
                 AnimatedContent(
                     targetState = currentStep,
                     transitionSpec = {
@@ -234,7 +231,6 @@ private fun WelcomeStep(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // App logo with animation
             val scale by animateFloatAsState(
                 targetValue = if (isVisible) 1f else 0.8f,
                 animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
@@ -404,7 +400,6 @@ private fun NotificationPermissionStep(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Benefits list
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
