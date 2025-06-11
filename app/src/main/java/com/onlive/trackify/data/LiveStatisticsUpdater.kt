@@ -41,10 +41,8 @@ class LiveStatisticsUpdater(
     private var lastCalculationTime = 0L
     private val cacheValidTime = 30_000L
 
-    private companion object {
-        const val TAG = "LiveStatisticsUpdater"
-        const val DEBOUNCE_DELAY = 300L
-    }
+    private val tag = "LiveStatisticsUpdater"
+    private val debounceDelay = 300L
 
     init {
         totalMonthlySpending.addSource(subscriptionsLiveData) { subs ->
@@ -87,7 +85,7 @@ class LiveStatisticsUpdater(
             }
             invalidateCache()
         } catch (e: Exception) {
-            Log.e(TAG, "Error updating subscriptions", e)
+            Log.e(tag, "Error updating subscriptions", e)
         }
     }
 
@@ -99,7 +97,7 @@ class LiveStatisticsUpdater(
             }
             invalidateCache()
         } catch (e: Exception) {
-            Log.e(TAG, "Error updating categories", e)
+            Log.e(tag, "Error updating categories", e)
         }
     }
 
@@ -116,7 +114,7 @@ class LiveStatisticsUpdater(
     private fun debouncedCalculateMonthlySpending() {
         debounceJob?.cancel()
         debounceJob = calculationScope.launch {
-            delay(DEBOUNCE_DELAY)
+            delay(debounceDelay)
             calculateMonthlySpending()
         }
     }
@@ -124,7 +122,7 @@ class LiveStatisticsUpdater(
     private fun debouncedCalculateYearlySpending() {
         debounceJob?.cancel()
         debounceJob = calculationScope.launch {
-            delay(DEBOUNCE_DELAY)
+            delay(debounceDelay)
             calculateYearlySpending()
         }
     }
@@ -132,7 +130,7 @@ class LiveStatisticsUpdater(
     private fun debouncedCalculateSpendingByCategory() {
         debounceJob?.cancel()
         debounceJob = calculationScope.launch {
-            delay(DEBOUNCE_DELAY)
+            delay(debounceDelay)
             calculateSpendingByCategory()
         }
     }
@@ -140,7 +138,7 @@ class LiveStatisticsUpdater(
     private fun debouncedCalculateMonthlySpendingHistory() {
         debounceJob?.cancel()
         debounceJob = calculationScope.launch {
-            delay(DEBOUNCE_DELAY)
+            delay(debounceDelay)
             calculateMonthlySpendingHistory()
         }
     }
@@ -148,7 +146,7 @@ class LiveStatisticsUpdater(
     private fun debouncedCalculateSpendingBySubscriptionType() {
         debounceJob?.cancel()
         debounceJob = calculationScope.launch {
-            delay(DEBOUNCE_DELAY)
+            delay(debounceDelay)
             calculateSpendingBySubscriptionType()
         }
     }
@@ -176,7 +174,7 @@ class LiveStatisticsUpdater(
                 lastCalculationTime = System.currentTimeMillis()
                 totalMonthlySpending.postValue(monthlyCost)
             } catch (e: Exception) {
-                Log.e(TAG, "Error calculating monthly spending", e)
+                Log.e(tag, "Error calculating monthly spending", e)
                 totalMonthlySpending.postValue(0.0)
             }
         }
@@ -205,7 +203,7 @@ class LiveStatisticsUpdater(
                 lastCalculationTime = System.currentTimeMillis()
                 totalYearlySpending.postValue(yearlyCost)
             } catch (e: Exception) {
-                Log.e(TAG, "Error calculating yearly spending", e)
+                Log.e(tag, "Error calculating yearly spending", e)
                 totalYearlySpending.postValue(0.0)
             }
         }
@@ -246,7 +244,7 @@ class LiveStatisticsUpdater(
 
                 spendingByCategory.postValue(result)
             } catch (e: Exception) {
-                Log.e(TAG, "Error calculating spending by category", e)
+                Log.e(tag, "Error calculating spending by category", e)
                 spendingByCategory.postValue(emptyList())
             }
         }
@@ -313,7 +311,7 @@ class LiveStatisticsUpdater(
                 monthlyData.reverse()
                 monthlySpendingHistory.postValue(monthlyData)
             } catch (e: Exception) {
-                Log.e(TAG, "Error calculating monthly spending history", e)
+                Log.e(tag, "Error calculating monthly spending history", e)
                 monthlySpendingHistory.postValue(emptyList())
             }
         }
@@ -349,7 +347,7 @@ class LiveStatisticsUpdater(
 
                 subscriptionTypeSpending.postValue(result)
             } catch (e: Exception) {
-                Log.e(TAG, "Error calculating subscription type spending", e)
+                Log.e(tag, "Error calculating subscription type spending", e)
                 subscriptionTypeSpending.postValue(emptyList())
             }
         }
@@ -362,7 +360,7 @@ class LiveStatisticsUpdater(
             val dateFormat = SimpleDateFormat("MMM", Locale.getDefault())
             dateFormat.format(calendar.time)
         } catch (e: Exception) {
-            Log.e(TAG, "Error getting month name", e)
+            Log.e(tag, "Error getting month name", e)
             context.getString(R.string.month_fallback, month)
         }
     }

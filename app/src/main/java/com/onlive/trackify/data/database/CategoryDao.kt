@@ -27,12 +27,6 @@ interface CategoryDao {
     @Query("SELECT * FROM categories WHERE categoryId = :id")
     fun getCategoryById(id: Long): LiveData<Category>
 
-    @Query("SELECT * FROM categories WHERE name LIKE '%' || :query || '%' ORDER BY name ASC")
-    fun searchCategories(query: String): LiveData<List<Category>>
-
     @Query("DELETE FROM categories")
     suspend fun deleteAllSync()
-
-    @Query("SELECT c.* FROM categories c JOIN subscriptions s ON c.categoryId = s.categoryId WHERE s.active = 1 GROUP BY c.categoryId ORDER BY COUNT(s.subscriptionId) DESC")
-    fun getCategoriesWithActiveSubscriptions(): LiveData<List<Category>>
 }
