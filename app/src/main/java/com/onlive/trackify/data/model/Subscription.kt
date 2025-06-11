@@ -47,26 +47,4 @@ data class Subscription(
 
     @Ignore
     var categoryColor: String? = null
-
-    @Ignore
-    val monthlyPrice: Double = when (billingFrequency) {
-        BillingFrequency.MONTHLY -> price
-        BillingFrequency.YEARLY -> price / 12
-    }
-
-    @Ignore
-    val yearlyPrice: Double = when (billingFrequency) {
-        BillingFrequency.MONTHLY -> price * 12
-        BillingFrequency.YEARLY -> price
-    }
-
-    fun isActiveOn(date: Date): Boolean {
-        if (!active) return false
-
-        if (endDate != null && date.after(endDate)) {
-            return false
-        }
-
-        return date.after(startDate) || date == startDate
-    }
 }

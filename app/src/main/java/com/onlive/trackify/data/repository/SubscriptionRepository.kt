@@ -11,7 +11,6 @@ import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.utils.Result
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.util.Calendar
 
 class SubscriptionRepository(
     private val subscriptionDao: SubscriptionDao,
@@ -21,8 +20,6 @@ class SubscriptionRepository(
 
     private val _allActiveSubscriptions = MediatorLiveData<List<Subscription>>()
     val allActiveSubscriptions: LiveData<List<Subscription>> = _allActiveSubscriptions
-
-    val activeSubscriptionsCount: LiveData<Int> = subscriptionDao.getActiveSubscriptionsCount()
 
     init {
         val subscriptionsLiveData = subscriptionDao.getAllActiveSubscriptions()
@@ -107,101 +104,5 @@ class SubscriptionRepository(
         }
 
         return result
-    }
-
-    fun getSubscriptionsByCategory(categoryId: Long): LiveData<List<Subscription>> {
-        val result = MediatorLiveData<List<Subscription>>()
-        val subscriptions = subscriptionDao.getSubscriptionsByCategory(categoryId)
-        val categories = categoryDao.getAllCategories()
-
-        result.addSource(subscriptions) { subs ->
-            combineSubscriptionsWithCategories(subs, categories.value ?: emptyList())
-        }
-
-        result.addSource(categories) { cats ->
-            combineSubscriptionsWithCategories(subscriptions.value ?: emptyList(), cats)
-        }
-
-        return result
-    }
-
-    fun getUpcomingExpirations(days: Int): LiveData<List<Subscription>> {
-        val calendar = Calendar.getInstance()
-        val startDate = calendar.time
-
-        calendar.add(Calendar.DAY_OF_YEAR, days)
-        val endDate = calendar.time
-
-        val result = MediatorLiveData<List<Subscription>>()
-        val subscriptions = subscriptionDao.getSubscriptionsExpiringBetween(startDate, endDate)
-        val categories = categoryDao.getAllCategories()
-
-        result.addSource(subscriptions) { subs ->
-            combineSubscriptionsWithCategories(subs, categories.value ?: emptyList())
-        }
-
-        result.addSource(categories) { cats ->
-            combineSubscriptionsWithCategories(subscriptions.value ?: emptyList(), cats)
-        }
-
-        return result
-    }
-
-    suspend fun getActiveSubscriptionsSync(): Result<List<Subscription>> = withContext(Dispatchers.IO) {
-        return@withContext try {
-            val subscriptions = subscriptionDao.getActiveSubscriptionsSync()
-            val categories = categoryDao.getAllCategoriesSync()
-
-            val result = subscriptions.map { subscription ->
-                subscription.apply {
-                    val category = subscription.categoryId?.let { id ->
-                        categories.find { it.categoryId == id }
-                    }
-                    categoryName = category?.name ?: context.getString(R.string.without_category)
-                    categoryColor = category?.colorCode
-                }
-            }
-
-            Result.Success(result)
-        } catch (e: Exception) {
-            Result.Error(context.getString(R.string.error_loading_subscriptions), e)
-        }
-    }
-
-    fun searchSubscriptions(query: String): LiveData<List<Subscription>> {
-        val result = MediatorLiveData<List<Subscription>>()
-        val subscriptions = subscriptionDao.searchActiveSubscriptions(query)
-        val categories = categoryDao.getAllCategories()
-
-        result.addSource(subscriptions) { subs ->
-            combineSubscriptionsWithCategories(subs, categories.value ?: emptyList())
-        }
-
-        result.addSource(categories) { cats ->
-            combineSubscriptionsWithCategories(subscriptions.value ?: emptyList(), cats)
-        }
-
-        return result
-    }
-
-    suspend fun getActiveSubscriptionsPage(limit: Int, offset: Int): Result<List<Subscription>> = withContext(Dispatchers.IO) {
-        return@withContext try {
-            val subscriptions = subscriptionDao.getActiveSubscriptionsPage(limit, offset)
-            val categories = categoryDao.getAllCategoriesSync()
-
-            val result = subscriptions.map { subscription ->
-                subscription.apply {
-                    val category = subscription.categoryId?.let { id ->
-                        categories.find { it.categoryId == id }
-                    }
-                    categoryName = category?.name ?: context.getString(R.string.without_category)
-                    categoryColor = category?.colorCode
-                }
-            }
-
-            Result.Success(result)
-        } catch (e: Exception) {
-            Result.Error(context.getString(R.string.error_loading_subscriptions_page), e)
-        }
     }
 }

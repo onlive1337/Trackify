@@ -27,18 +27,4 @@ object DateUtils {
         calendar.add(java.util.Calendar.YEAR, years)
         return calendar.time
     }
-
-    fun getMonthName(month: Int): String {
-        val calendar = java.util.Calendar.getInstance()
-        calendar.set(java.util.Calendar.MONTH, month)
-        val dateFormat = SimpleDateFormat("MMMM", Locale.getDefault())
-        return dateFormat.format(calendar.time)
-    }
-
-    fun getShortMonthName(month: Int): String {
-        val calendar = java.util.Calendar.getInstance()
-        calendar.set(java.util.Calendar.MONTH, month)
-        val dateFormat = SimpleDateFormat("MMM", Locale.getDefault())
-        return dateFormat.format(calendar.time)
-    }
 }

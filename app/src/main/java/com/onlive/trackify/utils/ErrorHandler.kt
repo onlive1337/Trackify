@@ -2,9 +2,6 @@ package com.onlive.trackify.utils
 
 import android.content.Context
 import android.util.Log
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.onlive.trackify.R
 import java.lang.ref.WeakReference
@@ -26,8 +23,6 @@ class ErrorHandler private constructor(context: Context) {
     }
 
     private val contextRef = WeakReference(context.applicationContext)
-    private val _errorEvent = MutableLiveData<Event<String>>()
-    val errorEvent = _errorEvent
 
     fun handleError(error: Any?, showToast: Boolean = true, context: String? = null) {
         val appContext = contextRef.get() ?: return
@@ -63,7 +58,6 @@ class ErrorHandler private constructor(context: Context) {
         }
 
         Log.e(TAG, "Error handled: $errorMessage", error as? Throwable)
-        _errorEvent.postValue(Event(errorMessage))
     }
 
     private fun getReadableErrorMessage(e: Exception, context: Context): String {
@@ -74,41 +68,5 @@ class ErrorHandler private constructor(context: Context) {
             is java.io.FileNotFoundException -> context.getString(R.string.file_not_found_error)
             else -> e.message ?: context.getString(R.string.unknown_error)
         }
-    }
-
-    fun observeErrors(owner: LifecycleOwner, observer: (String) -> Unit) {
-        errorEvent.observe(owner, Observer { event ->
-            event.getContentIfNotHandled()?.let {
-                observer(it)
-            }
-        })
-    }
-
-    fun logEvent(event: String, parameters: Map<String, Any> = emptyMap()) {
-        try {
-            FirebaseCrashlytics.getInstance().apply {
-                log("Event: $event")
-                parameters.forEach { (key, value) ->
-                    setCustomKey(key, value.toString())
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to log event to Crashlytics", e)
-        }
-    }
-
-    class Event<out T>(private val content: T) {
-        private var hasBeenHandled = false
-
-        fun getContentIfNotHandled(): T? {
-            return if (hasBeenHandled) {
-                null
-            } else {
-                hasBeenHandled = true
-                content
-            }
-        }
-
-        fun peekContent(): T = content
     }
 }

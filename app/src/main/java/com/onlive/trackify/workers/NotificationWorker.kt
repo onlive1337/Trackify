@@ -24,16 +24,14 @@ class NotificationWorker(
     private val preferenceManager = PreferenceManager(appContext)
     private val database = AppDatabase.getDatabase(appContext)
 
-    companion object {
-        private const val TAG = "NotificationWorker"
-    }
+    private val tag = "NotificationWorker"
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
-            Log.d(TAG, "Starting notification check")
+            Log.d(tag, "Starting notification check")
 
             if (!preferenceManager.areNotificationsEnabled()) {
-                Log.d(TAG, "Notifications disabled")
+                Log.d(tag, "Notifications disabled")
                 return@withContext Result.success()
             }
 
@@ -41,17 +39,17 @@ class NotificationWorker(
             val reminderDays = preferenceManager.getReminderDays()
             val today = Calendar.getInstance().time
 
-            Log.d(TAG, "Checking ${subscriptions.size} subscriptions with reminder days: $reminderDays")
+            Log.d(tag, "Checking ${subscriptions.size} subscriptions with reminder days: $reminderDays")
 
             for (subscription in subscriptions) {
                 checkPaymentReminders(subscription, today, reminderDays)
                 checkExpirationReminders(subscription, today, reminderDays)
             }
 
-            Log.d(TAG, "Notification check completed")
+            Log.d(tag, "Notification check completed")
             Result.success()
         } catch (e: Exception) {
-            Log.e(TAG, "Error in notification worker", e)
+            Log.e(tag, "Error in notification worker", e)
             Result.failure()
         }
     }
@@ -62,7 +60,7 @@ class NotificationWorker(
 
         if (daysUntil in reminderDays) {
             notificationHelper.showPaymentReminderNotification(subscription, daysUntil)
-            Log.d(TAG, "Payment reminder sent for ${subscription.name}, days until: $daysUntil")
+            Log.d(tag, "Payment reminder sent for ${subscription.name}, days until: $daysUntil")
         }
     }
 
@@ -75,7 +73,7 @@ class NotificationWorker(
 
         if (daysUntil in reminderDays) {
             notificationHelper.showExpirationReminderNotification(subscription, daysUntil)
-            Log.d(TAG, "Expiration reminder sent for ${subscription.name}, days until: $daysUntil")
+            Log.d(tag, "Expiration reminder sent for ${subscription.name}, days until: $daysUntil")
         }
     }
 

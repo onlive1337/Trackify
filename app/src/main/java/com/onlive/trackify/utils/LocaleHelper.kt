@@ -42,18 +42,6 @@ object LocaleHelper {
         }
     }
 
-    fun getLocalizedString(context: Context, languageCode: String, resourceId: Int): String {
-        return if (languageCode.isEmpty()) {
-            context.getString(resourceId)
-        } else {
-            val locale = Locale(languageCode)
-            val config = Configuration(context.resources.configuration)
-            config.setLocale(locale)
-            val localizedContext = context.createConfigurationContext(config)
-            localizedContext.getString(resourceId)
-        }
-    }
-
     data class Language(
         val code: String,
         val name: String

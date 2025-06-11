@@ -12,7 +12,6 @@ import com.onlive.trackify.utils.ErrorHandler
 import com.onlive.trackify.utils.NotificationHelper
 import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
-import com.onlive.trackify.utils.ThemeManager
 import com.onlive.trackify.workers.DatabaseCleanupWorker
 import java.util.concurrent.TimeUnit
 import kotlin.system.exitProcess
@@ -22,7 +21,6 @@ class TrackifyApplication : Application(), Configuration.Provider {
     lateinit var errorHandler: ErrorHandler
         private set
 
-    private lateinit var themeManager: ThemeManager
     private lateinit var notificationHelper: NotificationHelper
     private lateinit var preferenceManager: PreferenceManager
     private lateinit var notificationScheduler: NotificationScheduler
@@ -52,7 +50,6 @@ class TrackifyApplication : Application(), Configuration.Provider {
                 setCustomKey("app_version", BuildConfig.VERSION_NAME)
                 setCustomKey("version_code", BuildConfig.VERSION_CODE)
                 setCustomKey("debug_build", BuildConfig.DEBUG)
-
             }
 
             Log.i("TrackifyApp", "Firebase initialized successfully")
@@ -82,7 +79,6 @@ class TrackifyApplication : Application(), Configuration.Provider {
     }
 
     private fun initializeComponents() {
-        themeManager = ThemeManager(this)
         preferenceManager = PreferenceManager(this)
 
         notificationHelper = NotificationHelper(this)

@@ -23,12 +23,4 @@ class CategoryRepository(private val categoryDao: CategoryDao) {
     fun getCategoryById(id: Long): LiveData<Category> {
         return categoryDao.getCategoryById(id)
     }
-
-    fun searchCategories(query: String): LiveData<List<Category>> {
-        return categoryDao.searchCategories(query)
-    }
-
-    fun getCategoriesWithActiveSubscriptions(): LiveData<List<Category>> {
-        return categoryDao.getCategoriesWithActiveSubscriptions()
-    }
 }

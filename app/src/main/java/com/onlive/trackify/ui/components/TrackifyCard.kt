@@ -60,22 +60,6 @@ fun TrackifyCard(
 }
 
 @Composable
-fun TrackifyElevatedCard(
-    modifier: Modifier = Modifier,
-    title: String? = null,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    TrackifyCard(
-        modifier = modifier,
-        title = title,
-        backgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        elevation = 2,
-        useOutline = false,
-        content = content
-    )
-}
-
-@Composable
 fun TrackifyOutlinedCard(
     modifier: Modifier = Modifier,
     title: String? = null,

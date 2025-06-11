@@ -36,12 +36,4 @@ class PaymentViewModel(application: Application) : AndroidViewModel(application)
     fun getPaymentsBySubscription(subscriptionId: Long): LiveData<List<Payment>> {
         return repository.getPaymentsBySubscription(subscriptionId)
     }
-
-    fun getPaymentsForMonth(year: Int, month: Int): LiveData<List<Payment>> {
-        return repository.getPaymentsForMonth(year, month)
-    }
-
-    fun getTotalAmountForMonth(year: Int, month: Int): LiveData<Double> {
-        return repository.getTotalAmountForMonth(year, month)
-    }
 }

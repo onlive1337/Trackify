@@ -18,16 +18,14 @@ import com.onlive.trackify.data.model.Subscription
 
 class NotificationHelper(private val context: Context) {
 
-    companion object {
-        const val CHANNEL_ID = "trackify_notifications"
-        private const val TAG = "NotificationHelper"
-    }
+    private val channelId = "trackify_notifications"
+    private val tag = "NotificationHelper"
 
     fun createNotificationChannel() {
         val name = context.getString(R.string.notification_channel_name)
         val descriptionText = context.getString(R.string.notification_channel_description)
         val importance = NotificationManager.IMPORTANCE_DEFAULT
-        val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+        val channel = NotificationChannel(channelId, name, importance).apply {
             description = descriptionText
         }
 
@@ -35,12 +33,12 @@ class NotificationHelper(private val context: Context) {
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
 
-        Log.d(TAG, "Notification channel created")
+        Log.d(tag, "Notification channel created")
     }
 
     fun showPaymentReminderNotification(subscription: Subscription, daysUntil: Int) {
         if (!checkNotificationPermission()) {
-            Log.w(TAG, "No notification permission")
+            Log.w(tag, "No notification permission")
             return
         }
 
@@ -64,7 +62,7 @@ class NotificationHelper(private val context: Context) {
         val formattedAmount = CurrencyFormatter.formatAmount(context, subscription.price)
         val fullText = "$text ($formattedAmount)"
 
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+        val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_payments)
             .setContentTitle(title)
             .setContentText(fullText)
@@ -77,15 +75,15 @@ class NotificationHelper(private val context: Context) {
             with(NotificationManagerCompat.from(context)) {
                 notify(subscription.subscriptionId.toInt(), builder.build())
             }
-            Log.d(TAG, "Payment reminder notification sent for ${subscription.name}")
+            Log.d(tag, "Payment reminder notification sent for ${subscription.name}")
         } catch (e: SecurityException) {
-            Log.e(TAG, "Failed to send notification: ${e.message}")
+            Log.e(tag, "Failed to send notification: ${e.message}")
         }
     }
 
     fun showExpirationReminderNotification(subscription: Subscription, daysUntil: Int) {
         if (!checkNotificationPermission()) {
-            Log.w(TAG, "No notification permission")
+            Log.w(tag, "No notification permission")
             return
         }
 
@@ -106,7 +104,7 @@ class NotificationHelper(private val context: Context) {
             else -> context.getString(R.string.notification_expires_in_days, subscription.name, daysUntil)
         }
 
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+        val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_info)
             .setContentTitle(title)
             .setContentText(text)
@@ -118,9 +116,9 @@ class NotificationHelper(private val context: Context) {
             with(NotificationManagerCompat.from(context)) {
                 notify((subscription.subscriptionId + 10000).toInt(), builder.build())
             }
-            Log.d(TAG, "Expiration reminder notification sent for ${subscription.name}")
+            Log.d(tag, "Expiration reminder notification sent for ${subscription.name}")
         } catch (e: SecurityException) {
-            Log.e(TAG, "Failed to send notification: ${e.message}")
+            Log.e(tag, "Failed to send notification: ${e.message}")
         }
     }
 
@@ -133,6 +131,4 @@ class NotificationHelper(private val context: Context) {
         }
         return true
     }
-
-
 }

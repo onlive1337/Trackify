@@ -12,9 +12,6 @@ interface CategoryDao {
     @Insert
     fun insertSync(category: Category): Long
 
-    @Insert
-    suspend fun insertAll(categories: List<Category>): List<Long>
-
     @Update
     suspend fun update(category: Category)
 
@@ -25,16 +22,10 @@ interface CategoryDao {
     fun getAllCategories(): LiveData<List<Category>>
 
     @Query("SELECT * FROM categories ORDER BY name ASC")
-    suspend fun getAllCategoriesAsync(): List<Category>
-
-    @Query("SELECT * FROM categories ORDER BY name ASC")
     fun getAllCategoriesSync(): List<Category>
 
     @Query("SELECT * FROM categories WHERE categoryId = :id")
     fun getCategoryById(id: Long): LiveData<Category>
-
-    @Query("SELECT COUNT(*) FROM categories")
-    suspend fun getCategoriesCountSync(): Int
 
     @Query("SELECT * FROM categories WHERE name LIKE '%' || :query || '%' ORDER BY name ASC")
     fun searchCategories(query: String): LiveData<List<Category>>

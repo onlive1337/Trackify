@@ -6,7 +6,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import com.onlive.trackify.data.model.BillingFrequency
 import com.onlive.trackify.data.model.Category
-import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.viewmodel.StatisticsViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -23,7 +22,6 @@ import java.util.concurrent.ConcurrentHashMap
 class LiveStatisticsUpdater(
     private val context: Context,
     subscriptionsLiveData: LiveData<List<Subscription>>,
-    paymentsLiveData: LiveData<List<Payment>>,
     categoriesLiveData: LiveData<List<Category>>
 ) {
     val totalMonthlySpending = MediatorLiveData<Double>()
@@ -33,7 +31,6 @@ class LiveStatisticsUpdater(
     val subscriptionTypeSpending = MediatorLiveData<List<StatisticsViewModel.SubscriptionTypeSpending>>()
 
     private val subscriptions = ConcurrentHashMap<Long, Subscription>()
-    private val payments = ConcurrentHashMap<Long, Payment>()
     private val categories = ConcurrentHashMap<Long, Category>()
 
     private val calculationScope = CoroutineScope(Dispatchers.Default)
@@ -44,9 +41,9 @@ class LiveStatisticsUpdater(
     private var lastCalculationTime = 0L
     private val cacheValidTime = 30_000L
 
-    companion object {
-        private const val TAG = "LiveStatisticsUpdater"
-        private const val DEBOUNCE_DELAY = 300L
+    private companion object {
+        const val TAG = "LiveStatisticsUpdater"
+        const val DEBOUNCE_DELAY = 300L
     }
 
     init {

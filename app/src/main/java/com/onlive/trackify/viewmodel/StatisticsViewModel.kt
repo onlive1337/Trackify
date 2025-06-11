@@ -41,7 +41,6 @@ class StatisticsViewModel(application: Application) : AndroidViewModel(applicati
         liveStatisticsUpdater = LiveStatisticsUpdater(
             application,
             subscriptionRepository.allActiveSubscriptions,
-            paymentRepository.allPayments,
             categories
         )
 

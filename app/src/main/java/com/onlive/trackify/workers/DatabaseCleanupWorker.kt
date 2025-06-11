@@ -18,9 +18,7 @@ class DatabaseCleanupWorker(
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
             deleteOldPayments()
-
             deleteExpiredSubscriptions()
-
             Result.success()
         } catch (e: Exception) {
             Result.failure()

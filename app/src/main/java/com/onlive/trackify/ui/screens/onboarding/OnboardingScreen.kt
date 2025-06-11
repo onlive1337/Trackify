@@ -1,10 +1,8 @@
 package com.onlive.trackify.ui.screens.onboarding
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
-import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
@@ -58,8 +56,6 @@ fun OnboardingScreen(
     var selectedLanguage by remember { mutableStateOf("") }
     var selectedCurrency by remember { mutableStateOf("USD") }
 
-    val totalSteps = 4
-
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -69,7 +65,7 @@ fun OnboardingScreen(
         finishOnboarding(preferenceManager, selectedLanguage, selectedCurrency, onComplete)
     }
 
-    val settingsLauncher = rememberLauncherForActivityResult(
+    rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { _ ->
         finishOnboarding(preferenceManager, selectedLanguage, selectedCurrency, onComplete)
@@ -103,7 +99,6 @@ fun OnboardingScreen(
             ) {
                 OnboardingProgressIndicator(
                     currentStep = currentStep,
-                    totalSteps = totalSteps,
                     modifier = Modifier.padding(vertical = 16.dp)
                 )
 
@@ -159,12 +154,6 @@ fun OnboardingScreen(
                             },
                             onSkip = {
                                 finishOnboarding(preferenceManager, selectedLanguage, selectedCurrency, onComplete)
-                            },
-                            onOpenSettings = {
-                                val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
-                                    putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-                                }
-                                settingsLauncher.launch(intent)
                             }
                         )
                     }
@@ -177,9 +166,10 @@ fun OnboardingScreen(
 @Composable
 private fun OnboardingProgressIndicator(
     currentStep: Int,
-    totalSteps: Int,
     modifier: Modifier = Modifier
 ) {
+    val totalSteps = 4
+
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -374,8 +364,7 @@ private fun CurrencySelectionStep(
 @Composable
 private fun NotificationPermissionStep(
     onGrantPermission: () -> Unit,
-    onSkip: () -> Unit,
-    onOpenSettings: () -> Unit
+    onSkip: () -> Unit
 ) {
     val context = LocalContext.current
     val hasNotificationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

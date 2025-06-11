@@ -66,30 +66,6 @@ class NavigationActions(navController: NavHostController) {
         }
     }
 
-    val navigateToPayments: () -> Unit = {
-        navController.navigate(Screen.Payments.route) {
-            popUpTo(Screen.Home.route) {
-                inclusive = false
-            }
-        }
-    }
-
-    val navigateToStatistics: () -> Unit = {
-        navController.navigate(Screen.Statistics.route) {
-            popUpTo(Screen.Home.route) {
-                inclusive = false
-            }
-        }
-    }
-
-    val navigateToSettings: () -> Unit = {
-        navController.navigate(Screen.Settings.route) {
-            popUpTo(Screen.Home.route) {
-                inclusive = false
-            }
-        }
-    }
-
     val navigateToAddSubscription: () -> Unit = {
         navController.navigate(Screen.AddSubscription.route)
     }
@@ -109,7 +85,6 @@ class NavigationActions(navController: NavHostController) {
     val navigateToCategoryDetail: (Long) -> Unit = { categoryId ->
         navController.navigate(Screen.CategoryDetail.createRoute(categoryId))
     }
-
 
     val navigateToCurrencySettings: () -> Unit = {
         navController.navigate(Screen.CurrencySettings.route)

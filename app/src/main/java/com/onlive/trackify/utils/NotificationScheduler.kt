@@ -11,18 +11,16 @@ import java.util.concurrent.TimeUnit
 
 class NotificationScheduler(private val context: Context) {
 
-    companion object {
-        private const val TAG = "NotificationScheduler"
-        private const val WORK_NAME = "subscription_notifications"
-    }
+    private val tag = "NotificationScheduler"
+    private val workName = "subscription_notifications"
 
     private val preferenceManager = PreferenceManager(context)
 
     fun scheduleNotifications() {
-        Log.d(TAG, "Scheduling notifications")
+        Log.d(tag, "Scheduling notifications")
 
         if (!preferenceManager.areNotificationsEnabled()) {
-            Log.d(TAG, "Notifications disabled, cancelling work")
+            Log.d(tag, "Notifications disabled, cancelling work")
             cancelNotifications()
             return
         }
@@ -50,16 +48,16 @@ class NotificationScheduler(private val context: Context) {
             .build()
 
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-            WORK_NAME,
+            workName,
             ExistingPeriodicWorkPolicy.UPDATE,
             workRequest
         )
 
-        Log.d(TAG, "Notifications scheduled for $hour:$minute with initial delay ${initialDelay/1000/60} minutes")
+        Log.d(tag, "Notifications scheduled for $hour:$minute with initial delay ${initialDelay/1000/60} minutes")
     }
 
     fun cancelNotifications() {
-        Log.d(TAG, "Cancelling notifications")
-        WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
+        Log.d(tag, "Cancelling notifications")
+        WorkManager.getInstance(context).cancelUniqueWork(workName)
     }
 }

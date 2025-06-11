@@ -1,16 +1,8 @@
 package com.onlive.trackify.utils
 
 import android.content.Context
-import android.content.res.Configuration
 import androidx.compose.runtime.*
-import androidx.compose.ui.platform.LocalContext
 import java.util.Locale
-
-@Composable
-fun rememberLocaleManager(): LocaleManager {
-    val context = LocalContext.current
-    return remember { LocaleManager(context) }
-}
 
 class LocaleManager(private val context: Context) {
     private var _currentLocale by mutableStateOf(getSystemLocale())
@@ -33,17 +25,9 @@ class LocaleManager(private val context: Context) {
         _currentLocale = locale
         Locale.setDefault(locale)
 
-        val config = Configuration(context.resources.configuration)
+        val config = android.content.res.Configuration(context.resources.configuration)
         config.setLocale(locale)
         _localizedContext = context.createConfigurationContext(config)
-    }
-
-    fun getLocalizedString(resourceId: Int): String {
-        return _localizedContext.getString(resourceId)
-    }
-
-    fun getLocalizedString(resourceId: Int, vararg formatArgs: Any): String {
-        return _localizedContext.getString(resourceId, *formatArgs)
     }
 }
 
