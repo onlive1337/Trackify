@@ -46,18 +46,13 @@ class TrackifyApplication : Application(), Configuration.Provider {
             FirebaseApp.initializeApp(this)
 
             FirebaseCrashlytics.getInstance().apply {
-                setCrashlyticsCollectionEnabled(true)
+                isCrashlyticsCollectionEnabled = true
 
                 setUserId("user_${System.currentTimeMillis()}")
                 setCustomKey("app_version", BuildConfig.VERSION_NAME)
                 setCustomKey("version_code", BuildConfig.VERSION_CODE)
                 setCustomKey("debug_build", BuildConfig.DEBUG)
 
-                // Только для первого релиза - потом убрать
-                if (BuildConfig.DEBUG) {
-                    log("🧪 Trackify Crashlytics initialized for testing")
-                    setCustomKey("test_build", true)
-                }
             }
 
             Log.i("TrackifyApp", "Firebase initialized successfully")

@@ -77,11 +77,7 @@
     <string name="notification_expires_tomorrow">%1$s subscription expires tomorrow</string>
     <string name="notification_expires_in_days">%1$s subscription expires in %2$d days</string>
     <string name="enable_notifications">Enable notifications</string>
-    <string name="notification_description">Get reminders about payments and expiring subscriptions</string>
     <string name="select_time">Select time</string>
-    <string name="permission_required">Permission Required</string>
-    <string name="notification_permission_required">Notification permission is required to send reminders</string>
-    <string name="open_settings">Open Settings</string>
     <string name="notify_on_payment_day">Notify on payment day</string>
     <string name="notify_one_day_before">Notify one day before payment</string>
     <string name="notify_three_days_before">Notify 3 days before payment</string>
@@ -103,7 +99,6 @@
 
     <string name="language_settings">Language settings</string>
     <string name="language_description">Choose application language</string>
-    <string name="language_changed">Language changed. Changes will take effect after application restart</string>
     <string name="choose_language">Choose language</string>>
     <string name="system_language">System language</string>
 

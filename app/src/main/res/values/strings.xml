@@ -78,11 +78,7 @@
     <string name="notification_expires_tomorrow">Подписка %1$s истекает завтра</string>
     <string name="notification_expires_in_days">Подписка %1$s истекает через %2$d дней</string>
     <string name="enable_notifications">Включить уведомления</string>
-    <string name="notification_description">Получать напоминания о платежах и истекающих подписках</string>
     <string name="select_time">Выберите время</string>
-    <string name="permission_required">Требуется разрешение</string>
-    <string name="notification_permission_required">Для отправки уведомлений необходимо разрешение</string>
-    <string name="open_settings">Открыть настройки</string>
     <string name="notify_on_payment_day">Уведомление в день платежа</string>
     <string name="notify_one_day_before">Уведомление за день до платежа</string>
     <string name="notify_three_days_before">Уведомление за 3 дня до платежа</string>
@@ -104,7 +100,6 @@
 
     <string name="language_settings">Настройки языка</string>
     <string name="language_description">Выберите язык приложения</string>
-    <string name="language_changed">Язык изменен. Изменения вступят в силу после перезапуска приложения</string>
     <string name="choose_language">Выбор языка</string>
     <string name="system_language">Системный язык</string>
 
