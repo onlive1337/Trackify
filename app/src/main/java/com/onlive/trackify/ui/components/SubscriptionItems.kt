@@ -1,6 +1,6 @@
 package com.onlive.trackify.ui.components
 
-import androidx.compose.foundation.background
+import  androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import com.onlive.trackify.data.model.BillingFrequency
 import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.utils.CurrencyFormatter
-import androidx.compose.ui.platform.LocalContext
+import com.onlive.trackify.utils.LocalLocalizedContext
 import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.R
 import androidx.core.graphics.toColorInt
@@ -34,7 +34,7 @@ fun SubscriptionListItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
+    val context = LocalLocalizedContext.current
     val defaultColor = MaterialTheme.colorScheme.surfaceVariant
 
     val categoryColor = getCategoryColor(subscription.categoryColor, defaultColor)

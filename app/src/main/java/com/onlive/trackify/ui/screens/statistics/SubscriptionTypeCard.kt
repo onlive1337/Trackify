@@ -36,6 +36,12 @@ fun SubscriptionTypeCard(
             subscriptionTypes.forEachIndexed { index, typeSpending ->
                 val backgroundColor = colors.getOrElse(index) { MaterialTheme.colorScheme.primary }
 
+                val localizedType = when (typeSpending.type) {
+                    "monthly_spending" -> stringResource(R.string.monthly_spending)
+                    "yearly_type" -> stringResource(R.string.yearly_type)
+                    else -> typeSpending.type
+                }
+
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -62,7 +68,7 @@ fun SubscriptionTypeCard(
                         Spacer(modifier = Modifier.width(12.dp))
 
                         Text(
-                            text = typeSpending.type,
+                            text = localizedType,
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier.weight(1f)
                         )

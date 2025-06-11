@@ -7,12 +7,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.CurrencyFormatter
+import com.onlive.trackify.utils.LocalLocalizedContext
 import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.StatisticsViewModel
 
@@ -20,7 +20,7 @@ import com.onlive.trackify.viewmodel.StatisticsViewModel
 fun StatisticsScreen(
     viewModel: StatisticsViewModel = viewModel()
 ) {
-    val context = LocalContext.current
+    val context = LocalLocalizedContext.current
     val totalMonthlySpending by viewModel.totalMonthlySpending.observeAsState(0.0)
     val totalYearlySpending by viewModel.totalYearlySpending.observeAsState(0.0)
     val spendingByCategory by viewModel.spendingByCategory.observeAsState(emptyList())

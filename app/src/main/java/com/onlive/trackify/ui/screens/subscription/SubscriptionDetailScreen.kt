@@ -13,8 +13,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import com.onlive.trackify.utils.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -26,6 +24,8 @@ import com.onlive.trackify.ui.components.TrackifyDatePicker
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.CurrencyFormatter
 import com.onlive.trackify.utils.DateUtils
+import com.onlive.trackify.utils.LocalLocalizedContext
+import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.CategoryViewModel
 import com.onlive.trackify.viewmodel.PaymentViewModel
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
@@ -41,7 +41,7 @@ fun SubscriptionDetailScreen(
     categoryViewModel: CategoryViewModel = viewModel(),
     paymentViewModel: PaymentViewModel = viewModel()
 ) {
-    LocalContext.current
+    val context = LocalLocalizedContext.current
     val isNewSubscription = subscriptionId == -1L
 
     val existingSubscription by if (!isNewSubscription) {
@@ -425,7 +425,7 @@ fun SubscriptionDetailScreen(
 
 @Composable
 fun PaymentHistorySection(payments: List<Payment>) {
-    val context = LocalContext.current
+    val context = LocalLocalizedContext.current
 
     Column {
         Text(

@@ -324,12 +324,12 @@ class LiveStatisticsUpdater(
 
                 val result = listOf(
                     StatisticsViewModel.SubscriptionTypeSpending(
-                        context.getString(R.string.monthly_spending),
+                        "monthly_spending",
                         monthlyTotal,
                         "#4285F4"
                     ),
                     StatisticsViewModel.SubscriptionTypeSpending(
-                        context.getString(R.string.yearly_type),
+                        "yearly_type",
                         yearlyTotal,
                         "#34A853"
                     )

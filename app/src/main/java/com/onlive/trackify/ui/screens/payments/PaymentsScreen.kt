@@ -15,7 +15,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -26,6 +25,7 @@ import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.CurrencyFormatter
 import com.onlive.trackify.utils.DateUtils
+import com.onlive.trackify.utils.LocalLocalizedContext
 import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.PaymentViewModel
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
@@ -39,7 +39,7 @@ fun PaymentsScreen(
 ) {
     val payments by paymentViewModel.allPayments.observeAsState(emptyList())
     val subscriptions by subscriptionViewModel.allSubscriptions.observeAsState(emptyList())
-    val context = LocalContext.current
+    val context = LocalLocalizedContext.current
 
     var paymentToDelete by remember { mutableStateOf<Payment?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
