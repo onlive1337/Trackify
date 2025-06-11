@@ -12,7 +12,6 @@ import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.data.repository.SubscriptionRepository
 import com.onlive.trackify.utils.ErrorHandler
 import com.onlive.trackify.utils.Result
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class SubscriptionViewModel(application: Application) : AndroidViewModel(application) {
@@ -23,22 +22,16 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
-    val allActiveSubscriptions: LiveData<List<Subscription>>
-
-    val activeSubscriptionsCount: LiveData<Int>
-
-    private val _operationResult = MutableLiveData<Result<*>>()
-    val operationResult: LiveData<Result<*>> = _operationResult
+    val allSubscriptions: LiveData<List<Subscription>>
 
     init {
         val database = AppDatabase.getDatabase(application)
         val subscriptionDao = database.subscriptionDao()
         val categoryDao = database.categoryDao()
 
-        repository = SubscriptionRepository(subscriptionDao, categoryDao, application)
+        repository = SubscriptionRepository(subscriptionDao, categoryDao, application.applicationContext)
 
-        allActiveSubscriptions = repository.allActiveSubscriptions
-        activeSubscriptionsCount = repository.activeSubscriptionsCount
+        allSubscriptions = repository.allSubscriptions
     }
 
     fun insert(subscription: Subscription) = viewModelScope.launch {
@@ -46,13 +39,11 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
 
         try {
             val result = repository.insert(subscription)
-            _operationResult.value = result
 
             if (result is Result.Error) {
                 errorHandler.handleError(result.message, true)
             }
         } catch (e: Exception) {
-            _operationResult.value = Result.Error("Ошибка при добавлении подписки", e)
             errorHandler.handleError(e, true)
         } finally {
             _isLoading.value = false
@@ -64,13 +55,11 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
 
         try {
             val result = repository.update(subscription)
-            _operationResult.value = result
 
             if (result is Result.Error) {
                 errorHandler.handleError(result.message, true)
             }
         } catch (e: Exception) {
-            _operationResult.value = Result.Error("Ошибка при обновлении подписки", e)
             errorHandler.handleError(e, true)
         } finally {
             _isLoading.value = false
@@ -82,32 +71,11 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
 
         try {
             val result = repository.delete(subscription)
-            _operationResult.value = result
 
             if (result is Result.Error) {
                 errorHandler.handleError(result.message, true)
             }
         } catch (e: Exception) {
-            _operationResult.value = Result.Error("Ошибка при удалении подписки", e)
-            errorHandler.handleError(e, true)
-        } finally {
-            _isLoading.value = false
-        }
-    }
-
-    fun deactivateSubscription(subscription: Subscription) = viewModelScope.launch(Dispatchers.IO) {
-        _isLoading.value = true
-
-        try {
-            val updatedSubscription = subscription.copy(active = false)
-            val result = repository.update(updatedSubscription)
-            _operationResult.value = result
-
-            if (result is Result.Error) {
-                errorHandler.handleError(result.message, true)
-            }
-        } catch (e: Exception) {
-            _operationResult.value = Result.Error("Ошибка при деактивации подписки", e)
             errorHandler.handleError(e, true)
         } finally {
             _isLoading.value = false
@@ -116,35 +84,5 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
 
     fun getSubscriptionById(id: Long): MediatorLiveData<Subscription?> {
         return repository.getSubscriptionById(id)
-    }
-
-    fun getSubscriptionsByCategory(categoryId: Long): LiveData<List<Subscription>> {
-        return repository.getSubscriptionsByCategory(categoryId)
-    }
-
-    fun getUpcomingExpirations(days: Int): LiveData<List<Subscription>> {
-        return repository.getUpcomingExpirations(days)
-    }
-
-    fun searchSubscriptions(query: String): LiveData<List<Subscription>> {
-        return repository.searchSubscriptions(query)
-    }
-
-    fun loadSubscriptionsPage(limit: Int, offset: Int) = viewModelScope.launch {
-        _isLoading.value = true
-
-        try {
-            val result = repository.getActiveSubscriptionsPage(limit, offset)
-            _operationResult.value = result
-
-            if (result is Result.Error) {
-                errorHandler.handleError(result.message, false)
-            }
-        } catch (e: Exception) {
-            _operationResult.value = Result.Error("Ошибка при загрузке подписок", e)
-            errorHandler.handleError(e, false)
-        } finally {
-            _isLoading.value = false
-        }
     }
 }

@@ -12,10 +12,10 @@ data class Currency(
 ) {
     companion object {
         val POPULAR_CURRENCIES = listOf(
-            Currency("RUB", "₽", "Russian Ruble", CurrencyFormat.SYMBOL_AFTER),
             Currency("USD", "$", "US Dollar"),
             Currency("EUR", "€", "Euro"),
             Currency("GBP", "£", "British Pound"),
+            Currency("RUB", "₽", "Russian Ruble", CurrencyFormat.SYMBOL_AFTER),
             Currency("JPY", "¥", "Japanese Yen"),
             Currency("CNY", "¥", "Chinese Yuan"),
             Currency("INR", "₹", "Indian Rupee"),
@@ -31,7 +31,8 @@ data class Currency(
 
     fun format(amount: Double, includeSymbol: Boolean = true, maxDecimals: Int = 0): String {
         try {
-            val format = NumberFormat.getCurrencyInstance(getLocaleForCurrency())
+            val targetLocale = getLocaleForCurrency()
+            val format = NumberFormat.getCurrencyInstance(targetLocale)
             val javaCurrency = JavaCurrency.getInstance(code)
             format.currency = javaCurrency
             format.maximumFractionDigits = maxDecimals
@@ -43,8 +44,9 @@ data class Currency(
                 return formatted.replace(symbol, "").trim()
             }
         } catch (e: Exception) {
+            val targetLocale = getLocaleForCurrency()
             val formatPattern = if (maxDecimals > 0) "%.${maxDecimals}f" else "%.0f"
-            val formattedAmount = String.format(formatPattern, amount)
+            val formattedAmount = String.format(targetLocale, formatPattern, amount)
 
             return when {
                 !includeSymbol -> formattedAmount
@@ -56,10 +58,10 @@ data class Currency(
 
     private fun getLocaleForCurrency(): Locale {
         return when (code) {
-            "RUB" -> Locale("ru", "RU")
             "USD" -> Locale.US
             "EUR" -> Locale.GERMANY
             "GBP" -> Locale.UK
+            "RUB" -> Locale("ru", "RU")
             "JPY" -> Locale.JAPAN
             "CNY" -> Locale.CHINA
             "INR" -> Locale("hi", "IN")

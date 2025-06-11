@@ -2,8 +2,8 @@ package com.onlive.trackify.utils
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.os.Build
-import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.core.content.edit
 
 class ThemeManager(context: Context) {
     companion object {
@@ -16,25 +16,22 @@ class ThemeManager(context: Context) {
     }
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private val _themeMode = mutableIntStateOf(getThemeMode())
 
     fun getThemeMode(): Int {
         return prefs.getInt(KEY_THEME_MODE, MODE_SYSTEM)
     }
 
     fun setThemeMode(mode: Int) {
-        prefs.edit().putInt(KEY_THEME_MODE, mode).apply()
-        applyTheme(mode)
+        prefs.edit { putInt(KEY_THEME_MODE, mode) }
+        _themeMode.intValue = mode
     }
 
-    fun applyTheme(mode: Int = getThemeMode()) {
-        when (mode) {
-            MODE_LIGHT -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-            MODE_DARK -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-            else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+    fun isDarkTheme(systemIsDark: Boolean): Boolean {
+        return when (_themeMode.intValue) {
+            MODE_LIGHT -> false
+            MODE_DARK -> true
+            else -> systemIsDark
         }
-    }
-
-    fun supportsDynamicColors(): Boolean {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     }
 }

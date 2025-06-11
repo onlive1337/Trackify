@@ -6,7 +6,6 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.onlive.trackify.data.model.Category
-import com.onlive.trackify.data.model.CategoryGroup
 import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.data.model.Subscription
 import kotlinx.coroutines.Dispatchers
@@ -14,8 +13,8 @@ import kotlinx.coroutines.withContext
 import androidx.room.withTransaction
 
 @Database(
-    entities = [Subscription::class, Payment::class, Category::class, CategoryGroup::class],
-    version = 2,
+    entities = [Subscription::class, Payment::class, Category::class],
+    version = 1,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -24,7 +23,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun subscriptionDao(): SubscriptionDao
     abstract fun paymentDao(): PaymentDao
     abstract fun categoryDao(): CategoryDao
-    abstract fun categoryGroupDao(): CategoryGroupDao
 
     companion object {
         @Volatile
@@ -38,7 +36,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     DATABASE_NAME
                 )
-                    .fallbackToDestructiveMigration()
+                    .fallbackToDestructiveMigration(true)
                     .build()
                 INSTANCE = instance
                 instance

@@ -8,7 +8,6 @@ import com.onlive.trackify.data.LiveStatisticsUpdater
 import com.onlive.trackify.data.database.AppDatabase
 import com.onlive.trackify.data.model.Category
 import com.onlive.trackify.data.repository.CategoryRepository
-import com.onlive.trackify.data.repository.PaymentRepository
 import com.onlive.trackify.data.repository.SubscriptionRepository
 import kotlinx.coroutines.launch
 
@@ -16,7 +15,6 @@ class StatisticsViewModel(application: Application) : AndroidViewModel(applicati
 
     private val database = AppDatabase.getDatabase(application)
     private val subscriptionRepository: SubscriptionRepository
-    private val paymentRepository: PaymentRepository
     private val categoryRepository: CategoryRepository
     private val liveStatisticsUpdater: LiveStatisticsUpdater
 
@@ -29,19 +27,16 @@ class StatisticsViewModel(application: Application) : AndroidViewModel(applicati
 
     init {
         val subscriptionDao = database.subscriptionDao()
-        val paymentDao = database.paymentDao()
         val categoryDao = database.categoryDao()
 
-        subscriptionRepository = SubscriptionRepository(subscriptionDao, categoryDao, application)
-        paymentRepository = PaymentRepository(paymentDao)
+        subscriptionRepository = SubscriptionRepository(subscriptionDao, categoryDao, application.applicationContext)
         categoryRepository = CategoryRepository(categoryDao)
 
         categories = categoryRepository.allCategories
 
         liveStatisticsUpdater = LiveStatisticsUpdater(
             application,
-            subscriptionRepository.allActiveSubscriptions,
-            paymentRepository.allPayments,
+            subscriptionRepository.allSubscriptions,
             categories
         )
 

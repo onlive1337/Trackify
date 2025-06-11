@@ -18,9 +18,7 @@ class DatabaseCleanupWorker(
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
             deleteOldPayments()
-
             deleteExpiredSubscriptions()
-
             Result.success()
         } catch (e: Exception) {
             Result.failure()
@@ -47,7 +45,7 @@ class DatabaseCleanupWorker(
         val thresholdDate = calendar.time
 
         val expiredSubscriptions = database.subscriptionDao().getAllSubscriptionsSync().filter {
-            !it.active && it.endDate != null && it.endDate.before(thresholdDate)
+            it.endDate != null && it.endDate.before(thresholdDate)
         }
 
         for (subscription in expiredSubscriptions) {
