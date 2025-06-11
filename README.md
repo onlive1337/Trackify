@@ -132,7 +132,7 @@ Trackify is designed with privacy in mind:
 
 ## 📞 Contact
 
-- **Telegram**: [@onlivedev](https://t.me/onswix)
+- **Telegram**: [onswix](https://t.me/onswix)
 - **Issues**: [GitHub Issues](https://github.com/onlive1337/trackify/issues)
 
 ## 🙏 Acknowledgments

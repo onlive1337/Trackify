@@ -26,6 +26,12 @@ android {
             useSupportLibrary = true
         }
     }
+    
+    bundle {
+        language {
+            enableSplit = false
+        }
+    }
 
     signingConfigs {
         create("release") {
