@@ -13,12 +13,9 @@
     <string name="error_creating_payment">Error creating payment</string>
     <string name="error_updating_payment">Error updating payment</string>
     <string name="error_deleting_payment">Error deleting payment</string>
-    <string name="error_loading_payments_page">Error loading payments page</string>
     <string name="error_creating_subscription">Error creating subscription</string>
     <string name="error_updating_subscription">Error updating subscription</string>
     <string name="error_deleting_subscription">Error deleting subscription</string>
-    <string name="error_loading_subscriptions">Error loading subscriptions</string>
-    <string name="error_loading_subscriptions_page">Error loading subscriptions page</string>
 
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>

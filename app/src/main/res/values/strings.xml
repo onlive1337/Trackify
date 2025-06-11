@@ -13,12 +13,9 @@
     <string name="error_creating_payment">Ошибка при создании платежа</string>
     <string name="error_updating_payment">Ошибка при обновлении платежа</string>
     <string name="error_deleting_payment">Ошибка при удалении платежа</string>
-    <string name="error_loading_payments_page">Ошибка при загрузке страницы платежей</string>
     <string name="error_creating_subscription">Ошибка при создании подписки</string>
     <string name="error_updating_subscription">Ошибка при обновлении подписки</string>
     <string name="error_deleting_subscription">Ошибка при удалении подписки</string>
-    <string name="error_loading_subscriptions">Ошибка при получении подписок</string>
-    <string name="error_loading_subscriptions_page">Ошибка при загрузке страницы подписок</string>
 
     <string name="save">Сохранить</string>
     <string name="cancel">Отмена</string>
