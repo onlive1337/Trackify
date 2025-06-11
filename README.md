@@ -8,139 +8,249 @@
 [![Android](https://img.shields.io/badge/Platform-Android-green.svg)](https://android.com)
 [![Kotlin](https://img.shields.io/badge/Language-Kotlin-purple.svg)](https://kotlinlang.org)
 [![Material 3](https://img.shields.io/badge/Design-Material%203-blue.svg)](https://m3.material.io)
+[![Min API](https://img.shields.io/badge/API-28+-brightgreen.svg)](https://android-arsenal.com/api?level=28)
+
+*Never miss a subscription payment again*
+
+[Download APK](https://github.com/onlive1337/trackify/releases) • [Report Bug](https://github.com/onlive1337/trackify/issues) • [Request Feature](https://github.com/onlive1337/trackify/issues)
 
 </div>
 
 ## ✨ Features
 
-- **📱 Modern Material 3 Design** - Beautiful, intuitive interface with dynamic colors
-- **💰 Subscription Tracking** - Manage all your recurring payments in one place
-- **📊 Statistics & Analytics** - Visualize your spending patterns with charts
-- **🔔 Smart Notifications** - Get reminders before payments are due
-- **🏷️ Categories** - Organize subscriptions with custom categories and colors
-- **💳 Payment History** - Track all your payments with detailed history
-- **🌍 Multi-language** - Available in English and Russian
-- **💱 Multi-currency** - Support for multiple currencies (USD, EUR, RUB, etc.)
-- **📤 Data Export/Import** - Backup and restore your data
-- **🌙 Dark/Light Theme** - Automatic theme switching based on system preferences
+### 📊 Smart Tracking
+- **Subscription Management** - Add, edit, and organize all your recurring payments
+- **Payment History** - Complete transaction log with notes and dates
+- **Smart Notifications** - Customizable reminders before payments are due
+- **Multi-Currency Support** - Track subscriptions in USD, EUR, RUB, and more
+
+### 📈 Analytics & Insights
+- **Statistics Dashboard** - Visualize spending patterns with interactive charts
+- **Category Organization** - Custom categories with color coding
+- **Monthly/Yearly Overview** - Track spending trends over time
+- **Expense Analysis** - Breakdown by subscription type and frequency
+
+### 🎨 Modern Experience
+- **Material 3 Design** - Beautiful, intuitive interface with dynamic colors
+- **Dark/Light Theme** - Automatic theme switching based on system preferences
+- **Multi-language Support** - Available in English and Russian
+- **Responsive UI** - Optimized for all screen sizes
+
+### 🔒 Privacy & Data
+- **Local Storage** - All data stays on your device
+- **Data Export/Import** - Backup and restore via JSON files
+- **No Telemetry** - Zero data collection or tracking
+- **Open Source** - Transparent and community-driven
+
+## 📱 Screenshots
+
+| Home Screen                        | Statistics                           | Settings                                   | Add Subscription                 |
+|------------------------------------|--------------------------------------|--------------------------------------------|----------------------------------|
+| ![Home](docs/screenshots/home.png) | ![Stats](docs/screenshots/stats.png) | ![Settings](docs/screenshots/settings.png) | ![Add](docs/screenshots/add.png) |
 
 ## 🛠️ Tech Stack
 
-- **Language**: Kotlin
-- **UI**: Jetpack Compose with Material 3
+### Core
+- **Language**: [Kotlin](https://kotlinlang.org/) 2.1.21
+- **UI**: [Jetpack Compose](https://developer.android.com/jetpack/compose) with Material 3
 - **Architecture**: MVVM with Repository pattern
-- **Database**: Room (SQLite)
-- **Async**: Coroutines + Flow
-- **DI**: Manual dependency injection
-- **Background**: WorkManager
-- **Charts**: Custom Compose charts
-- **Navigation**: Navigation Compose
+- **Navigation**: [Navigation Compose](https://developer.android.com/jetpack/compose/navigation)
+
+### Data & Storage
+- **Database**: [Room](https://developer.android.com/jetpack/androidx/releases/room) (SQLite)
+- **Serialization**: [Gson](https://github.com/google/gson)
+- **Preferences**: SharedPreferences with custom wrapper
+
+### Async & Background
+- **Concurrency**: [Kotlin Coroutines](https://kotlinlang.org/docs/coroutines-overview.html) + Flow
+- **Background Tasks**: [WorkManager](https://developer.android.com/topic/libraries/architecture/workmanager)
+- **Lifecycle**: [Lifecycle-aware components](https://developer.android.com/topic/libraries/architecture/lifecycle)
+
+### Additional Features
+- **Charts**: Custom Compose-based charts
+- **Dependency Injection**: Manual DI (lightweight approach)
+- **Crash Reporting**: Firebase Crashlytics
+- **Notifications**: Android notification system
+- **File I/O**: Scoped Storage for data export/import
 
 ## 📋 Requirements
 
 - **Android 9.0 (API 28)** or higher
 - **Target Android 14 (API 35)**
-- **Kotlin 2.1.21**
-- **Compile SDK 35**
+- **RAM**: 2GB+ recommended
+- **Storage**: 50MB available space
 
 ## 🚀 Installation
 
-### From Source
+### Option 1: Download Release APK
+1. Go to [Releases](https://github.com/onlive1337/trackify/releases)
+2. Download the latest `trackify-v*.apk`
+3. Enable "Install from unknown sources" in your device settings
+4. Install the APK
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/onlive1337/trackify.git
-   cd trackify
-   ```
+### Option 2: Build from Source
+```bash
+# Clone the repository
+git clone https://github.com/onlive1337/trackify.git
+cd trackify
 
-2. **Open in Android Studio**
-   - Open Android Studio
-   - Select "Open an existing project"
-   - Navigate to the cloned directory
+# Open in Android Studio
+# Android Studio Arctic Fox 2020.3.1 or later required
 
-3. **Build and run**
-   - Wait for Gradle sync to complete
-   - Click "Run" or press `Ctrl+R`
+# Build and install
+./gradlew assembleDebug
+# or use Android Studio's Run button
+```
 
-### Release APK
-
-Download the latest APK from the [Releases](https://github.com/onlive1337/trackify/releases) page.
-
-## 📁 Project Structure
+## 🏗️ Project Structure
 
 ```
 app/src/main/java/com/onlive/trackify/
 ├── data/                   # Data layer
-│   ├── database/          # Room database
-│   ├── model/             # Data models
+│   ├── database/          # Room database (DAOs, entities, converters)
+│   ├── model/             # Data models (Subscription, Payment, Category)
 │   ├── repository/        # Repository implementations
-│   └── cache/             # Caching service
+│   └── LiveStatisticsUpdater.kt  # Real-time statistics calculator
 ├── ui/                    # UI layer
 │   ├── components/        # Reusable Compose components
 │   ├── screens/           # Screen implementations
+│   │   ├── home/         # Subscription list
+│   │   ├── payments/     # Payment management
+│   │   ├── statistics/   # Analytics dashboard
+│   │   ├── settings/     # App configuration
+│   │   └── onboarding/   # First-time setup
 │   ├── navigation/        # Navigation setup
-│   └── theme/             # App theming
+│   └── theme/             # Material 3 theming
 ├── utils/                 # Utility classes
-├── viewmodel/             # ViewModels
-└── workers/               # Background workers
+│   ├── CurrencyFormatter.kt    # Multi-currency support
+│   ├── DateUtils.kt           # Date handling
+│   ├── NotificationHelper.kt  # Push notifications
+│   ├── PreferenceManager.kt   # Settings management
+│   └── DataExportImportManager.kt  # Backup functionality
+├── viewmodel/             # ViewModels (MVVM)
+└── workers/               # Background tasks
 ```
 
-## 🎨 Screenshots
+## 🔧 Development Setup
 
-<!-- Add screenshots here when available -->
-*Screenshots will be added soon*
+### Prerequisites
+- **Android Studio**: Arctic Fox 2020.3.1+
+- **JDK**: 8 or higher
+- **Android SDK**: API 28-35
+- **Kotlin**: 2.1.21
 
-## 🌐 Localization
+### Getting Started
+1. **Fork** the repository
+2. **Clone** your fork:
+   ```bash
+   git clone https://github.com/onlive1337/trackify.git
+   ```
+3. **Open** in Android Studio
+4. **Wait** for Gradle sync to complete
+5. **Run** the app on device/emulator
+
+### Building
+```bash
+# Debug build
+./gradlew assembleDebug
+
+# Release build (requires signing)
+./gradlew assembleRelease
+
+# Run tests
+./gradlew test
+
+# Generate APK
+./gradlew build
+```
+
+## 🧪 Testing
+
+```bash
+# Unit tests
+./gradlew test
+
+# Instrumentation tests
+./gradlew connectedAndroidTest
+
+# Test coverage
+./gradlew jacocoTestReport
+```
+
+## 🌍 Localization
 
 Currently supported languages:
-- 🇺🇸 English
-- 🇷🇺 Russian
+- 🇺🇸 **English** (default)
+- 🇷🇺 **Russian**
 
-Want to help translate? Check out our [localization guide](CONTRIBUTING.md#localization).
+### Adding a new language:
+1. Create `values-[language]/strings.xml`
+2. Translate all string resources
+3. Add language to `LocaleHelper.getAvailableLanguages()`
+4. Test with different locales
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) for details.
 
-### Development Setup
+### Quick Start
+1. **Check** [Issues](https://github.com/onlive1337/trackify/issues) for available tasks
+2. **Fork** the repository
+3. **Create** a feature branch: `git checkout -b feature/amazing-feature`
+4. **Make** your changes following our [coding standards](CONTRIBUTING.md#coding-standards)
+5. **Test** your changes thoroughly
+6. **Commit** with descriptive messages: `git commit -m 'Add amazing feature'`
+7. **Push** to your branch: `git push origin feature/amazing-feature`
+8. **Open** a Pull Request
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes
-4. Run tests: `./gradlew test`
-5. Commit changes: `git commit -m 'Add amazing feature'`
-6. Push to branch: `git push origin feature/amazing-feature`
-7. Open a Pull Request
+### Areas needing help:
+- 🌍 Translations to other languages
+- 🎨 UI/UX improvements
+- 📱 Testing on different devices
+- 📝 Documentation improvements
+- 🐛 Bug fixes and performance optimizations
 
-## 📝 License
+## 🛡️ Privacy & Security
+
+**Trackify is designed with privacy in mind:**
+
+- ✅ **No data collection** - Zero telemetry or analytics
+- ✅ **Local storage only** - All data stays on your device
+- ✅ **No network requests** - Except for crash reporting (optional)
+- ✅ **Open source** - Transparent code you can audit
+- ✅ **No ads or tracking** - Completely free and clean experience
+
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🛡️ Privacy
-
-Trackify is designed with privacy in mind:
-- **No telemetry** - We don't collect any usage data
-- **Local storage** - All data is stored locally on your device
-- **No ads** - Completely ad-free experience
-- **No tracking** - No analytics or tracking libraries
+```
+MIT License - Feel free to use, modify, and distribute
+```
 
 ## 🐛 Bug Reports & Feature Requests
 
-- **Bug reports**: [Open an issue](https://github.com/onlive1337/trackify/issues/new?template=bug_report.md)
-- **Feature requests**: [Open an issue](https://github.com/onlive1337/trackify/issues/new?template=feature_request.md)
-- **Questions**: Use [Discussions](https://github.com/onlive1337/trackify/discussions)
+- **🐛 Bug reports**: [Create an issue](https://github.com/onlive1337/trackify/issues/new?template=bug_report.md)
+- **💡 Feature requests**: [Create an issue](https://github.com/onlive1337/trackify/issues/new?template=feature_request.md)
+- **❓ Questions**: [Discussions](https://github.com/onlive1337/trackify/discussions)
 
-## 📞 Contact
+## 📞 Contact & Support
 
-- **Telegram**: [onswix](https://t.me/onswix)
-- **Issues**: [GitHub Issues](https://github.com/onlive1337/trackify/issues)
+- **Telegram**: [@onswix](https://t.me/onswix)
+- **GitHub Issues**: [Create an issue](https://github.com/onlive1337/trackify/issues)
+- **Developer Telegram**: [@onlivedev](https://t.me/onlivedev)
 
 ## 🙏 Acknowledgments
 
-- Material Design team for the amazing design system
-- JetBrains for Kotlin and excellent tools
-- Android team for Jetpack Compose
-- All contributors who help improve this project
+- **Material Design** team for the amazing design system
+- **JetBrains** for Kotlin and excellent development tools
+- **Android team** for Jetpack Compose and modern Android development
+- **Open source community** for inspiration and contributions
+- **All contributors** who help improve this project
+
+## ⭐ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=onlive1337/trackify&type=Date)](https://star-history.com/#onlive1337/trackify&Date)
 
 ---
 
@@ -148,6 +258,8 @@ Trackify is designed with privacy in mind:
 
 **Made with ❤️ for the open source community**
 
-[⭐ Star this repo](https://github.com/onlive1337/trackify) • [🐛 Report Bug](https://github.com/onlive1337/trackify/issues) • [💡 Request Feature](https://github.com/onlive1337/trackify/issues)
+[⭐ Star this repo](https://github.com/onlive1337/trackify) • [🐛 Report Bug](https://github.com/onlive1337/trackify/issues) • [💡 Request Feature](https://github.com/onlive1337/trackify/issues) • [🤝 Contribute](CONTRIBUTING.md)
+
+**Support the project by giving it a star! ⭐**
 
 </div>
