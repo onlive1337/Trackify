@@ -18,8 +18,8 @@ interface SubscriptionDao {
     @Delete
     suspend fun delete(subscription: Subscription)
 
-    @Query("SELECT * FROM subscriptions WHERE active = 1 ORDER BY name ASC")
-    fun getAllActiveSubscriptions(): LiveData<List<Subscription>>
+    @Query("SELECT * FROM subscriptions ORDER BY name ASC")
+    fun getAllSubscriptions(): LiveData<List<Subscription>>
 
     @Query("SELECT * FROM subscriptions ORDER BY name ASC")
     fun getAllSubscriptionsSync(): List<Subscription>
@@ -27,8 +27,8 @@ interface SubscriptionDao {
     @Query("SELECT * FROM subscriptions WHERE subscriptionId = :id")
     fun getSubscriptionById(id: Long): LiveData<Subscription>
 
-    @Query("SELECT * FROM subscriptions WHERE active = 1")
-    suspend fun getActiveSubscriptionsSync(): List<Subscription>
+    @Query("SELECT * FROM subscriptions")
+    suspend fun getAllSubscriptionsForWorker(): List<Subscription>
 
     @Query("DELETE FROM subscriptions")
     suspend fun deleteAllSync()

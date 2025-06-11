@@ -28,16 +28,16 @@ fun HomeScreen(
     onSubscriptionClick: (Long) -> Unit,
     viewModel: SubscriptionViewModel = viewModel()
 ) {
-    val allActiveSubscriptions by viewModel.allActiveSubscriptions.observeAsState(emptyList())
+    val allSubscriptions by viewModel.allSubscriptions.observeAsState(emptyList())
     val loading by viewModel.isLoading.observeAsState(false)
 
     var query by remember { mutableStateOf("") }
 
-    val filteredSubscriptions = remember(query, allActiveSubscriptions) {
+    val filteredSubscriptions = remember(query, allSubscriptions) {
         if (query.isEmpty()) {
-            allActiveSubscriptions
+            allSubscriptions
         } else {
-            allActiveSubscriptions.filter { subscription ->
+            allSubscriptions.filter { subscription ->
                 subscription.name.contains(query, ignoreCase = true)
             }
         }
@@ -93,7 +93,7 @@ fun HomeScreen(
                 ) {
                     CircularProgressIndicator()
                 }
-            } else if (allActiveSubscriptions.isEmpty()) {
+            } else if (allSubscriptions.isEmpty()) {
                 EmptySubscriptionsView()
             } else if (filteredSubscriptions.isEmpty()) {
                 Box(

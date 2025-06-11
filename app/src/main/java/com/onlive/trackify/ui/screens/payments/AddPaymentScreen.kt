@@ -32,7 +32,7 @@ fun AddPaymentScreen(
     paymentViewModel: PaymentViewModel = viewModel(),
     subscriptionViewModel: SubscriptionViewModel = viewModel()
 ) {
-    val subscriptions by subscriptionViewModel.allActiveSubscriptions.observeAsState(emptyList())
+    val subscriptions by subscriptionViewModel.allSubscriptions.observeAsState(emptyList())
     val allPayments by paymentViewModel.allPayments.observeAsState(emptyList())
 
     val existingPayment = remember(allPayments, paymentId) {
@@ -51,11 +51,11 @@ fun AddPaymentScreen(
     var showDatePicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(existingPayment) {
-        existingPayment?.let {
-            selectedSubscriptionId = it.subscriptionId
-            amount = it.amount.toString()
-            notes = it.notes ?: ""
-            paymentDate = it.date
+        existingPayment?.let { payment ->
+            selectedSubscriptionId = payment.subscriptionId
+            amount = payment.amount.toString()
+            notes = payment.notes ?: ""
+            paymentDate = payment.date
         }
     }
 

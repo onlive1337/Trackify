@@ -63,7 +63,6 @@ fun SubscriptionDetailScreen(
     var billingFrequency by remember { mutableStateOf(BillingFrequency.MONTHLY) }
     var startDate by remember { mutableStateOf(Date()) }
     var endDate by remember { mutableStateOf<Date?>(null) }
-    var isActive by remember { mutableStateOf(true) }
     var selectedCategoryId by remember { mutableStateOf<Long?>(null) }
 
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -81,7 +80,6 @@ fun SubscriptionDetailScreen(
             billingFrequency = it.billingFrequency
             startDate = it.startDate
             endDate = it.endDate
-            isActive = it.active
             selectedCategoryId = it.categoryId
         }
     }
@@ -291,24 +289,6 @@ fun SubscriptionDetailScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.subscription_active),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f)
-                )
-
-                Switch(
-                    checked = isActive,
-                    onCheckedChange = { isActive = it }
-                )
-            }
-
             Spacer(modifier = Modifier.height(24.dp))
 
             Row(
@@ -355,8 +335,7 @@ fun SubscriptionDetailScreen(
                                 billingFrequency = billingFrequency,
                                 startDate = startDate,
                                 endDate = endDate,
-                                categoryId = selectedCategoryId,
-                                active = isActive
+                                categoryId = selectedCategoryId
                             )
                             subscriptionViewModel.insert(newSubscription)
                         } else {
@@ -368,8 +347,7 @@ fun SubscriptionDetailScreen(
                                     billingFrequency = billingFrequency,
                                     startDate = startDate,
                                     endDate = endDate,
-                                    categoryId = selectedCategoryId,
-                                    active = isActive
+                                    categoryId = selectedCategoryId
                                 )
                                 subscriptionViewModel.update(updatedSubscription)
                             }

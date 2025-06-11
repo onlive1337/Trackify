@@ -38,7 +38,7 @@ fun PaymentsScreen(
     subscriptionViewModel: SubscriptionViewModel = viewModel()
 ) {
     val payments by paymentViewModel.allPayments.observeAsState(emptyList())
-    val subscriptions by subscriptionViewModel.allActiveSubscriptions.observeAsState(emptyList())
+    val subscriptions by subscriptionViewModel.allSubscriptions.observeAsState(emptyList())
     val context = LocalContext.current
 
     var paymentToDelete by remember { mutableStateOf<Payment?>(null) }

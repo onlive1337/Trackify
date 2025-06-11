@@ -22,7 +22,7 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
-    val allActiveSubscriptions: LiveData<List<Subscription>>
+    val allSubscriptions: LiveData<List<Subscription>>
 
     init {
         val database = AppDatabase.getDatabase(application)
@@ -31,7 +31,7 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
 
         repository = SubscriptionRepository(subscriptionDao, categoryDao, application.applicationContext)
 
-        allActiveSubscriptions = repository.allActiveSubscriptions
+        allSubscriptions = repository.allSubscriptions
     }
 
     fun insert(subscription: Subscription) = viewModelScope.launch {

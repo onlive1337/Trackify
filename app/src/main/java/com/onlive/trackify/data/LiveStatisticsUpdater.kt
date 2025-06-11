@@ -162,8 +162,6 @@ class LiveStatisticsUpdater(
                 var monthlyCost = 0.0
 
                 for (subscription in subscriptions.values) {
-                    if (!subscription.active) continue
-
                     monthlyCost += when (subscription.billingFrequency) {
                         BillingFrequency.MONTHLY -> subscription.price
                         BillingFrequency.YEARLY -> subscription.price / 12
@@ -191,8 +189,6 @@ class LiveStatisticsUpdater(
                 var yearlyCost = 0.0
 
                 for (subscription in subscriptions.values) {
-                    if (!subscription.active) continue
-
                     yearlyCost += when (subscription.billingFrequency) {
                         BillingFrequency.MONTHLY -> subscription.price * 12
                         BillingFrequency.YEARLY -> subscription.price
@@ -220,8 +216,6 @@ class LiveStatisticsUpdater(
                 }
 
                 for (subscription in subscriptions.values) {
-                    if (!subscription.active) continue
-
                     val monthlyCost = when (subscription.billingFrequency) {
                         BillingFrequency.MONTHLY -> subscription.price
                         BillingFrequency.YEARLY -> subscription.price / 12
@@ -272,8 +266,6 @@ class LiveStatisticsUpdater(
                     var totalAmount = 0.0
 
                     subscriptions.values.forEach { subscription ->
-                        if (!subscription.active) return@forEach
-
                         val subscriptionStart = Calendar.getInstance().apply { time = subscription.startDate }
                         val startYear = subscriptionStart.get(Calendar.YEAR)
                         val startMonth = subscriptionStart.get(Calendar.MONTH)
@@ -324,8 +316,6 @@ class LiveStatisticsUpdater(
                 var yearlyTotal = 0.0
 
                 for (subscription in subscriptions.values) {
-                    if (!subscription.active) continue
-
                     when (subscription.billingFrequency) {
                         BillingFrequency.MONTHLY -> monthlyTotal += subscription.price
                         BillingFrequency.YEARLY -> yearlyTotal += subscription.price / 12

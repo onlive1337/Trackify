@@ -118,16 +118,6 @@ fun SettingsScreen(
                     modifier = Modifier.padding(vertical = 4.dp)
                 ) {
                     ThemeOption(
-                        title = stringResource(R.string.system_theme),
-                        selected = selectedThemeMode == ThemeManager.MODE_SYSTEM,
-                        onClick = {
-                            selectedThemeMode = ThemeManager.MODE_SYSTEM
-                            themeManager.setThemeMode(ThemeManager.MODE_SYSTEM)
-                        },
-                        icon = Icons.Rounded.PhoneAndroid
-                    )
-
-                    ThemeOption(
                         title = stringResource(R.string.light_theme),
                         selected = selectedThemeMode == ThemeManager.MODE_LIGHT,
                         onClick = {

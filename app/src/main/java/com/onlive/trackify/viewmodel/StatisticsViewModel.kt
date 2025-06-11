@@ -36,7 +36,7 @@ class StatisticsViewModel(application: Application) : AndroidViewModel(applicati
 
         liveStatisticsUpdater = LiveStatisticsUpdater(
             application,
-            subscriptionRepository.allActiveSubscriptions,
+            subscriptionRepository.allSubscriptions,
             categories
         )
 

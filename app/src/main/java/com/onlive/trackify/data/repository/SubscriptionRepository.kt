@@ -18,18 +18,18 @@ class SubscriptionRepository(
     private val context: Context
 ) {
 
-    private val _allActiveSubscriptions = MediatorLiveData<List<Subscription>>()
-    val allActiveSubscriptions: LiveData<List<Subscription>> = _allActiveSubscriptions
+    private val _allSubscriptions = MediatorLiveData<List<Subscription>>()
+    val allSubscriptions: LiveData<List<Subscription>> = _allSubscriptions
 
     init {
-        val subscriptionsLiveData = subscriptionDao.getAllActiveSubscriptions()
+        val subscriptionsLiveData = subscriptionDao.getAllSubscriptions()
         val categoriesLiveData = categoryDao.getAllCategories()
 
-        _allActiveSubscriptions.addSource(subscriptionsLiveData) { subscriptions ->
+        _allSubscriptions.addSource(subscriptionsLiveData) { subscriptions ->
             combineSubscriptionsWithCategories(subscriptions, categoriesLiveData.value ?: emptyList())
         }
 
-        _allActiveSubscriptions.addSource(categoriesLiveData) { categories ->
+        _allSubscriptions.addSource(categoriesLiveData) { categories ->
             combineSubscriptionsWithCategories(subscriptionsLiveData.value ?: emptyList(), categories)
         }
     }
@@ -44,7 +44,7 @@ class SubscriptionRepository(
                 categoryColor = category?.colorCode
             }
         }
-        _allActiveSubscriptions.value = result
+        _allSubscriptions.value = result
     }
 
     suspend fun insert(subscription: Subscription): Result<Long> = withContext(Dispatchers.IO) {

@@ -24,7 +24,6 @@ enum class BillingFrequency {
     ],
     indices = [
         Index("categoryId"),
-        Index("active"),
         Index("endDate"),
         Index("name")
     ]
@@ -39,7 +38,6 @@ data class Subscription(
     val startDate: Date,
     val endDate: Date?,
     val categoryId: Long?,
-    val active: Boolean = true,
     val image: String? = null
 ) {
     @Ignore

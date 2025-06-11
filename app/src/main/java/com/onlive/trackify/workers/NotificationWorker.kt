@@ -35,7 +35,7 @@ class NotificationWorker(
                 return@withContext Result.success()
             }
 
-            val subscriptions = database.subscriptionDao().getActiveSubscriptionsSync()
+            val subscriptions = database.subscriptionDao().getAllSubscriptionsForWorker()
             val reminderDays = preferenceManager.getReminderDays()
             val today = Calendar.getInstance().time
 

@@ -95,7 +95,7 @@ class PreferenceManager(context: Context) {
     }
 
     fun getLanguageCode(): String {
-        return prefs.getString(KEY_LANGUAGE_CODE, "") ?: ""
+        return prefs.getString(KEY_LANGUAGE_CODE, "en") ?: "en"
     }
 
     fun setLanguageCode(languageCode: String) {
