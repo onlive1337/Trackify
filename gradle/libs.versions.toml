@@ -1,26 +1,26 @@
 [versions]
-activityCompose = "1.10.1"
-agp = "8.13.0"
-composeBomVersion = "2025.06.00"
-coreKtxVersion = "1.16.0"
-googleServicesVersion = "4.4.2"
-firebaseCrashlyticsGradle = "3.0.4"
-gson = "2.11.0"
-kotlin = "2.1.21"
+activityCompose = "1.12.2"
+agp = "8.13.2"
+composeBomVersion = "2025.12.01"
+coreKtxVersion = "1.17.0"
+googleServicesVersion = "4.4.4"
+firebaseCrashlyticsGradle = "3.0.6"
+gson = "2.13.2"
+kotlin = "2.3.0"
 appcompat = "1.7.1"
-kotlinxCoroutinesAndroid = "1.9.0"
-kotlinxCoroutinesCore = "1.9.0"
-lifecycleLivedataKtx = "2.9.1"
-material = "1.12.0"
-navigationCompose = "2.9.0"
-navigationSafeArgsGradlePlugin = "2.9.0"
-roomCompiler = "2.7.1"
-roomKtx = "2.7.1"
-workRuntimeKtx = "2.10.1"
-ksp = "2.1.21-2.0.1"
-googleServices = "4.4.2"
-firebaseCrashlytics = "3.0.4"
-firebaseBom = "33.15.0"
+kotlinxCoroutinesAndroid = "1.10.2"
+kotlinxCoroutinesCore = "1.10.2"
+lifecycleLivedataKtx = "2.10.0"
+material = "1.13.0"
+navigationCompose = "2.9.6"
+navigationSafeArgsGradlePlugin = "2.9.6"
+roomCompiler = "2.8.4"
+roomKtx = "2.8.4"
+workRuntimeKtx = "2.11.0"
+ksp = "2.3.3"
+googleServices = "4.4.4"
+firebaseCrashlytics = "3.0.6"
+firebaseBom = "34.7.0"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
@@ -53,8 +53,8 @@ material = { group = "com.google.android.material", name = "material", version.r
 
 # Firebase
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
-firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx" }
-firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
+firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
