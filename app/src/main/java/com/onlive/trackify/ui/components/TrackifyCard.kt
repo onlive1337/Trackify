@@ -1,6 +1,10 @@
 package com.onlive.trackify.ui.components
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,8 +14,11 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -22,11 +29,32 @@ fun TrackifyCard(
     backgroundColor: Color = MaterialTheme.colorScheme.surfaceContainer,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     elevation: Int = 0,
+    tonalElevation: Int = 2,
     useOutline: Boolean = true,
+    onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.98f else 1f,
+        label = "CardScale"
+    )
+
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .then(
+                if (onClick != null) {
+                    Modifier
+                        .graphicsLayer(scaleX = scale, scaleY = scale)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null, // Custom scale handles the visual feedback
+                            onClick = onClick
+                        )
+                } else Modifier
+            ),
         colors = CardDefaults.cardColors(
             containerColor = backgroundColor,
             contentColor = contentColor
@@ -37,8 +65,8 @@ fun TrackifyCard(
         shape = MaterialTheme.shapes.large,
         border = if (useOutline) {
             BorderStroke(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                width = 0.5.dp, // Thinner border for a more premium look
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
             )
         } else null
     ) {
@@ -63,14 +91,19 @@ fun TrackifyCard(
 fun TrackifyOutlinedCard(
     modifier: Modifier = Modifier,
     title: String? = null,
+    backgroundColor: Color = MaterialTheme.colorScheme.surface,
+    tonalElevation: Int = 1,
+    onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
     TrackifyCard(
         modifier = modifier,
         title = title,
-        backgroundColor = MaterialTheme.colorScheme.surface,
+        backgroundColor = backgroundColor,
         elevation = 0,
+        tonalElevation = tonalElevation,
         useOutline = true,
+        onClick = onClick,
         content = content
     )
 }

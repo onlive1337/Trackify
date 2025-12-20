@@ -13,6 +13,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -41,20 +43,20 @@ fun SubscriptionDetailScreen(
     categoryViewModel: CategoryViewModel = viewModel(),
     paymentViewModel: PaymentViewModel = viewModel()
 ) {
-    val context = LocalLocalizedContext.current
+    val haptic = LocalHapticFeedback.current
     val isNewSubscription = subscriptionId == -1L
 
     val existingSubscription by if (!isNewSubscription) {
         subscriptionViewModel.getSubscriptionById(subscriptionId).observeAsState()
     } else {
-        remember { mutableStateOf<Subscription?>(null) }
+        remember { mutableStateOf(null) }
     }
 
     val categories by categoryViewModel.allCategories.observeAsState(emptyList())
     val payments by if (!isNewSubscription) {
         paymentViewModel.getPaymentsBySubscription(subscriptionId).observeAsState(emptyList())
     } else {
-        remember { mutableStateOf<List<Payment>>(emptyList()) }
+        remember { mutableStateOf(emptyList()) }
     }
 
     var name by remember { mutableStateOf("") }
@@ -95,7 +97,10 @@ fun SubscriptionDetailScreen(
         floatingActionButton = {
             if (!isNewSubscription) {
                 FloatingActionButton(
-                    onClick = onAddPayment,
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onAddPayment()
+                    },
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 ) {
@@ -114,7 +119,6 @@ fun SubscriptionDetailScreen(
                 .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
                 value = name,
@@ -179,7 +183,7 @@ fun SubscriptionDetailScreen(
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandCategoryDropdown) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
                 )
 
                 ExposedDropdownMenu(
@@ -221,24 +225,36 @@ fun SubscriptionDetailScreen(
             ) {
                 RadioButton(
                     selected = billingFrequency == BillingFrequency.MONTHLY,
-                    onClick = { billingFrequency = BillingFrequency.MONTHLY }
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        billingFrequency = BillingFrequency.MONTHLY
+                    }
                 )
 
                 Text(
                     text = stringResource(R.string.subscription_monthly),
-                    modifier = Modifier.clickable { billingFrequency = BillingFrequency.MONTHLY }
+                    modifier = Modifier.clickable {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        billingFrequency = BillingFrequency.MONTHLY
+                    }
                 )
 
                 Spacer(modifier = Modifier.width(16.dp))
 
                 RadioButton(
                     selected = billingFrequency == BillingFrequency.YEARLY,
-                    onClick = { billingFrequency = BillingFrequency.YEARLY }
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        billingFrequency = BillingFrequency.YEARLY
+                    }
                 )
 
                 Text(
                     text = stringResource(R.string.subscription_yearly),
-                    modifier = Modifier.clickable { billingFrequency = BillingFrequency.YEARLY }
+                    modifier = Modifier.clickable {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        billingFrequency = BillingFrequency.YEARLY
+                    }
                 )
             }
 
@@ -253,7 +269,10 @@ fun SubscriptionDetailScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedButton(
-                    onClick = { showStartDatePickerState.value = true },
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        showStartDatePickerState.value = true
+                    },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
@@ -275,7 +294,10 @@ fun SubscriptionDetailScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedButton(
-                    onClick = { showEndDatePickerState.value = true },
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        showEndDatePickerState.value = true
+                    },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
@@ -297,7 +319,10 @@ fun SubscriptionDetailScreen(
             ) {
                 if (!isNewSubscription) {
                     Button(
-                        onClick = { showDeleteDialogState.value = true },
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            showDeleteDialogState.value = true
+                        },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.error
                         ),
@@ -316,6 +341,7 @@ fun SubscriptionDetailScreen(
 
                 Button(
                     onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         if (name.isEmpty()) {
                             isNameError = true
                             return@Button

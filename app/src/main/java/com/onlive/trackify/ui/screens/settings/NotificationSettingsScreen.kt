@@ -58,7 +58,6 @@ fun NotificationSettingsScreen(
                 .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
 
             TrackifyOutlinedCard(
                 title = stringResource(R.string.notification_time)

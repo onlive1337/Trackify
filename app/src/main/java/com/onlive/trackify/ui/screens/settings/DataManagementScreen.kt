@@ -10,13 +10,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.onlive.trackify.utils.stringResource
-import com.onlive.trackify.utils.LocalLocalizedContext
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.onlive.trackify.R
-import com.onlive.trackify.ui.components.TrackifyCard
+import com.onlive.trackify.ui.components.TrackifyOutlinedCard
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.DataExportImportManager
+import com.onlive.trackify.utils.LocalLocalizedContext
+import com.onlive.trackify.utils.stringResource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -29,6 +31,7 @@ fun DataManagementScreen(
     onNavigateBack: () -> Unit
 ) {
     val context = LocalLocalizedContext.current
+    val haptic = LocalHapticFeedback.current
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -119,12 +122,11 @@ fun DataManagementScreen(
                     .padding(horizontal = 16.dp)
                     .verticalScroll(rememberScrollState())
             ) {
-                Spacer(modifier = Modifier.height(16.dp))
 
-                TrackifyCard(
+                TrackifyOutlinedCard(
                     title = stringResource(R.string.export_title)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(modifier = Modifier.padding(vertical = 4.dp)) {
                         Text(
                             text = stringResource(R.string.export_description),
                             style = MaterialTheme.typography.bodyMedium,
@@ -135,6 +137,7 @@ fun DataManagementScreen(
 
                         Button(
                             onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
                                 val dateString = dateFormat.format(Date())
                                 val fileName = "trackify_backup_$dateString.json"
@@ -151,10 +154,10 @@ fun DataManagementScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                TrackifyCard(
+                TrackifyOutlinedCard(
                     title = stringResource(R.string.import_title)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(modifier = Modifier.padding(vertical = 4.dp)) {
                         Text(
                             text = stringResource(R.string.import_description),
                             style = MaterialTheme.typography.bodyMedium,
@@ -164,7 +167,10 @@ fun DataManagementScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Button(
-                             onClick = { showImportDialogState.value = true },
+                             onClick = {
+                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                 showImportDialogState.value = true
+                             },
                             modifier = Modifier.fillMaxWidth(),
                             enabled = !isLoading
                         ) {
@@ -197,6 +203,7 @@ fun DataManagementScreen(
             confirmButton = {
                 Button(
                     onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         showImportDialogState.value = false
                         importLauncher.launch(arrayOf("application/json"))
                     }

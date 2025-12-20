@@ -15,7 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalDensity
 import com.onlive.trackify.utils.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -41,12 +40,9 @@ fun TrackifyDatePicker(
     onDismiss: () -> Unit,
     allowNull: Boolean = false,
 ) {
-    val density = LocalDensity.current
-    val screenHeight = with(density) {
-        WindowInsets.displayCutout.asPaddingValues().calculateTopPadding() +
-                WindowInsets.systemBars.asPaddingValues().calculateTopPadding() +
-                600.dp
-    }
+    val screenHeight = WindowInsets.displayCutout.asPaddingValues().calculateTopPadding() +
+            WindowInsets.systemBars.asPaddingValues().calculateTopPadding() +
+            600.dp
     val isLargeScreen = screenHeight > 600.dp
 
     val datePickerState = rememberDatePickerState(

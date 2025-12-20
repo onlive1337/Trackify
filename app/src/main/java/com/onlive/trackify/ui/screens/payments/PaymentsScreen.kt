@@ -15,6 +15,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -40,6 +42,7 @@ fun PaymentsScreen(
     val payments by paymentViewModel.allPayments.observeAsState(emptyList())
     val subscriptions by subscriptionViewModel.allSubscriptions.observeAsState(emptyList())
     val context = LocalLocalizedContext.current
+    val haptic = LocalHapticFeedback.current
 
     val paymentToDeleteState = remember { mutableStateOf<Payment?>(null) }
     val showDeleteDialogState = remember { mutableStateOf(false) }
@@ -83,7 +86,10 @@ fun PaymentsScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { onAddPayment(-1L, -1L) },
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onAddPayment(-1L, -1L)
+                },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = RoundedCornerShape(16.dp)
@@ -118,7 +124,7 @@ fun PaymentsScreen(
                     contentPadding = PaddingValues(vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(displayedPayments, key = { it.paymentId }) { payment ->
+                items(displayedPayments, key = { it.paymentId }) { payment ->
                         val subscription = subscriptions.find { it.subscriptionId == payment.subscriptionId }
                         PaymentItem(
                             payment = payment,
@@ -128,9 +134,11 @@ fun PaymentsScreen(
                                 onAddPayment(payment.subscriptionId, payment.paymentId)
                             },
                             onDeleteClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 paymentToDeleteState.value = payment
                                 showDeleteDialogState.value = true
-                            }
+                            },
+                            modifier = Modifier.animateItem()
                         )
                     }
 
@@ -195,14 +203,19 @@ fun PaymentItem(
     subscriptionName: String,
     formatAmount: (Double) -> String,
     onPaymentClick: () -> Unit,
-    onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
+    val haptic = LocalHapticFeedback.current
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onPaymentClick)
+            .clickable {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                onPaymentClick()
+            }
             .padding(vertical = 4.dp),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(

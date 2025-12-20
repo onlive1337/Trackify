@@ -8,10 +8,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.onlive.trackify.R
 import com.onlive.trackify.ui.components.TrackifyCard
+import com.onlive.trackify.ui.components.TrackifyOutlinedCard
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.LocaleHelper
 import com.onlive.trackify.utils.LocalLocaleManager
@@ -23,6 +26,7 @@ fun LanguageSettingsScreen(
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
     val preferenceManager = remember { PreferenceManager(context) }
     val localeManager = LocalLocaleManager.current
 
@@ -49,20 +53,19 @@ fun LanguageSettingsScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
 
-            TrackifyCard {
+            TrackifyOutlinedCard {
                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
                     Text(
                         text = stringResource(R.string.language_description),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Text(
                 text = stringResource(R.string.choose_language),
@@ -70,7 +73,7 @@ fun LanguageSettingsScreen(
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             LazyColumn {
                 items(availableLanguages) { language ->
@@ -78,10 +81,12 @@ fun LanguageSettingsScreen(
                         languageName = language.name,
                         selected = language.code == selectedLanguageCode,
                         onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             selectedLanguageCode = language.code
                             preferenceManager.setLanguageCode(language.code)
                             localeManager.setLocale(language.code)
-                        }
+                        },
+                        modifier = Modifier.animateItem()
                     )
                 }
             }
@@ -93,38 +98,35 @@ fun LanguageSettingsScreen(
 private fun LanguageItem(
     languageName: String,
     selected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp, horizontal = 8.dp)
-            .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(
-            containerColor = if (selected)
-                MaterialTheme.colorScheme.primaryContainer
-            else
-                MaterialTheme.colorScheme.surface
-        )
+    TrackifyOutlinedCard(
+        modifier = modifier
+            .padding(vertical = 4.dp),
+        onClick = onClick,
+        backgroundColor = if (selected)
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+        else
+            MaterialTheme.colorScheme.surface
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = languageName,
                 style = MaterialTheme.typography.titleMedium,
+                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f)
             )
 
-            if (selected) {
-                RadioButton(
-                    selected = true,
-                    onClick = null
-                )
-            }
+            RadioButton(
+                selected = selected,
+                onClick = null // Handled by Card click
+            )
         }
     }
 }
