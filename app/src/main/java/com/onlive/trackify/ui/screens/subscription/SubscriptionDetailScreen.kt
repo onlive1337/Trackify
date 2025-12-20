@@ -65,11 +65,11 @@ fun SubscriptionDetailScreen(
     var endDate by remember { mutableStateOf<Date?>(null) }
     var selectedCategoryId by remember { mutableStateOf<Long?>(null) }
 
-    var showDeleteDialog by remember { mutableStateOf(false) }
+    val showDeleteDialogState = remember { mutableStateOf(false) }
     var isNameError by remember { mutableStateOf(false) }
     var isPriceError by remember { mutableStateOf(false) }
-    var showStartDatePicker by remember { mutableStateOf(false) }
-    var showEndDatePicker by remember { mutableStateOf(false) }
+    val showStartDatePickerState = remember { mutableStateOf(false) }
+    val showEndDatePickerState = remember { mutableStateOf(false) }
     var expandCategoryDropdown by remember { mutableStateOf(false) }
 
     LaunchedEffect(existingSubscription) {
@@ -253,7 +253,7 @@ fun SubscriptionDetailScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedButton(
-                    onClick = { showStartDatePicker = true },
+                    onClick = { showStartDatePickerState.value = true },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
@@ -275,7 +275,7 @@ fun SubscriptionDetailScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedButton(
-                    onClick = { showEndDatePicker = true },
+                    onClick = { showEndDatePickerState.value = true },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
@@ -297,7 +297,7 @@ fun SubscriptionDetailScreen(
             ) {
                 if (!isNewSubscription) {
                     Button(
-                        onClick = { showDeleteDialog = true },
+                        onClick = { showDeleteDialogState.value = true },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.error
                         ),
@@ -372,30 +372,30 @@ fun SubscriptionDetailScreen(
         }
     }
 
-    if (showStartDatePicker) {
+    if (showStartDatePickerState.value) {
         TrackifyDatePicker(
             selectedDate = startDate,
             onDateSelected = {
                 startDate = it
             },
-            onDismiss = { showStartDatePicker = false }
+            onDismiss = { showStartDatePickerState.value = false }
         )
     }
 
-    if (showEndDatePicker) {
+    if (showEndDatePickerState.value) {
         TrackifyDatePicker(
             selectedDate = endDate ?: Date(),
             onDateSelected = { date ->
                 endDate = if (date.time == Long.MAX_VALUE) null else date
             },
-            onDismiss = { showEndDatePicker = false },
+            onDismiss = { showEndDatePickerState.value = false },
             allowNull = true
         )
     }
 
-    if (showDeleteDialog) {
+    if (showDeleteDialogState.value) {
         AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
+            onDismissRequest = { showDeleteDialogState.value = false },
             title = { Text(stringResource(R.string.delete_subscription_confirmation)) },
             text = { Text(stringResource(R.string.delete_subscription_message)) },
             confirmButton = {
@@ -404,7 +404,7 @@ fun SubscriptionDetailScreen(
                         existingSubscription?.let {
                             subscriptionViewModel.delete(it)
                         }
-                        showDeleteDialog = false
+                        showDeleteDialogState.value = false
                         onNavigateBack()
                     },
                     colors = ButtonDefaults.buttonColors(
@@ -415,7 +415,7 @@ fun SubscriptionDetailScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
+                TextButton(onClick = { showDeleteDialogState.value = false }) {
                     Text(stringResource(R.string.cancel))
                 }
             }

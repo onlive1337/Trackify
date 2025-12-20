@@ -35,7 +35,7 @@ fun CategoryManagementScreen(
     categoryViewModel: CategoryViewModel = viewModel()
 ) {
     val categories by categoryViewModel.allCategories.observeAsState(emptyList())
-    var showDeleteCategoryDialog by remember { mutableStateOf<Category?>(null) }
+    val showDeleteCategoryDialogState = remember { mutableStateOf<Category?>(null) }
 
     Scaffold(
         topBar = {
@@ -71,23 +71,23 @@ fun CategoryManagementScreen(
                     categories = categories,
                     onEditCategory = onEditCategory,
                     onDeleteCategory = { category ->
-                        showDeleteCategoryDialog = category
+                        showDeleteCategoryDialogState.value = category
                     }
                 )
             }
         }
     }
 
-    showDeleteCategoryDialog?.let { category ->
+    showDeleteCategoryDialogState.value?.let { category ->
         AlertDialog(
-            onDismissRequest = { showDeleteCategoryDialog = null },
+            onDismissRequest = { showDeleteCategoryDialogState.value = null },
             title = { Text(stringResource(R.string.delete_category_confirmation)) },
             text = { Text(stringResource(R.string.delete_category_message)) },
             confirmButton = {
                 Button(
                     onClick = {
                         categoryViewModel.delete(category)
-                        showDeleteCategoryDialog = null
+                        showDeleteCategoryDialogState.value = null
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error
@@ -97,7 +97,7 @@ fun CategoryManagementScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteCategoryDialog = null }) {
+                TextButton(onClick = { showDeleteCategoryDialogState.value = null }) {
                     Text(stringResource(R.string.cancel))
                 }
             }

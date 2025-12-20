@@ -34,10 +34,10 @@ fun DataManagementScreen(
 
     val dataManager = remember { DataExportImportManager(context) }
 
-    var showImportDialog by remember { mutableStateOf(false) }
-    var showExportSuccessDialog by remember { mutableStateOf(false) }
-    var showImportSuccessDialog by remember { mutableStateOf(false) }
-    var showErrorDialog by remember { mutableStateOf(false) }
+    val showImportDialogState = remember { mutableStateOf(false) }
+    val showExportSuccessDialogState = remember { mutableStateOf(false) }
+    val showImportSuccessDialogState = remember { mutableStateOf(false) }
+    val showErrorDialogState = remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     var exportFilePath by remember { mutableStateOf("") }
 
@@ -55,14 +55,14 @@ fun DataManagementScreen(
                     }
                     if (success) {
                         exportFilePath = it.lastPathSegment ?: it.toString()
-                        showExportSuccessDialog = true
+                        showExportSuccessDialogState.value = true
                     } else {
                         errorMessage = context.getString(R.string.data_export_error)
-                        showErrorDialog = true
+                        showErrorDialogState.value = true
                     }
                 } catch (e: Exception) {
                     errorMessage = e.message ?: context.getString(R.string.data_export_error)
-                    showErrorDialog = true
+                    showErrorDialogState.value = true
                 } finally {
                     isLoading = false
                 }
@@ -81,14 +81,14 @@ fun DataManagementScreen(
                         dataManager.importData(it)
                     }
                     if (success) {
-                        showImportSuccessDialog = true
+                        showImportSuccessDialogState.value = true
                     } else {
                         errorMessage = context.getString(R.string.data_import_error)
-                        showErrorDialog = true
+                        showErrorDialogState.value = true
                     }
                 } catch (e: Exception) {
                     errorMessage = e.message ?: context.getString(R.string.data_import_error)
-                    showErrorDialog = true
+                    showErrorDialogState.value = true
                 } finally {
                     isLoading = false
                 }
@@ -164,7 +164,7 @@ fun DataManagementScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Button(
-                            onClick = { showImportDialog = true },
+                             onClick = { showImportDialogState.value = true },
                             modifier = Modifier.fillMaxWidth(),
                             enabled = !isLoading
                         ) {
@@ -189,15 +189,15 @@ fun DataManagementScreen(
         }
     }
 
-    if (showImportDialog) {
+    if (showImportDialogState.value) {
         AlertDialog(
-            onDismissRequest = { showImportDialog = false },
+            onDismissRequest = { showImportDialogState.value = false },
             title = { Text(stringResource(R.string.import_confirmation_title)) },
             text = { Text(stringResource(R.string.import_confirmation_message)) },
             confirmButton = {
                 Button(
                     onClick = {
-                        showImportDialog = false
+                        showImportDialogState.value = false
                         importLauncher.launch(arrayOf("application/json"))
                     }
                 ) {
@@ -206,7 +206,7 @@ fun DataManagementScreen(
             },
             dismissButton = {
                 TextButton(
-                    onClick = { showImportDialog = false }
+                    onClick = { showImportDialogState.value = false }
                 ) {
                     Text(stringResource(R.string.cancel))
                 }
@@ -214,14 +214,14 @@ fun DataManagementScreen(
         )
     }
 
-    if (showExportSuccessDialog) {
+    if (showExportSuccessDialogState.value) {
         AlertDialog(
-            onDismissRequest = { showExportSuccessDialog = false },
+            onDismissRequest = { showExportSuccessDialogState.value = false },
             title = { Text(stringResource(R.string.export_success, exportFilePath)) },
             text = { Text(stringResource(R.string.export_success, exportFilePath)) },
             confirmButton = {
                 TextButton(
-                    onClick = { showExportSuccessDialog = false }
+                    onClick = { showExportSuccessDialogState.value = false }
                 ) {
                     Text(stringResource(R.string.done))
                 }
@@ -229,9 +229,9 @@ fun DataManagementScreen(
         )
     }
 
-    if (showImportSuccessDialog) {
+    if (showImportSuccessDialogState.value) {
         AlertDialog(
-            onDismissRequest = { showImportSuccessDialog = false },
+            onDismissRequest = { showImportSuccessDialogState.value = false },
             title = { Text(stringResource(R.string.import_success)) },
             text = {
                 Column {
@@ -247,7 +247,7 @@ fun DataManagementScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        showImportSuccessDialog = false
+                        showImportSuccessDialogState.value = false
                         onNavigateBack()
                     }
                 ) {
@@ -257,14 +257,14 @@ fun DataManagementScreen(
         )
     }
 
-    if (showErrorDialog) {
+    if (showErrorDialogState.value) {
         AlertDialog(
-            onDismissRequest = { showErrorDialog = false },
+            onDismissRequest = { showErrorDialogState.value = false },
             title = { Text(stringResource(R.string.import_error)) },
             text = { Text(errorMessage) },
             confirmButton = {
                 TextButton(
-                    onClick = { showErrorDialog = false }
+                    onClick = { showErrorDialogState.value = false }
                 ) {
                     Text(stringResource(R.string.done))
                 }

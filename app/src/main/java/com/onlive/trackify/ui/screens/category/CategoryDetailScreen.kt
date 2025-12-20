@@ -73,7 +73,7 @@ fun CategoryDetailScreen(
         categoryColor = it.colorCode
     }
 
-    var showDeleteDialog by remember { mutableStateOf(false) }
+    val showDeleteDialogState = remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -174,7 +174,7 @@ fun CategoryDetailScreen(
             ) {
                 if (categoryId != -1L) {
                     Button(
-                        onClick = { showDeleteDialog = true },
+                        onClick = { showDeleteDialogState.value = true },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.error
                         ),
@@ -222,9 +222,9 @@ fun CategoryDetailScreen(
             Spacer(modifier = Modifier.height(32.dp))
         }
 
-        if (showDeleteDialog) {
+        if (showDeleteDialogState.value) {
             AlertDialog(
-                onDismissRequest = { showDeleteDialog = false },
+                onDismissRequest = { showDeleteDialogState.value = false },
                 title = { Text(stringResource(R.string.delete_category_confirmation)) },
                 text = { Text(stringResource(R.string.delete_category_message)) },
                 confirmButton = {
@@ -233,7 +233,7 @@ fun CategoryDetailScreen(
                             existingCategory?.let {
                                 categoryViewModel.delete(it)
                             }
-                            showDeleteDialog = false
+                            showDeleteDialogState.value = false
                             onNavigateBack()
                         },
                         colors = ButtonDefaults.buttonColors(
@@ -244,7 +244,7 @@ fun CategoryDetailScreen(
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showDeleteDialog = false }) {
+                    TextButton(onClick = { showDeleteDialogState.value = false }) {
                         Text(stringResource(R.string.cancel))
                     }
                 }

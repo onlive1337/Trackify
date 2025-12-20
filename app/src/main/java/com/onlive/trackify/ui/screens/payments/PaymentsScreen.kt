@@ -41,8 +41,8 @@ fun PaymentsScreen(
     val subscriptions by subscriptionViewModel.allSubscriptions.observeAsState(emptyList())
     val context = LocalLocalizedContext.current
 
-    var paymentToDelete by remember { mutableStateOf<Payment?>(null) }
-    var showDeleteDialog by remember { mutableStateOf(false) }
+    val paymentToDeleteState = remember { mutableStateOf<Payment?>(null) }
+    val showDeleteDialogState = remember { mutableStateOf(false) }
 
     val listState = rememberLazyListState()
     val pageSize = 20
@@ -128,8 +128,8 @@ fun PaymentsScreen(
                                 onAddPayment(payment.subscriptionId, payment.paymentId)
                             },
                             onDeleteClick = {
-                                paymentToDelete = payment
-                                showDeleteDialog = true
+                                paymentToDeleteState.value = payment
+                                showDeleteDialogState.value = true
                             }
                         )
                     }
@@ -151,22 +151,22 @@ fun PaymentsScreen(
         }
     }
 
-    if (showDeleteDialog && paymentToDelete != null) {
+    if (showDeleteDialogState.value && paymentToDeleteState.value != null) {
         AlertDialog(
             onDismissRequest = {
-                showDeleteDialog = false
-                paymentToDelete = null
+                showDeleteDialogState.value = false
+                paymentToDeleteState.value = null
             },
             title = { Text(stringResource(R.string.delete_payment_confirmation)) },
             text = { Text(stringResource(R.string.delete_payment_message)) },
             confirmButton = {
                 Button(
                     onClick = {
-                        paymentToDelete?.let { payment ->
+                        paymentToDeleteState.value?.let { payment ->
                             paymentViewModel.delete(payment)
                         }
-                        showDeleteDialog = false
-                        paymentToDelete = null
+                        showDeleteDialogState.value = false
+                        paymentToDeleteState.value = null
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error
@@ -178,8 +178,8 @@ fun PaymentsScreen(
             dismissButton = {
                 TextButton(
                     onClick = {
-                        showDeleteDialog = false
-                        paymentToDelete = null
+                        showDeleteDialogState.value = false
+                        paymentToDeleteState.value = null
                     }
                 ) {
                     Text(stringResource(R.string.cancel))

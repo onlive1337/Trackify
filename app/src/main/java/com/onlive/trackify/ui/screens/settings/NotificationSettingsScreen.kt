@@ -30,15 +30,15 @@ fun NotificationSettingsScreen(
     }
 
     val (hour, minute) = preferenceManager.getNotificationTime()
-    var notificationHour by remember { mutableIntStateOf(hour) }
-    var notificationMinute by remember { mutableIntStateOf(minute) }
+    val notificationHourState = remember { mutableIntStateOf(hour) }
+    val notificationMinuteState = remember { mutableIntStateOf(minute) }
     var notificationTime by remember {
-        mutableStateOf(formatTime(hour, minute))
+        mutableStateOf(formatTime(notificationHourState.intValue, notificationMinuteState.intValue))
     }
 
-    var showTimePickerDialog by remember { mutableStateOf(false) }
+    val showTimePickerDialogState = remember { mutableStateOf(false) }
 
-    LaunchedEffect(reminderDays, notificationHour, notificationMinute) {
+    LaunchedEffect(reminderDays, notificationHourState.intValue, notificationMinuteState.intValue) {
         notificationScheduler.scheduleNotifications()
     }
 
@@ -72,7 +72,7 @@ fun NotificationSettingsScreen(
                     )
 
                     Button(
-                        onClick = { showTimePickerDialog = true },
+                        onClick = { showTimePickerDialogState.value = true },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -159,18 +159,18 @@ fun NotificationSettingsScreen(
         }
     }
 
-    if (showTimePickerDialog) {
+    if (showTimePickerDialogState.value) {
         TimePickerDialog(
-            initialHour = notificationHour,
-            initialMinute = notificationMinute,
-            onDismiss = { showTimePickerDialog = false },
+            initialHour = notificationHourState.intValue,
+            initialMinute = notificationMinuteState.intValue,
+            onDismiss = { showTimePickerDialogState.value = false },
             onConfirm = { selectedHour, selectedMinute ->
-                notificationHour = selectedHour
-                notificationMinute = selectedMinute
+                notificationHourState.intValue = selectedHour
+                notificationMinuteState.intValue = selectedMinute
                 notificationTime = formatTime(selectedHour, selectedMinute)
                 preferenceManager.setNotificationTime(selectedHour, selectedMinute)
                 notificationScheduler.scheduleNotifications()
-                showTimePickerDialog = false
+                showTimePickerDialogState.value = false
             }
         )
     }

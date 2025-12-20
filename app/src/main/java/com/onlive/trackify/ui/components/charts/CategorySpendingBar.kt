@@ -59,15 +59,15 @@ fun CategoryBarItem(
     }
 
     val percentage = (category.amount / totalAmount)
-    var startAnimation by remember { mutableStateOf(false) }
+    val startAnimationState = remember { mutableStateOf(false) }
     val animatedPercentage by animateFloatAsState(
-        targetValue = if (startAnimation) percentage.toFloat() else 0f,
+        targetValue = if (startAnimationState.value) percentage.toFloat() else 0f,
         animationSpec = tween(durationMillis = 1000),
         label = "bar-animation"
     )
 
     LaunchedEffect(key1 = true) {
-        startAnimation = true
+        startAnimationState.value = true
     }
 
     Column(modifier = Modifier.fillMaxWidth()) {

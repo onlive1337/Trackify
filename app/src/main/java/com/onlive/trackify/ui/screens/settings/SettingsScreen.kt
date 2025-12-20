@@ -67,13 +67,13 @@ fun SettingsScreen(
         mutableIntStateOf(themeManager.getThemeMode())
     }
 
-    var waitingForPermission by remember { mutableStateOf(false) }
+    val waitingForPermissionState = remember { mutableStateOf(false) }
 
     val settingsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { _ ->
-        if (waitingForPermission) {
-            waitingForPermission = false
+        if (waitingForPermissionState.value) {
+            waitingForPermissionState.value = false
 
             val permissionGranted = checkNotificationPermission()
 
@@ -155,7 +155,7 @@ fun SettingsScreen(
                                         preferenceManager.setNotificationsEnabled(true)
                                         notificationScheduler.scheduleNotifications()
                                     } else {
-                                        waitingForPermission = true
+                                        waitingForPermissionState.value = true
                                         val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
                                             putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
                                         }

@@ -48,7 +48,7 @@ fun AddPaymentScreen(
 
     var isSubscriptionError by remember { mutableStateOf(false) }
     var isAmountError by remember { mutableStateOf(false) }
-    var showDatePicker by remember { mutableStateOf(false) }
+    val showDatePickerState = remember { mutableStateOf(false) }
 
     LaunchedEffect(existingPayment) {
         existingPayment?.let { payment ->
@@ -131,7 +131,7 @@ fun AddPaymentScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedButton(
-                onClick = { showDatePicker = true },
+                onClick = { showDatePickerState.value = true },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
@@ -200,13 +200,13 @@ fun AddPaymentScreen(
         }
     }
 
-    if (showDatePicker) {
+    if (showDatePickerState.value) {
         TrackifyDatePicker(
             selectedDate = paymentDate,
             onDateSelected = {
                 paymentDate = it
             },
-            onDismiss = { showDatePicker = false }
+            onDismiss = { showDatePickerState.value = false }
         )
     }
 }
