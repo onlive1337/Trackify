@@ -50,7 +50,7 @@ fun TrackifyCard(
                         .graphicsLayer(scaleX = scale, scaleY = scale)
                         .clickable(
                             interactionSource = interactionSource,
-                            indication = null, // Custom scale handles the visual feedback
+                            indication = null,
                             onClick = onClick
                         )
                 } else Modifier
@@ -65,7 +65,7 @@ fun TrackifyCard(
         shape = MaterialTheme.shapes.large,
         border = if (useOutline) {
             BorderStroke(
-                width = 0.5.dp, // Thinner border for a more premium look
+                width = 0.5.dp,
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
             )
         } else null
