@@ -20,7 +20,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
+import com.onlive.trackify.utils.LocalLocalizedContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.onlive.trackify.R
@@ -42,7 +42,7 @@ fun SettingsScreen(
     onNavigateToAboutApp: () -> Unit,
     themeManager: ThemeManager
 ) {
-    val context = LocalContext.current
+    val context = LocalLocalizedContext.current
     val preferenceManager = remember { PreferenceManager(context) }
     val notificationScheduler = remember { NotificationScheduler(context) }
     val snackbarHostState = remember { SnackbarHostState() }

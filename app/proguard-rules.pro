@@ -45,7 +45,8 @@
 -keepclassmembers @androidx.room.Dao class * { *; }
 -dontwarn androidx.room.paging.**
 
--keep class androidx.compose.** { *; }
+
+# Compose
 -keep @androidx.compose.runtime.Composable class * { *; }
 -keep class * {
     @androidx.compose.runtime.Composable <methods>;
@@ -63,16 +64,9 @@
     public <init>(android.content.Context, androidx.work.WorkerParameters);
 }
 
-# Navigation
--keep class androidx.navigation.** { *; }
 
--keep class com.google.gson.** { *; }
--keep class com.google.gson.stream.** { *; }
 -keep class com.onlive.trackify.utils.DataExportImportManager$** { *; }
 
--keep class com.google.firebase.** { *; }
--keep class com.google.android.gms.** { *; }
--keep class com.google.firebase.crashlytics.** { *; }
 -dontwarn com.google.firebase.**
 -dontwarn com.google.android.gms.**
 
@@ -87,10 +81,8 @@
 -dontwarn kotlin.reflect.jvm.internal.**
 
 # Coroutines
--keep class kotlinx.coroutines.** { *; }
 -dontwarn kotlinx.coroutines.**
 
--keep class com.google.android.material.** { *; }
 -dontwarn com.google.android.material.**
 
 # Enums

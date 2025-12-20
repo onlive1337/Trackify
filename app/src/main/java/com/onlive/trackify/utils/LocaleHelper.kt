@@ -11,7 +11,7 @@ object LocaleHelper {
             return context
         }
 
-        val locale = Locale(languageCode)
+        val locale = Locale.Builder().setLanguage(languageCode).build()
         Locale.setDefault(locale)
 
         val configuration = Configuration(context.resources.configuration)
@@ -25,7 +25,7 @@ object LocaleHelper {
         return updateLocale(context, languageCode)
     }
 
-    fun getAvailableLanguages(context: Context): List<Language> {
+    fun getAvailableLanguages(): List<Language> {
         return listOf(
             Language("en", "English"),
             Language("ru", "Русский")

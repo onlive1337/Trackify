@@ -30,8 +30,8 @@ fun LanguageSettingsScreen(
         mutableStateOf(preferenceManager.getLanguageCode())
     }
 
-    val availableLanguages = remember(context) {
-        LocaleHelper.getAvailableLanguages(context)
+    val availableLanguages = remember {
+        LocaleHelper.getAvailableLanguages()
     }
 
     Scaffold(

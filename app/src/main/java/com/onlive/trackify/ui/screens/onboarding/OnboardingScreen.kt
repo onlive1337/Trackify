@@ -274,8 +274,7 @@ private fun LanguageSelectionStep(
     onLanguageSelected: (String) -> Unit,
     onNext: () -> Unit
 ) {
-    val context = LocalContext.current
-    val availableLanguages = remember { LocaleHelper.getAvailableLanguages(context) }
+    val availableLanguages = remember { LocaleHelper.getAvailableLanguages() }
 
     Column(
         modifier = Modifier

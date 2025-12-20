@@ -11,7 +11,7 @@ class LocaleManager(private val context: Context) {
         val locale = if (languageCode.isEmpty()) {
             java.util.Locale.getDefault()
         } else {
-            java.util.Locale(languageCode)
+            java.util.Locale.Builder().setLanguage(languageCode).build()
         }
 
         java.util.Locale.setDefault(locale)

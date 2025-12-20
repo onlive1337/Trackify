@@ -10,8 +10,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import com.onlive.trackify.utils.stringResource
+import com.onlive.trackify.utils.LocalLocalizedContext
 import androidx.compose.ui.unit.dp
 import com.onlive.trackify.R
 import com.onlive.trackify.ui.components.TrackifyCard
@@ -28,7 +28,7 @@ import java.util.Locale
 fun DataManagementScreen(
     onNavigateBack: () -> Unit
 ) {
-    val context = LocalContext.current
+    val context = LocalLocalizedContext.current
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
