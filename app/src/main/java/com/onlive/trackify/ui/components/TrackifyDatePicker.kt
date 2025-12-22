@@ -117,8 +117,11 @@ fun TrackifyDatePicker(
             tonalElevation = 6.dp
         ) {
             Column(
-                modifier = Modifier.padding(vertical = 24.dp, horizontal = 16.dp)
+                modifier = Modifier.padding(vertical = 24.dp)
             ) {
+                Column(
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -170,6 +173,8 @@ fun TrackifyDatePicker(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
+                }
+
                 if (showCalendar) {
                     DatePicker(
                         state = datePickerState,
@@ -211,6 +216,7 @@ fun TrackifyDatePicker(
                         isLargeScreen = isLargeScreen,
                         modifier = Modifier
                             .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
                             .heightIn(max = if (isLargeScreen) 400.dp else 350.dp)
                     )
                 }
@@ -218,7 +224,9 @@ fun TrackifyDatePicker(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically
                 ) {

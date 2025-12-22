@@ -1,6 +1,7 @@
 package com.onlive.trackify.ui.components
 
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -11,7 +12,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import com.onlive.trackify.R
 import com.onlive.trackify.utils.stringResource
 
@@ -21,9 +24,11 @@ fun TrackifyTopAppBar(
     title: String,
     showBackButton: Boolean = false,
     onBackClick: () -> Unit = {},
-    actions: @Composable RowScope.() -> Unit = {}
+    actions: @Composable RowScope.() -> Unit = {},
+    modifier: Modifier = Modifier
 ) {
     CenterAlignedTopAppBar(
+        modifier = modifier.height(48.dp),
         title = {
             Text(
                 text = title,

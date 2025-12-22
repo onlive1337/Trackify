@@ -51,7 +51,8 @@ fun TrackifyBottomBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(64.dp)
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .height(50.dp)
                 .padding(horizontal = 4.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
@@ -146,7 +147,6 @@ fun AnimatedNavItem(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .width(88.dp)
-            .padding(vertical = 4.dp)
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
@@ -165,7 +165,7 @@ fun AnimatedNavItem(
         ) { isSelected ->
             Box(
                 modifier = Modifier
-                    .size(40.dp, 32.dp)
+                    .size(36.dp, 28.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .background(
                         color = if (isSelected) MaterialTheme.colorScheme.primaryContainer
@@ -185,7 +185,7 @@ fun AnimatedNavItem(
             }
         }
 
-        Spacer(modifier = Modifier.height(2.dp))
+        Spacer(modifier = Modifier.height(0.dp))
 
         AnimatedContent(
             targetState = selected,

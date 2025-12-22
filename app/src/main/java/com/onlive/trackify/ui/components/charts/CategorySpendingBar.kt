@@ -58,7 +58,7 @@ fun CategoryBarItem(
         MaterialTheme.colorScheme.primary
     }
 
-    val percentage = (category.amount / totalAmount)
+    val percentage = if (totalAmount > 0) (category.amount / totalAmount) else 0.0
     val startAnimationState = remember { mutableStateOf(false) }
     val animatedPercentage by animateFloatAsState(
         targetValue = if (startAnimationState.value) percentage.toFloat() else 0f,

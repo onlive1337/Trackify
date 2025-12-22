@@ -37,8 +37,6 @@ fun TrackifyApp(
         }
     }
 
-    val bottomPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-
     val startDestination = if (preferenceManager.isOnboardingCompleted()) {
         Screen.Home.route
     } else {
@@ -48,14 +46,10 @@ fun TrackifyApp(
     Scaffold(
         bottomBar = {
             if (showBottomBar) {
-                Box(
-                    modifier = Modifier.padding(bottom = bottomPadding)
-                ) {
-                    TrackifyBottomBar(
-                        navController = navController,
-                        currentRoute = currentDestination?.route ?: Screen.Home.route
-                    )
-                }
+                TrackifyBottomBar(
+                    navController = navController,
+                    currentRoute = currentDestination?.route ?: Screen.Home.route
+                )
             }
         },
         containerColor = MaterialTheme.colorScheme.background
