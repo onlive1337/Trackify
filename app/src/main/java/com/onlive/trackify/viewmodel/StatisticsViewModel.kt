@@ -3,13 +3,11 @@ package com.onlive.trackify.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.viewModelScope
 import com.onlive.trackify.data.LiveStatisticsUpdater
 import com.onlive.trackify.data.database.AppDatabase
 import com.onlive.trackify.data.model.Category
 import com.onlive.trackify.data.repository.CategoryRepository
 import com.onlive.trackify.data.repository.SubscriptionRepository
-import kotlinx.coroutines.launch
 
 class StatisticsViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -17,6 +15,8 @@ class StatisticsViewModel(application: Application) : AndroidViewModel(applicati
     private val subscriptionRepository: SubscriptionRepository
     private val categoryRepository: CategoryRepository
     private val liveStatisticsUpdater: LiveStatisticsUpdater
+
+    val isLoading: LiveData<Boolean>
 
     val totalMonthlySpending: LiveData<Double>
     val totalYearlySpending: LiveData<Double>
@@ -45,32 +45,7 @@ class StatisticsViewModel(application: Application) : AndroidViewModel(applicati
         spendingByCategory = liveStatisticsUpdater.spendingByCategory
         monthlySpendingHistory = liveStatisticsUpdater.monthlySpendingHistory
         subscriptionTypeSpending = liveStatisticsUpdater.subscriptionTypeSpending
-
-        calculateMonthlySpending()
-        calculateYearlySpending()
-        calculateSpendingByCategory()
-        calculateMonthlySpendingHistory()
-        calculateSpendingBySubscriptionType()
-    }
-
-    fun calculateMonthlySpending() = viewModelScope.launch {
-        liveStatisticsUpdater.calculateMonthlySpending()
-    }
-
-    fun calculateYearlySpending() = viewModelScope.launch {
-        liveStatisticsUpdater.calculateYearlySpending()
-    }
-
-    fun calculateSpendingByCategory() = viewModelScope.launch {
-        liveStatisticsUpdater.calculateSpendingByCategory()
-    }
-
-    fun calculateMonthlySpendingHistory(monthsCount: Int = 6) = viewModelScope.launch {
-        liveStatisticsUpdater.calculateMonthlySpendingHistory(monthsCount)
-    }
-
-    fun calculateSpendingBySubscriptionType() = viewModelScope.launch {
-        liveStatisticsUpdater.calculateSpendingBySubscriptionType()
+        isLoading = liveStatisticsUpdater.isLoading
     }
 
     data class CategorySpending(

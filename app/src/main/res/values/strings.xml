@@ -20,6 +20,7 @@
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="delete">Delete</string>
+    <string name="loading">Loading…</string>
     <string name="indefinitely">Indefinitely</string>
     <string name="select_date">Select a date</string>
     <string name="done">Done</string>
