@@ -197,7 +197,7 @@ We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) 
 1. **Check** [Issues](https://github.com/onlive1337/trackify/issues) for available tasks
 2. **Fork** the repository
 3. **Create** a feature branch: `git checkout -b feature/amazing-feature`
-4. **Make** your changes following our [coding standards](CONTRIBUTING.md#coding-standards)
+4. **Make** your changes
 5. **Test** your changes thoroughly
 6. **Commit** with descriptive messages: `git commit -m 'Add amazing feature'`
 7. **Push** to your branch: `git push origin feature/amazing-feature`

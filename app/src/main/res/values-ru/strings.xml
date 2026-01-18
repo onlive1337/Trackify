@@ -68,10 +68,20 @@
     <string name="notification_expiration_reminder_title">Истекает подписка</string>
     <string name="notification_payment_today">Сегодня платеж за %1$s</string>
     <string name="notification_payment_tomorrow">Завтра платеж за %1$s</string>
-    <string name="notification_payment_in_days">Через %2$d дней платеж за %1$s</string>
+    <plurals name="notification_payment_in_days">
+        <item quantity="one">Через %2$d день платеж за %1$s</item>
+        <item quantity="few">Через %2$d дня платеж за %1$s</item>
+        <item quantity="many">Через %2$d дней платеж за %1$s</item>
+        <item quantity="other">Через %2$d дней платеж за %1$s</item>
+    </plurals>
     <string name="notification_expires_today">Подписка %1$s истекает сегодня</string>
     <string name="notification_expires_tomorrow">Подписка %1$s истекает завтра</string>
-    <string name="notification_expires_in_days">Подписка %1$s истекает через %2$d дней</string>
+    <plurals name="notification_expires_in_days">
+        <item quantity="one">Подписка %1$s истекает через %2$d день</item>
+        <item quantity="few">Подписка %1$s истекает через %2$d дня</item>
+        <item quantity="many">Подписка %1$s истекает через %2$d дней</item>
+        <item quantity="other">Подписка %1$s истекает через %2$d дней</item>
+    </plurals>
     <string name="enable_notifications">Включить уведомления</string>
     <string name="select_time">Выберите время</string>
     <string name="notify_on_payment_day">Уведомление в день платежа</string>
@@ -165,7 +175,12 @@
     <string name="enter_correct_amount">Введите корректную сумму</string>
     <string name="select_subscription">Выберите подписку</string>
 
-    <string name="and_more_count">…и ещё %d</string>
+    <plurals name="and_more_count">
+        <item quantity="one">…и ещё %d</item>
+        <item quantity="few">…и ещё %d</item>
+        <item quantity="many">…и ещё %d</item>
+        <item quantity="other">…и ещё %d</item>
+    </plurals>
     <string name="month_fallback">Месяц %d</string>
 
     <string name="no_internet_connection">Нет подключения к интернету</string>

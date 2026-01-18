@@ -1,7 +1,7 @@
 [versions]
 activityCompose = "1.12.2"
 agp = "9.0.0"
-composeBomVersion = "2025.12.01"
+composeBomVersion = "2026.01.00"
 coreKtxVersion = "1.17.0"
 googleServicesVersion = "4.4.4"
 firebaseCrashlyticsGradle = "3.0.6"
@@ -20,7 +20,7 @@ workRuntimeKtx = "2.11.0"
 ksp = "2.3.3"
 googleServices = "4.4.4"
 firebaseCrashlytics = "3.0.6"
-firebaseBom = "34.7.0"
+firebaseBom = "34.8.0"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
@@ -59,7 +59,6 @@ firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashly
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }

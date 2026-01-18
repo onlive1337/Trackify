@@ -67,10 +67,16 @@
     <string name="notification_expiration_reminder_title">Subscription Expires</string>
     <string name="notification_payment_today">Payment for %1$s is due today</string>
     <string name="notification_payment_tomorrow">Payment for %1$s is due tomorrow</string>
-    <string name="notification_payment_in_days">Payment for %1$s in %2$d days</string>
+    <plurals name="notification_payment_in_days">
+        <item quantity="one">Payment for %1$s in %2$d day</item>
+        <item quantity="other">Payment for %1$s in %2$d days</item>
+    </plurals>
     <string name="notification_expires_today">%1$s subscription expires today</string>
     <string name="notification_expires_tomorrow">%1$s subscription expires tomorrow</string>
-    <string name="notification_expires_in_days">%1$s subscription expires in %2$d days</string>
+    <plurals name="notification_expires_in_days">
+        <item quantity="one">%1$s subscription expires in %2$d day</item>
+        <item quantity="other">%1$s subscription expires in %2$d days</item>
+    </plurals>
     <string name="enable_notifications">Enable notifications</string>
     <string name="select_time">Select time</string>
     <string name="notify_on_payment_day">Notify on payment day</string>
@@ -165,7 +171,10 @@
     <string name="enter_correct_amount">Enter the correct amount</string>
     <string name="select_subscription">Select a subscription</string>
 
-    <string name="and_more_count">…and %d more</string>
+    <plurals name="and_more_count">
+        <item quantity="one">…and %d more</item>
+        <item quantity="other">…and %d more</item>
+    </plurals>
     <string name="month_fallback">Month %d</string>
 
     <string name="no_internet_connection">No internet connection</string>

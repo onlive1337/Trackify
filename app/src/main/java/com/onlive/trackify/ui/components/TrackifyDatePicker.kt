@@ -142,7 +142,7 @@ fun TrackifyDatePicker(
                             label = {
                                 Icon(
                                     imageVector = Icons.Default.CalendarToday,
-                                    contentDescription = "Календарь",
+                                    contentDescription = null,
                                     modifier = Modifier.size(18.dp)
                                 )
                             },
@@ -158,7 +158,7 @@ fun TrackifyDatePicker(
                             label = {
                                 Icon(
                                     imageVector = Icons.Default.Apps,
-                                    contentDescription = "Быстрый выбор",
+                                    contentDescription = null,
                                     modifier = Modifier.size(18.dp)
                                 )
                             },

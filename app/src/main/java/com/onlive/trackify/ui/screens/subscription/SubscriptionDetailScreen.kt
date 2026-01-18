@@ -27,6 +27,7 @@ import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.CurrencyFormatter
 import com.onlive.trackify.utils.DateUtils
 import com.onlive.trackify.utils.LocalLocalizedContext
+import com.onlive.trackify.utils.pluralStringResource
 import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.CategoryViewModel
 import com.onlive.trackify.viewmodel.PaymentViewModel
@@ -506,8 +507,9 @@ fun PaymentHistorySection(payments: List<Payment>) {
 
         if (payments.size > 5) {
             Spacer(modifier = Modifier.height(8.dp))
+            val remaining = payments.size - 5
             Text(
-                text = stringResource(R.string.and_more_count, payments.size - 5),
+                text = pluralStringResource(R.plurals.and_more_count, remaining, remaining),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.align(Alignment.CenterHorizontally)

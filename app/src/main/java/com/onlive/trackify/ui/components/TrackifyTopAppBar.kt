@@ -22,10 +22,10 @@ import com.onlive.trackify.utils.stringResource
 @Composable
 fun TrackifyTopAppBar(
     title: String,
+    modifier: Modifier = Modifier,
     showBackButton: Boolean = false,
     onBackClick: () -> Unit = {},
-    actions: @Composable RowScope.() -> Unit = {},
-    modifier: Modifier = Modifier
+    actions: @Composable RowScope.() -> Unit = {}
 ) {
     CenterAlignedTopAppBar(
         modifier = modifier.height(48.dp),

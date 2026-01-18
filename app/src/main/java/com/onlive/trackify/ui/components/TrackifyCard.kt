@@ -29,7 +29,6 @@ fun TrackifyCard(
     backgroundColor: Color = MaterialTheme.colorScheme.surfaceContainer,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     elevation: Int = 0,
-    tonalElevation: Int = 2,
     useOutline: Boolean = true,
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
@@ -92,7 +91,6 @@ fun TrackifyOutlinedCard(
     modifier: Modifier = Modifier,
     title: String? = null,
     backgroundColor: Color = MaterialTheme.colorScheme.surface,
-    tonalElevation: Int = 1,
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -101,7 +99,6 @@ fun TrackifyOutlinedCard(
         title = title,
         backgroundColor = backgroundColor,
         elevation = 0,
-        tonalElevation = tonalElevation,
         useOutline = true,
         onClick = onClick,
         content = content

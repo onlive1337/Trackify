@@ -58,7 +58,7 @@ class NotificationHelper(private val context: Context) {
         val text = when (daysUntil) {
             0 -> context.getString(R.string.notification_payment_today, subscription.name)
             1 -> context.getString(R.string.notification_payment_tomorrow, subscription.name)
-            else -> context.getString(R.string.notification_payment_in_days, subscription.name, daysUntil)
+            else -> context.resources.getQuantityString(R.plurals.notification_payment_in_days, daysUntil, subscription.name, daysUntil)
         }
 
         val formattedAmount = CurrencyFormatter.formatAmount(context, subscription.price)
@@ -104,7 +104,7 @@ class NotificationHelper(private val context: Context) {
         val text = when (daysUntil) {
             0 -> context.getString(R.string.notification_expires_today, subscription.name)
             1 -> context.getString(R.string.notification_expires_tomorrow, subscription.name)
-            else -> context.getString(R.string.notification_expires_in_days, subscription.name, daysUntil)
+            else -> context.resources.getQuantityString(R.plurals.notification_expires_in_days, daysUntil, subscription.name, daysUntil)
         }
 
         val builder = NotificationCompat.Builder(context, channelId)

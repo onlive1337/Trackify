@@ -182,7 +182,7 @@ fun TrackifyNavGraph(
             SubscriptionDetailScreen(
                 subscriptionId = -1L,
                 onNavigateBack = navigationActions.navigateBack,
-                onAddPayment = { /* Не используется при создании */ }
+                onAddPayment = { }
             )
         }
 
