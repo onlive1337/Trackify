@@ -43,7 +43,7 @@ data class Currency(
                 val formatted = format.format(amount)
                 return formatted.replace(symbol, "").trim()
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             val targetLocale = getLocaleForCurrency()
             val formatPattern = if (maxDecimals > 0) "%.${maxDecimals}f" else "%.0f"
             val formattedAmount = String.format(targetLocale, formatPattern, amount)
@@ -61,13 +61,13 @@ data class Currency(
             "USD" -> Locale.US
             "EUR" -> Locale.GERMANY
             "GBP" -> Locale.UK
-            "RUB" -> Locale("ru", "RU")
+            "RUB" -> Locale.Builder().setLanguage("ru").setRegion("RU").build()
             "JPY" -> Locale.JAPAN
             "CNY" -> Locale.CHINA
-            "INR" -> Locale("hi", "IN")
+            "INR" -> Locale.Builder().setLanguage("hi").setRegion("IN").build()
             "CAD" -> Locale.CANADA
-            "AUD" -> Locale("en", "AU")
-            "CHF" -> Locale("de", "CH")
+            "AUD" -> Locale.Builder().setLanguage("en").setRegion("AU").build()
+            "CHF" -> Locale.Builder().setLanguage("de").setRegion("CH").build()
             else -> Locale.getDefault()
         }
     }

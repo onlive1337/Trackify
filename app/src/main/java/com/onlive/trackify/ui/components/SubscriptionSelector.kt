@@ -40,7 +40,7 @@ fun SubscriptionSelector(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
                 isError = isError,
                 supportingText = if (isError) {
                     { Text(errorMessage) }
