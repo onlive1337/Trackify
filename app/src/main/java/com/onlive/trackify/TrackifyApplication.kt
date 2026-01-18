@@ -87,6 +87,7 @@ class TrackifyApplication : Application(), Configuration.Provider {
         notificationScheduler = NotificationScheduler(this)
         if (preferenceManager.areNotificationsEnabled()) {
             notificationScheduler.scheduleNotifications()
+            notificationScheduler.triggerImmediateCheck()
         }
 
         setupDatabaseCleanup()

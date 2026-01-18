@@ -196,4 +196,6 @@
     <string name="never_miss_payment_description">Автоматические напоминания помогут вам быть в курсе всех платежей</string>
     <string name="expense_tracking">Отслеживание расходов</string>
     <string name="expense_tracking_description">Контролируйте свои регулярные расходы и бюджет</string>
+
+    <string name="checking_subscriptions">Проверка подписок…</string>
 </resources>

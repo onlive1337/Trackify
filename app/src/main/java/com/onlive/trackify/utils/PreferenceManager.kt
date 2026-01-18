@@ -102,4 +102,33 @@ class PreferenceManager(context: Context) {
         prefs.edit { putString(KEY_LANGUAGE_CODE, languageCode) }
         notifyListeners(KEY_LANGUAGE_CODE, languageCode)
     }
+
+    fun wasNotificationSentToday(subscriptionId: Long, daysUntil: Int): Boolean {
+        val key = getNotificationKey(subscriptionId, daysUntil)
+        val lastSentDate = prefs.getString(key, null) ?: return false
+        val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
+        return lastSentDate == today
+    }
+
+    fun markNotificationSent(subscriptionId: Long, daysUntil: Int) {
+        val key = getNotificationKey(subscriptionId, daysUntil)
+        val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
+        prefs.edit { putString(key, today) }
+    }
+
+    private fun getNotificationKey(subscriptionId: Long, daysUntil: Int): String {
+        return "notification_sent_${subscriptionId}_$daysUntil"
+    }
+
+    fun cleanupOldNotificationRecords() {
+        val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
+        prefs.all.keys
+            .filter { it.startsWith("notification_sent_") }
+            .forEach { key ->
+                val savedDate = prefs.getString(key, null)
+                if (savedDate != null && savedDate != today) {
+                    prefs.edit { remove(key) }
+                }
+            }
+    }
 }

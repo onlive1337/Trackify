@@ -24,9 +24,11 @@ class NotificationHelper(private val context: Context) {
     fun createNotificationChannel() {
         val name = context.getString(R.string.notification_channel_name)
         val descriptionText = context.getString(R.string.notification_channel_description)
-        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val importance = NotificationManager.IMPORTANCE_HIGH
         val channel = NotificationChannel(channelId, name, importance).apply {
             description = descriptionText
+            enableVibration(true)
+            enableLights(true)
         }
 
         val notificationManager: NotificationManager =
@@ -67,9 +69,10 @@ class NotificationHelper(private val context: Context) {
             .setContentTitle(title)
             .setContentText(fullText)
             .setStyle(NotificationCompat.BigTextStyle().bigText(fullText))
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
 
         try {
             with(NotificationManagerCompat.from(context)) {
@@ -108,9 +111,10 @@ class NotificationHelper(private val context: Context) {
             .setSmallIcon(R.drawable.ic_info)
             .setContentTitle(title)
             .setContentText(text)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
 
         try {
             with(NotificationManagerCompat.from(context)) {

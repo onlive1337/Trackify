@@ -196,4 +196,6 @@
     <string name="never_miss_payment_description">Automatic reminders help you stay on top of all payments</string>
     <string name="expense_tracking">Expense tracking</string>
     <string name="expense_tracking_description">Monitor your recurring expenses and budget</string>
+
+    <string name="checking_subscriptions">Checking subscriptions…</string>
 </resources>
