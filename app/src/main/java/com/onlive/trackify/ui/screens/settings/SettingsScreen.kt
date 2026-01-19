@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.onlive.trackify.R
 import com.onlive.trackify.ui.components.TrackifyOutlinedCard
-import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.ThemeManager
@@ -95,14 +94,10 @@ fun SettingsScreen(
     }
 
     Scaffold(
-        topBar = {
-            TrackifyTopAppBar(
-                title = stringResource(R.string.title_settings)
-            )
-        },
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState)
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier

@@ -10,11 +10,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.onlive.trackify.ui.components.TrackifyBottomBar
+import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.ui.navigation.Screen
 import com.onlive.trackify.ui.navigation.TrackifyNavGraph
 import com.onlive.trackify.utils.LocaleManager
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.ThemeManager
+import com.onlive.trackify.utils.stringResource
 
 @Composable
 fun TrackifyApp(
@@ -37,6 +39,24 @@ fun TrackifyApp(
         }
     }
 
+    val showTopBar = remember(currentDestination) {
+        when (currentDestination?.route) {
+            Screen.Home.route,
+            Screen.Payments.route,
+            Screen.Statistics.route,
+            Screen.Settings.route -> true
+            else -> false
+        }
+    }
+
+    val topBarTitle = when (currentDestination?.route) {
+        Screen.Home.route -> stringResource(R.string.title_subscriptions)
+        Screen.Payments.route -> stringResource(R.string.title_payments)
+        Screen.Statistics.route -> stringResource(R.string.title_statistics)
+        Screen.Settings.route -> stringResource(R.string.title_settings)
+        else -> ""
+    }
+
     val startDestination = if (preferenceManager.isOnboardingCompleted()) {
         Screen.Home.route
     } else {
@@ -44,6 +64,11 @@ fun TrackifyApp(
     }
 
     Scaffold(
+        topBar = {
+            if (showTopBar) {
+                TrackifyTopAppBar(title = topBarTitle)
+            }
+        },
         bottomBar = {
             if (showBottomBar) {
                 TrackifyBottomBar(

@@ -17,7 +17,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.ui.components.SubscriptionListItem
-import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
 
@@ -43,28 +42,8 @@ fun HomeScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TrackifyTopAppBar(
-                title = stringResource(R.string.title_subscriptions)
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddSubscription,
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.add_subscription))
-            }
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
             SearchBar(
                 inputField = {
                     SearchBarDefaults.InputField(
@@ -112,6 +91,18 @@ fun HomeScreen(
                     onSubscriptionClick = onSubscriptionClick
                 )
             }
+        }
+
+        FloatingActionButton(
+            onClick = onAddSubscription,
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        ) {
+            Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.add_subscription))
         }
     }
 }

@@ -24,7 +24,6 @@ import androidx.compose.ui.window.Popup
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Payment
-import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.CurrencyFormatter
 import com.onlive.trackify.utils.DateUtils
 import com.onlive.trackify.utils.LocalLocalizedContext
@@ -78,33 +77,10 @@ fun PaymentsScreen(
             }
     }
 
-    Scaffold(
-        topBar = {
-            TrackifyTopAppBar(
-                title = stringResource(R.string.title_payments)
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onAddPayment(-1L, -1L)
-                },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = stringResource(R.string.add_payment)
-                )
-            }
-        }
-    ) { paddingValues ->
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
                 .padding(horizontal = 16.dp)
         ) {
             if (payments.isEmpty()) {
@@ -156,6 +132,24 @@ fun PaymentsScreen(
                     }
                 }
             }
+        }
+
+        FloatingActionButton(
+            onClick = {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onAddPayment(-1L, -1L)
+            },
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Add,
+                contentDescription = stringResource(R.string.add_payment)
+            )
         }
     }
 
