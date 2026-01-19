@@ -173,16 +173,14 @@ fun TrackifyNavGraph(
             val subscriptionId = entry.arguments?.getLong("subscriptionId") ?: -1L
             SubscriptionDetailScreen(
                 subscriptionId = subscriptionId,
-                onNavigateBack = navigationActions.navigateBack,
-                onAddPayment = { navigationActions.navigateToAddPayment(subscriptionId, -1L) }
+                onNavigateBack = navigationActions.navigateBack
             )
         }
 
         composable(Screen.AddSubscription.route) {
             SubscriptionDetailScreen(
                 subscriptionId = -1L,
-                onNavigateBack = navigationActions.navigateBack,
-                onAddPayment = { }
+                onNavigateBack = navigationActions.navigateBack
             )
         }
 

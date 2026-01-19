@@ -3,9 +3,9 @@ package com.onlive.trackify.ui.screens.subscription
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -39,7 +40,6 @@ import java.util.*
 fun SubscriptionDetailScreen(
     subscriptionId: Long,
     onNavigateBack: () -> Unit,
-    onAddPayment: () -> Unit,
     subscriptionViewModel: SubscriptionViewModel = viewModel(),
     categoryViewModel: CategoryViewModel = viewModel(),
     paymentViewModel: PaymentViewModel = viewModel()
@@ -94,23 +94,6 @@ fun SubscriptionDetailScreen(
                 showBackButton = true,
                 onBackClick = onNavigateBack
             )
-        },
-        floatingActionButton = {
-            if (!isNewSubscription) {
-                FloatingActionButton(
-                    onClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        onAddPayment()
-                    },
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                ) {
-                    Icon(
-                        Icons.Default.Add,
-                        contentDescription = stringResource(R.string.add_payment)
-                    )
-                }
-            }
         }
     ) { paddingValues ->
         Column(
@@ -157,6 +140,7 @@ fun SubscriptionDetailScreen(
                 label = { Text(stringResource(R.string.subscription_price)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 isError = isPriceError,
                 supportingText = if (isPriceError) {
                     { Text(stringResource(R.string.enter_correct_price)) }

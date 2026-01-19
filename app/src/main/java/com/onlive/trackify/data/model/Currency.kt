@@ -29,7 +29,7 @@ data class Currency(
         }
     }
 
-    fun format(amount: Double, includeSymbol: Boolean = true, maxDecimals: Int = 0): String {
+    fun format(amount: Double, includeSymbol: Boolean = true, maxDecimals: Int = 2): String {
         try {
             val targetLocale = getLocaleForCurrency()
             val format = NumberFormat.getCurrencyInstance(targetLocale)

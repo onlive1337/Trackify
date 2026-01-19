@@ -1,6 +1,5 @@
 package com.onlive.trackify.ui.screens.payments
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -202,14 +201,9 @@ fun PaymentItem(
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
-    val haptic = LocalHapticFeedback.current
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable {
-                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                onPaymentClick()
-            }
             .padding(vertical = 4.dp),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
