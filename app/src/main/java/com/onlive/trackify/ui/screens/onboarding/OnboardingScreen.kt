@@ -42,6 +42,7 @@ import com.onlive.trackify.utils.LocaleManager
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.stringResource
 import kotlinx.coroutines.delay
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,6 +56,15 @@ fun OnboardingScreen(
     var currentStep by remember { mutableIntStateOf(0) }
     var selectedLanguage by remember { mutableStateOf("") }
     var selectedCurrency by remember { mutableStateOf("USD") }
+
+    LaunchedEffect(currentStep) {
+        if (currentStep == 1 && selectedLanguage.isBlank()) {
+            val deviceLang = Locale.getDefault().language.takeIf { it.isNotBlank() }
+            val defaultLang = deviceLang ?: "en"
+            selectedLanguage = defaultLang
+            localeManager.setLocale(defaultLang)
+        }
+    }
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -276,25 +286,28 @@ private fun LanguageSelectionStep(
 ) {
     val availableLanguages = remember { LocaleHelper.getAvailableLanguages() }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-    ) {
-        OnboardingStepHeader(
-            icon = Icons.Default.Language,
-            title = stringResource(R.string.choose_your_language),
-            description = stringResource(R.string.language_onboarding_description)
-        )
+    val bottomBarPadding = 24.dp
+    val bottomBarContentHeight = 56.dp
+    val bottomBarTopSpacing = 20.dp
 
-        Spacer(modifier = Modifier.height(32.dp))
-
+    Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f, fill = false),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(
+                bottom = bottomBarContentHeight + bottomBarPadding * 2 + bottomBarTopSpacing
+            )
         ) {
+            item {
+                OnboardingStepHeader(
+                    icon = Icons.Default.Language,
+                    title = stringResource(R.string.choose_your_language),
+                    description = stringResource(R.string.language_onboarding_description)
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+            }
+
             items(availableLanguages) { language ->
                 LanguageOption(
                     language = language,
@@ -304,14 +317,35 @@ private fun LanguageSelectionStep(
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
-
-        OnboardingButton(
-            text = stringResource(R.string.continue_text),
-            onClick = onNext,
-            enabled = true,
-            icon = Icons.AutoMirrored.Filled.ArrowForward
-        )
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            MaterialTheme.colorScheme.background.copy(alpha = 0.92f),
+                            MaterialTheme.colorScheme.background
+                        )
+                    )
+                )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = bottomBarTopSpacing, bottom = bottomBarPadding)
+                    .navigationBarsPadding(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OnboardingButton(
+                    text = stringResource(R.string.continue_text),
+                    onClick = onNext,
+                    enabled = selectedLanguage.isNotBlank(),
+                    icon = Icons.AutoMirrored.Filled.ArrowForward
+                )
+            }
+        }
     }
 }
 
@@ -321,25 +355,29 @@ private fun CurrencySelectionStep(
     onCurrencySelected: (String) -> Unit,
     onNext: () -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-    ) {
-        OnboardingStepHeader(
-            icon = Icons.Default.AttachMoney,
-            title = stringResource(R.string.choose_your_currency),
-            description = stringResource(R.string.currency_onboarding_description)
-        )
+    val bottomBarPadding = 24.dp
+    val bottomBarContentHeight = 56.dp
+    val bottomBarTopSpacing = 20.dp
 
-        Spacer(modifier = Modifier.height(32.dp))
-
+    Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f, fill = false),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(
+                // Reserve enough space so the last card doesn't feel glued to the button.
+                bottom = bottomBarContentHeight + bottomBarPadding * 2 + bottomBarTopSpacing
+            )
         ) {
+            item {
+                OnboardingStepHeader(
+                    icon = Icons.Default.AttachMoney,
+                    title = stringResource(R.string.choose_your_currency),
+                    description = stringResource(R.string.currency_onboarding_description)
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+            }
+
             items(Currency.POPULAR_CURRENCIES) { currency ->
                 CurrencyOption(
                     currency = currency,
@@ -349,14 +387,35 @@ private fun CurrencySelectionStep(
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
-
-        OnboardingButton(
-            text = stringResource(R.string.continue_text),
-            onClick = onNext,
-            enabled = selectedCurrency.isNotEmpty(),
-            icon = Icons.AutoMirrored.Filled.ArrowForward
-        )
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            MaterialTheme.colorScheme.background.copy(alpha = 0.92f),
+                            MaterialTheme.colorScheme.background
+                        )
+                    )
+                )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = bottomBarTopSpacing, bottom = bottomBarPadding)
+                    .navigationBarsPadding(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OnboardingButton(
+                    text = stringResource(R.string.continue_text),
+                    onClick = onNext,
+                    enabled = selectedCurrency.isNotEmpty(),
+                    icon = Icons.AutoMirrored.Filled.ArrowForward
+                )
+            }
+        }
     }
 }
 
