@@ -113,6 +113,15 @@ class NotificationWorker(
 
         Log.d(tag, "${subscription.name}: next payment on $nextPaymentDate, days until: $daysUntil, reminder days: $reminderDays")
 
+        if (daysUntil == 0) {
+            val startDateNormalized = normalizeToStartOfDay(subscription.startDate)
+            val todayNormalized = normalizeToStartOfDay(today)
+            if (startDateNormalized == todayNormalized) {
+                Log.d(tag, "${subscription.name}: Subscription created today, skipping payment notification")
+                return
+            }
+        }
+
         if (daysUntil in reminderDays) {
             if (preferenceManager.wasNotificationSentToday(subscription.subscriptionId, daysUntil)) {
                 Log.d(tag, "${subscription.name}: Notification already sent today, skipping")
