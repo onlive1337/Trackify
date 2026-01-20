@@ -96,7 +96,7 @@ fun PaymentsScreen(
             } else {
                 LazyColumn(
                     state = listState,
-                    contentPadding = PaddingValues(vertical = 8.dp),
+                    contentPadding = PaddingValues(top = 8.dp, bottom = 120.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                 items(displayedPayments, key = { it.paymentId }) { payment ->
@@ -143,7 +143,7 @@ fun PaymentsScreen(
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(16.dp)
+                .padding(end = 16.dp, bottom = 130.dp)
         ) {
             Icon(
                 imageVector = Icons.Filled.Add,

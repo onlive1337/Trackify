@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
@@ -41,22 +42,35 @@ fun TrackifyBottomBar(
     currentRoute: String,
     modifier: Modifier = Modifier
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.onSurface,
-        tonalElevation = 0.dp,
-        shadowElevation = 0.dp
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+            .padding(bottom = 24.dp)
+            .navigationBarsPadding()
     ) {
-        Row(
+        Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.navigationBars)
-                .height(50.dp)
-                .padding(horizontal = 4.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
+                .shadow(
+                    elevation = 8.dp,
+                    shape = RoundedCornerShape(28.dp),
+                    ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                    spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                ),
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            tonalElevation = 3.dp
         ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp)
+                    .padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
             AnimatedNavItem(
                 icon = Icons.Filled.Home,
                 label = stringResource(R.string.title_subscriptions),
@@ -124,6 +138,7 @@ fun TrackifyBottomBar(
                     }
                 }
             )
+            }
         }
     }
 }
@@ -138,7 +153,7 @@ fun AnimatedNavItem(
     val interactionSource = remember { MutableInteractionSource() }
 
     val scale by animateFloatAsState(
-        targetValue = if (selected) 1.1f else 1.0f,
+        targetValue = if (selected) 1.05f else 1.0f,
         animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
         label = "scale"
     )
@@ -146,12 +161,14 @@ fun AnimatedNavItem(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .width(88.dp)
+            .width(72.dp)
+            .clip(RoundedCornerShape(16.dp))
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = onClick
             )
+            .padding(vertical = 6.dp)
     ) {
         AnimatedContent(
             targetState = selected,
@@ -165,14 +182,13 @@ fun AnimatedNavItem(
         ) { isSelected ->
             Box(
                 modifier = Modifier
-                    .size(36.dp, 28.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .size(48.dp, 32.dp)
+                    .clip(RoundedCornerShape(16.dp))
                     .background(
                         color = if (isSelected) MaterialTheme.colorScheme.primaryContainer
                         else Color.Transparent
                     )
-                    .scale(scale)
-                    .padding(6.dp),
+                    .scale(scale),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -180,12 +196,12 @@ fun AnimatedNavItem(
                     contentDescription = label,
                     tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
                     else MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(22.dp)
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(0.dp))
+        Spacer(modifier = Modifier.height(2.dp))
 
         AnimatedContent(
             targetState = selected,

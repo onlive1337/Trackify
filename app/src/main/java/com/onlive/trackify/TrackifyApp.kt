@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -69,14 +70,6 @@ fun TrackifyApp(
                 TrackifyTopAppBar(title = topBarTitle)
             }
         },
-        bottomBar = {
-            if (showBottomBar) {
-                TrackifyBottomBar(
-                    navController = navController,
-                    currentRoute = currentDestination?.route ?: Screen.Home.route
-                )
-            }
-        },
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Box(
@@ -90,6 +83,14 @@ fun TrackifyApp(
                 themeManager = themeManager,
                 localeManager = localeManager
             )
+
+            if (showBottomBar) {
+                TrackifyBottomBar(
+                    navController = navController,
+                    currentRoute = currentDestination?.route ?: Screen.Home.route,
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                )
+            }
         }
     }
 }

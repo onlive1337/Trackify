@@ -100,7 +100,7 @@ fun HomeScreen(
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(16.dp)
+                .padding(end = 16.dp, bottom = 130.dp)
         ) {
             Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.add_subscription))
         }
@@ -130,7 +130,7 @@ fun SubscriptionsList(
     onSubscriptionClick: (Long) -> Unit
 ) {
     LazyColumn(
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 120.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(subscriptions) { subscription ->
