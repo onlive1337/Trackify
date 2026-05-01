@@ -5,23 +5,65 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.MonetizationOn
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,7 +85,7 @@ import com.onlive.trackify.utils.stringResource
 import kotlinx.coroutines.delay
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun OnboardingScreen(
     onComplete: () -> Unit,
@@ -67,15 +109,6 @@ fun OnboardingScreen(
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            preferenceManager.setNotificationsEnabled(true)
-        }
-        finishOnboarding(preferenceManager, selectedLanguage, selectedCurrency, onComplete)
-    }
-
-    rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
     ) { _ ->
         finishOnboarding(preferenceManager, selectedLanguage, selectedCurrency, onComplete)
     }
@@ -101,22 +134,23 @@ fun OnboardingScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 24.dp)
-                    .padding(bottom = if (showBottomContinue) 56.dp + 24.dp + 20.dp else 0.dp)
+                    .padding(bottom = if (showBottomContinue) 80.dp + 24.dp else 0.dp)
             ) {
                 OnboardingProgressIndicator(
                     currentStep = currentStep,
-                    modifier = Modifier.padding(vertical = 16.dp)
+                    modifier = Modifier.padding(vertical = 24.dp)
                 )
 
+                val spatialSpec = MaterialTheme.motionScheme.defaultSpatialSpec<androidx.compose.ui.unit.IntOffset>()
                 AnimatedContent(
                     targetState = currentStep,
                     transitionSpec = {
                         slideIntoContainer(
                             towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                            animationSpec = tween(300)
+                            animationSpec = spatialSpec
                         ) togetherWith slideOutOfContainer(
                             towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                            animationSpec = tween(300)
+                            animationSpec = spatialSpec
                         )
                     },
                     label = "onboarding_step",
@@ -149,13 +183,11 @@ fun OnboardingScreen(
                                     ) == PackageManager.PERMISSION_GRANTED
 
                                     if (hasPermission) {
-                                        preferenceManager.setNotificationsEnabled(true)
                                         finishOnboarding(preferenceManager, selectedLanguage, selectedCurrency, onComplete)
                                     } else {
                                         notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                                     }
                                 } else {
-                                    preferenceManager.setNotificationsEnabled(true)
                                     finishOnboarding(preferenceManager, selectedLanguage, selectedCurrency, onComplete)
                                 }
                             },
@@ -173,7 +205,7 @@ fun OnboardingScreen(
                         .align(Alignment.BottomCenter)
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp)
-                        .padding(top = 20.dp, bottom = 24.dp)
+                        .padding(bottom = 32.dp)
                         .navigationBarsPadding(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
@@ -198,21 +230,21 @@ private fun OnboardingProgressIndicator(
 
     Row(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         repeat(totalSteps) { index ->
             val isActive = index <= currentStep
-            val animatedWidth by animateFloatAsState(
-                targetValue = if (isActive) 1f else 0.3f,
-                animationSpec = tween(300),
-                label = "progress_width"
+            val animatedWeight by animateFloatAsState(
+                targetValue = if (isActive) 1.5f else 1f,
+                animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+                label = "progress_weight"
             )
 
             Box(
                 modifier = Modifier
-                    .weight(animatedWidth)
-                    .height(4.dp)
-                    .clip(RoundedCornerShape(2.dp))
+                    .weight(animatedWeight)
+                    .height(6.dp)
+                    .clip(CircleShape)
                     .background(
                         if (isActive) MaterialTheme.colorScheme.primary
                         else MaterialTheme.colorScheme.surfaceVariant
@@ -235,9 +267,9 @@ private fun WelcomeStep(
 
     AnimatedVisibility(
         visible = isVisible,
-        enter = fadeIn(animationSpec = tween(600)) + slideInVertically(
-            animationSpec = tween(600),
-            initialOffsetY = { it / 4 }
+        enter = fadeIn(animationSpec = tween(800)) + slideInVertically(
+            animationSpec = spring(stiffness = Spring.StiffnessLow),
+            initialOffsetY = { it / 3 }
         )
     ) {
         Column(
@@ -248,32 +280,36 @@ private fun WelcomeStep(
             verticalArrangement = Arrangement.Center
         ) {
             val scale by animateFloatAsState(
-                targetValue = if (isVisible) 1f else 0.8f,
-                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                targetValue = if (isVisible) 1f else 0.7f,
+                animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
                 label = "logo_scale"
             )
 
-            Image(
-                painter = painterResource(id = R.mipmap.ic_launcher_foreground),
-                contentDescription = "Trackify Logo",
+            Box(
                 modifier = Modifier
-                    .size(120.dp)
+                    .size(140.dp)
                     .scale(scale)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer)
-            )
+                    .clip(MaterialTheme.shapes.large)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.mipmap.ic_launcher_foreground),
+                    contentDescription = "Trackify Logo",
+                    modifier = Modifier.size(100.dp)
+                )
+            }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
             Text(
                 text = stringResource(R.string.welcome_to_trackify),
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.headlineLargeEmphasized,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onBackground
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             Text(
                 text = stringResource(R.string.welcome_description),
@@ -283,7 +319,7 @@ private fun WelcomeStep(
                 lineHeight = MaterialTheme.typography.bodyLarge.lineHeight
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(56.dp))
 
             OnboardingButton(
                 text = stringResource(R.string.get_started),
@@ -303,7 +339,8 @@ private fun LanguageSelectionStep(
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(bottom = 24.dp)
     ) {
         item {
             OnboardingStepHeader(
@@ -332,7 +369,8 @@ private fun CurrencySelectionStep(
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(bottom = 24.dp)
     ) {
         item {
             OnboardingStepHeader(
@@ -380,10 +418,10 @@ private fun NotificationPermissionStep(
             description = stringResource(R.string.notification_onboarding_description)
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(40.dp))
 
         Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             NotificationBenefit(
                 icon = Icons.Default.Schedule,
@@ -407,7 +445,8 @@ private fun NotificationPermissionStep(
         Spacer(modifier = Modifier.weight(1f))
 
         Column(
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(bottom = 24.dp, top = 32.dp)
         ) {
             if (hasNotificationPermission) {
                 OnboardingButton(
@@ -429,6 +468,8 @@ private fun NotificationPermissionStep(
                 ) {
                     Text(
                         text = stringResource(R.string.skip_for_now),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -448,30 +489,29 @@ private fun OnboardingStepHeader(
     ) {
         Box(
             modifier = Modifier
-                .size(80.dp)
-                .clip(CircleShape)
+                .size(88.dp)
+                .clip(MaterialTheme.shapes.large)
                 .background(MaterialTheme.colorScheme.primaryContainer),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(40.dp),
+                modifier = Modifier.size(44.dp),
                 tint = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(28.dp))
 
         Text(
             text = title,
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.headlineMediumEmphasized,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onBackground
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Text(
             text = description,
@@ -490,8 +530,8 @@ private fun LanguageOption(
     onClick: () -> Unit
 ) {
     val animatedScale by animateFloatAsState(
-        targetValue = if (selected) 1.02f else 1f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        targetValue = if (selected) 1.03f else 1f,
+        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
         label = "language_scale"
     )
 
@@ -500,6 +540,7 @@ private fun LanguageOption(
         modifier = Modifier
             .fillMaxWidth()
             .scale(animatedScale),
+        shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
             containerColor = if (selected)
                 MaterialTheme.colorScheme.primaryContainer
@@ -507,19 +548,19 @@ private fun LanguageOption(
                 MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = if (selected) 8.dp else 2.dp
-        )
+            defaultElevation = if (selected) 8.dp else 1.dp
+        ),
+        border = if (selected) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
+                .padding(24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = language.name,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                style = if (selected) MaterialTheme.typography.titleMediumEmphasized else MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f),
                 color = if (selected)
                     MaterialTheme.colorScheme.onPrimaryContainer
@@ -532,7 +573,7 @@ private fun LanguageOption(
                     imageVector = Icons.Default.CheckCircle,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(28.dp)
                 )
             }
         }
@@ -546,8 +587,8 @@ private fun CurrencyOption(
     onClick: () -> Unit
 ) {
     val animatedScale by animateFloatAsState(
-        targetValue = if (selected) 1.02f else 1f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        targetValue = if (selected) 1.03f else 1f,
+        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
         label = "currency_scale"
     )
 
@@ -556,6 +597,7 @@ private fun CurrencyOption(
         modifier = Modifier
             .fillMaxWidth()
             .scale(animatedScale),
+        shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
             containerColor = if (selected)
                 MaterialTheme.colorScheme.primaryContainer
@@ -563,8 +605,9 @@ private fun CurrencyOption(
                 MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = if (selected) 8.dp else 2.dp
-        )
+            defaultElevation = if (selected) 8.dp else 1.dp
+        ),
+        border = if (selected) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Row(
             modifier = Modifier
@@ -572,22 +615,29 @@ private fun CurrencyOption(
                 .padding(20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = currency.symbol,
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(end = 16.dp),
-                color = if (selected)
-                    MaterialTheme.colorScheme.primary
-                else
-                    MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(MaterialTheme.shapes.medium)
+                    .background(
+                        if (selected) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.surfaceVariant
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = currency.symbol,
+                    style = MaterialTheme.typography.headlineSmallEmphasized,
+                    color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Spacer(modifier = Modifier.width(20.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = currency.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                    style = if (selected) MaterialTheme.typography.titleMediumEmphasized else MaterialTheme.typography.titleMedium,
                     color = if (selected)
                         MaterialTheme.colorScheme.onPrimaryContainer
                     else
@@ -595,7 +645,8 @@ private fun CurrencyOption(
                 )
                 Text(
                     text = currency.code,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
                     color = if (selected)
                         MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                     else
@@ -608,7 +659,7 @@ private fun CurrencyOption(
                     imageVector = Icons.Default.CheckCircle,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(28.dp)
                 )
             }
         }
@@ -627,30 +678,29 @@ private fun NotificationBenefit(
     ) {
         Box(
             modifier = Modifier
-                .size(48.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)),
+                .size(56.dp)
+                .clip(MaterialTheme.shapes.medium)
+                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier.size(28.dp),
                 tint = MaterialTheme.colorScheme.primary
             )
         }
 
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(20.dp))
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Medium,
+                style = MaterialTheme.typography.titleMediumEmphasized,
                 color = MaterialTheme.colorScheme.onBackground
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             Text(
                 text = description,
@@ -675,15 +725,15 @@ private fun OnboardingButton(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
-            .height(56.dp),
+            .height(64.dp),
         enabled = enabled,
         colors = ButtonDefaults.buttonColors(
             containerColor = containerColor
         ),
-        shape = RoundedCornerShape(16.dp),
+        shape = MaterialTheme.shapes.large,
         elevation = ButtonDefaults.buttonElevation(
             defaultElevation = 4.dp,
-            pressedElevation = 8.dp
+            pressedElevation = 12.dp
         )
     ) {
         Row(
@@ -692,16 +742,15 @@ private fun OnboardingButton(
         ) {
             Text(
                 text = text,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Medium
+                style = MaterialTheme.typography.titleMediumEmphasized
             )
 
             if (icon != null) {
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(12.dp))
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }

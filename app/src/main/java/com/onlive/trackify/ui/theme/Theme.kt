@@ -3,11 +3,7 @@ package com.onlive.trackify.ui.theme
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.platform.LocalContext
@@ -71,6 +67,7 @@ private val LightColorScheme = lightColorScheme(
     inverseSurface = md_theme_light_inverseSurface,
 )
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun TrackifyTheme(
     themeManager: ThemeManager? = null,
@@ -101,10 +98,11 @@ fun TrackifyTheme(
         }
     }
 
-    MaterialTheme(
+    MaterialExpressiveTheme(
         colorScheme = colorScheme,
         typography = Typography,
         shapes = Shapes,
+        motionScheme = MotionScheme.expressive(),
         content = content
     )
 }

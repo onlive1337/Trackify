@@ -126,7 +126,41 @@ fun TrackifyNavGraph(
     NavHost(
         navController = navController,
         startDestination = startDestination,
-        modifier = modifier
+        modifier = modifier,
+        enterTransition = {
+            slideIntoContainer(
+                towards = androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Left,
+                animationSpec = androidx.compose.animation.core.spring(
+                    dampingRatio = 0.85f,
+                    stiffness = androidx.compose.animation.core.Spring.StiffnessLow
+                )
+            )
+        },
+        exitTransition = {
+            androidx.compose.animation.fadeOut(
+                animationSpec = androidx.compose.animation.core.tween(300)
+            ) + androidx.compose.animation.scaleOut(
+                targetScale = 0.95f,
+                animationSpec = androidx.compose.animation.core.tween(300)
+            )
+        },
+        popEnterTransition = {
+            androidx.compose.animation.fadeIn(
+                animationSpec = androidx.compose.animation.core.tween(300)
+            ) + androidx.compose.animation.scaleIn(
+                initialScale = 0.95f,
+                animationSpec = androidx.compose.animation.core.tween(300)
+            )
+        },
+        popExitTransition = {
+            slideOutOfContainer(
+                towards = androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Right,
+                animationSpec = androidx.compose.animation.core.spring(
+                    dampingRatio = 0.85f,
+                    stiffness = androidx.compose.animation.core.Spring.StiffnessLow
+                )
+            )
+        }
     ) {
         composable(Screen.Onboarding.route) {
             OnboardingScreen(

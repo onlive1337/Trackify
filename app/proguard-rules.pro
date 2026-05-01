@@ -1,11 +1,12 @@
-# Keep core attributes
--keepattributes Signature,*Annotation*,SourceFile,LineNumberTable,InnerClasses,EnclosingMethod
+# --- General Android & Kotlin ---
+-keepattributes Signature, *Annotation*, SourceFile, LineNumberTable, InnerClasses, EnclosingMethod
+-dontwarn javax.annotation.**
 
-# Basic obfuscation
--repackageclasses 'a'
+# --- R8 / ProGuard Optimization ---
+-repackageclasses ''
 -allowaccessmodification
 
-# Remove debug logging
+# Remove debug logs in release build
 -assumenosideeffects class android.util.Log {
     public static *** v(...);
     public static *** d(...);
@@ -14,29 +15,20 @@
     public static *** e(...);
 }
 
+# --- Trackify Core Components ---
 -keep class com.onlive.trackify.TrackifyApplication { *; }
 -keep class com.onlive.trackify.MainActivity { *; }
 
-# Keep all data models (used by Room and Gson serialization)
+# --- Data Models (CRITICAL for GSON & Room) ---
+# Prevent renaming fields that are serialized to JSON or stored in DB
+-keepclassmembers class com.onlive.trackify.data.model.** { <fields>; }
 -keep class com.onlive.trackify.data.model.** { *; }
--keepclassmembers class com.onlive.trackify.data.model.** { *; }
 
-# Keep ViewModels (reflection access)
+# --- ViewModels & Repositories ---
 -keep class com.onlive.trackify.viewmodel.** { *; }
+-keep class com.onlive.trackify.data.repository.** { public <methods>; }
 
-# Keep repositories (public API methods)
--keep class com.onlive.trackify.data.repository.** {
-    public <methods>;
-}
-
-# Keep utility classes
--keep class com.onlive.trackify.utils.** {
-    public <methods>;
-}
-
-# Keep WorkManager workers
--keep class com.onlive.trackify.workers.** { *; }
-
+# --- Room Persistence ---
 -keep class * extends androidx.room.RoomDatabase { *; }
 -keep @androidx.room.Entity class * { *; }
 -keep @androidx.room.Dao class * { *; }
@@ -45,67 +37,43 @@
 -keepclassmembers @androidx.room.Dao class * { *; }
 -dontwarn androidx.room.paging.**
 
+# --- Gson Serialization ---
+-keepattributes *Annotation*
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+-keep class com.google.gson.reflect.TypeToken
+-keep class * extends com.google.gson.reflect.TypeToken
+-keep public class * implements com.google.gson.TypeAdapterFactory
+-keep public class * implements com.google.gson.JsonSerializer
+-keep public class * implements com.google.gson.JsonDeserializer
+-keep public class * implements com.google.gson.TypeAdapter
 
-# Compose
+-keep class com.onlive.trackify.utils.DataExportImportManager$** { *; }
+
+# --- Jetpack Compose ---
 -keep @androidx.compose.runtime.Composable class * { *; }
 -keep class * {
     @androidx.compose.runtime.Composable <methods>;
 }
 
-# ViewModel
--keep class * extends androidx.lifecycle.ViewModel { *; }
--keep class * extends androidx.lifecycle.AndroidViewModel { *; }
-
-# WorkManager
--keep class * extends androidx.work.Worker {
-    public <init>(android.content.Context, androidx.work.WorkerParameters);
-}
--keep class * extends androidx.work.ListenableWorker {
-    public <init>(android.content.Context, androidx.work.WorkerParameters);
-}
-
-
--keep class com.onlive.trackify.utils.DataExportImportManager$** { *; }
-
+# --- Firebase & Google Services ---
+# Rely on library-provided ProGuard rules
 -dontwarn com.google.firebase.**
 -dontwarn com.google.android.gms.**
 
--keep class kotlin.Metadata { *; }
--keep class kotlin.reflect.jvm.internal.** { *; }
--keepclassmembers class kotlin.Metadata {
-    public <methods>;
-}
--keepclassmembers class **$WhenMappings {
-    <fields>;
-}
--dontwarn kotlin.reflect.jvm.internal.**
-
-# Coroutines
+# --- Coroutines ---
+-keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
+-keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
 -dontwarn kotlinx.coroutines.**
 
--dontwarn com.google.android.material.**
-
-# Enums
+# --- Enums & Sealed Classes ---
 -keepclassmembers enum * {
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }
 
-# Parcelable
--keep class * implements android.os.Parcelable {
-    public static final android.os.Parcelable$Creator *;
+# --- Utils ---
+-keep class com.onlive.trackify.utils.** {
+    public <methods>;
 }
-
-# Serializable
--keepclassmembers class * implements java.io.Serializable {
-    static final long serialVersionUID;
-    private static final java.io.ObjectStreamField[] serialPersistentFields;
-    private void writeObject(java.io.ObjectOutputStream);
-    private void readObject(java.io.ObjectInputStream);
-    java.lang.Object writeReplace();
-    java.lang.Object readResolve();
-}
-
--dontwarn java.lang.invoke.**
--dontwarn **$$serializer
--dontwarn javax.annotation.**

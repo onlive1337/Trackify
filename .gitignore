@@ -20,3 +20,10 @@ trackify.keystore
 *.keystore
 app/google-services.json
 google-services.json
+
+# IDE and Project
+.artifacts/
+.idea/
+*.log
+
+/gradle/gradle-daemon-jvm.properties

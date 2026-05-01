@@ -3,6 +3,7 @@ package com.onlive.trackify.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.viewModelScope
 import com.onlive.trackify.data.LiveStatisticsUpdater
 import com.onlive.trackify.data.database.AppDatabase
 import com.onlive.trackify.data.model.Category
@@ -37,7 +38,8 @@ class StatisticsViewModel(application: Application) : AndroidViewModel(applicati
         liveStatisticsUpdater = LiveStatisticsUpdater(
             application,
             subscriptionRepository.allSubscriptions,
-            categories
+            categories,
+            viewModelScope,
         )
 
         totalMonthlySpending = liveStatisticsUpdater.totalMonthlySpending

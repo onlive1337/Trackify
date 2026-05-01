@@ -1,29 +1,30 @@
 package com.onlive.trackify.ui.screens.category
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import com.onlive.trackify.utils.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Category
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
+import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.CategoryViewModel
 import androidx.core.graphics.toColorInt
 
@@ -34,8 +35,8 @@ fun CategoryManagementScreen(
     onEditCategory: (Long) -> Unit,
     categoryViewModel: CategoryViewModel = viewModel()
 ) {
-    val categories by categoryViewModel.allCategories.observeAsState(emptyList())
-    val showDeleteCategoryDialogState = remember { mutableStateOf<Category?>(null) }
+    val allCategories by categoryViewModel.allCategories.observeAsState(emptyList())
+    val showDeleteDialogState = remember { mutableStateOf<Category?>(null) }
 
     Scaffold(
         topBar = {
@@ -44,77 +45,83 @@ fun CategoryManagementScreen(
                 showBackButton = true,
                 onBackClick = onNavigateBack
             )
-        },
-        floatingActionButton = {
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            if (allCategories.isEmpty()) {
+                EmptyCategoriesView()
+            } else {
+                CategoriesList(
+                    categories = allCategories,
+                    onEditCategory = onEditCategory,
+                    onDeleteCategory = { showDeleteDialogState.value = it }
+                )
+            }
+
             FloatingActionButton(
                 onClick = onAddCategory,
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
-                shape = RoundedCornerShape(16.dp)
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(24.dp)
             ) {
-                Icon(Icons.Filled.Add, contentDescription = null)
-            }
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
-        ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (categories.isEmpty()) {
-                EmptyCategoriesView()
-            } else {
-                CategoriesList(
-                    categories = categories,
-                    onEditCategory = onEditCategory,
-                    onDeleteCategory = { category ->
-                        showDeleteCategoryDialogState.value = category
-                    }
+                Icon(
+                    imageVector = Icons.Default.Add, 
+                    contentDescription = stringResource(R.string.add_category)
                 )
             }
         }
-    }
 
-    showDeleteCategoryDialogState.value?.let { category ->
-        AlertDialog(
-            onDismissRequest = { showDeleteCategoryDialogState.value = null },
-            title = { Text(stringResource(R.string.delete_category_confirmation)) },
-            text = { Text(stringResource(R.string.delete_category_message)) },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        categoryViewModel.delete(category)
-                        showDeleteCategoryDialogState.value = null
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Text(stringResource(R.string.delete))
+        if (showDeleteDialogState.value != null) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialogState.value = null },
+                title = { Text(stringResource(R.string.delete_category_confirmation)) },
+                text = { Text(stringResource(R.string.delete_category_message)) },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showDeleteDialogState.value?.let {
+                                categoryViewModel.delete(it)
+                            }
+                            showDeleteDialogState.value = null
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Text(stringResource(R.string.delete))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteDialogState.value = null }) {
+                        Text(stringResource(R.string.cancel))
+                    }
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteCategoryDialogState.value = null }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
-        )
+            )
+        }
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun EmptyCategoriesView() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         Text(
             text = stringResource(R.string.no_categories),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            style = MaterialTheme.typography.headlineMediumEmphasized,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
         )
     }
 }
@@ -126,31 +133,39 @@ fun CategoriesList(
     onDeleteCategory: (Category) -> Unit
 ) {
     LazyColumn(
-        contentPadding = PaddingValues(vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(categories) { category ->
             CategoryItem(
                 category = category,
-                onEditClick = { onEditCategory(category.categoryId) },
-                onDeleteClick = { onDeleteCategory(category) }
+                onEdit = { onEditCategory(category.categoryId) },
+                onDelete = { onDeleteCategory(category) }
             )
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun CategoryItem(
     category: Category,
-    onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
 ) {
+    val categoryColor = try {
+        Color(category.colorCode.toColorInt())
+    } catch (e: Exception) {
+        MaterialTheme.colorScheme.primary
+    }
+
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onEditClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = MaterialTheme.shapes.medium
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -158,48 +173,42 @@ fun CategoryItem(
         ) {
             Box(
                 modifier = Modifier
-                    .size(32.dp)
+                    .size(40.dp)
                     .clip(CircleShape)
-                    .background(
-                        try {
-                            Color(category.colorCode.toColorInt())
-                        } catch (e: Exception) {
-                            Color.Gray
-                        }
-                    )
+                    .background(categoryColor)
             )
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = category.name,
-                    style = MaterialTheme.typography.titleMedium
+            Text(
+                text = category.name,
+                style = MaterialTheme.typography.titleMediumEmphasized,
+                modifier = Modifier.weight(1f)
+            )
+
+            IconButton(
+                onClick = onEdit,
+                colors = IconButtonDefaults.iconButtonColors(
+                    contentColor = MaterialTheme.colorScheme.primary
                 )
-
-                if (!category.description.isNullOrEmpty()) {
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = category.description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            IconButton(onClick = onEditClick) {
+            ) {
                 Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = stringResource(R.string.edit_category),
-                    tint = MaterialTheme.colorScheme.primary
+                    imageVector = Icons.Default.Edit, 
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
                 )
             }
 
-            IconButton(onClick = onDeleteClick) {
+            IconButton(
+                onClick = onDelete,
+                colors = IconButtonDefaults.iconButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error
+                )
+            ) {
                 Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = stringResource(R.string.delete_category),
-                    tint = MaterialTheme.colorScheme.error
+                    imageVector = Icons.Default.Delete, 
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }

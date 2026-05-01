@@ -19,6 +19,7 @@ import com.onlive.trackify.utils.LocalLocalizedContext
 import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.StatisticsViewModel
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun StatisticsScreen(
     viewModel: StatisticsViewModel = viewModel()
@@ -48,13 +49,13 @@ fun StatisticsScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    CircularProgressIndicator(
+                    LoadingIndicator(
                         color = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = stringResource(R.string.loading),
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.titleMediumEmphasized,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -79,7 +80,7 @@ fun StatisticsScreen(
                     formattedYearlySpending = formattedYearlySpending
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 if (spendingByCategory.isNotEmpty()) {
                     CategorySpendingCard(
@@ -90,13 +91,13 @@ fun StatisticsScreen(
                         formatAmount = { amount -> CurrencyFormatter.formatAmount(context, amount) }
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
 
                 if (monthlySpendingHistory.isNotEmpty()) {
                     MonthlySpendingCard(monthlySpending = monthlySpendingHistory)
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
 
                 if (subscriptionTypeSpending.isNotEmpty()) {
@@ -106,7 +107,7 @@ fun StatisticsScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(120.dp))
+                Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }

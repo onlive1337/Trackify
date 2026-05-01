@@ -45,7 +45,7 @@ class DataExportImportManager(private val context: Context) {
         val payments: List<Payment> = emptyList(),
         val categories: List<Category> = emptyList(),
         val userPreferences: UserPreferences = UserPreferences(),
-        val exportDate: String = ""
+        val exportDate: String = "",
     )
 
     suspend fun exportData(uri: Uri): Boolean = withContext(Dispatchers.IO) {
@@ -126,44 +126,28 @@ class DataExportImportManager(private val context: Context) {
             try {
                 database.runInTransaction {
                     Log.d(tag, "Clearing database before import")
-                    try {
-                        database.paymentDao().deleteAllSync()
-                        database.subscriptionDao().deleteAllSync()
-                        database.categoryDao().deleteAllSync()
-                    } catch (e: Exception) {
-                        Log.e(tag, "Error clearing database", e)
-                    }
+                    database.paymentDao().deleteAllSync()
+                    database.subscriptionDao().deleteAllSync()
+                    database.categoryDao().deleteAllSync()
 
                     Log.d(tag, "Importing categories")
                     for (category in categories) {
-                        try {
-                            database.categoryDao().insertSync(category)
-                        } catch (e: Exception) {
-                            Log.e(tag, "Error inserting category: ${category.categoryId}", e)
-                        }
+                        database.categoryDao().insertSync(category)
                     }
 
                     Log.d(tag, "Importing subscriptions")
                     for (subscription in subscriptions) {
-                        try {
-                            database.subscriptionDao().insertSync(subscription)
-                        } catch (e: Exception) {
-                            Log.e(tag, "Error inserting subscription: ${subscription.subscriptionId}", e)
-                        }
+                        database.subscriptionDao().insertSync(subscription)
                     }
 
                     Log.d(tag, "Importing payments")
                     for (payment in payments) {
-                        try {
-                            database.paymentDao().insertSync(payment)
-                        } catch (e: Exception) {
-                            Log.e(tag, "Error inserting payment: ${payment.paymentId}", e)
-                        }
+                        database.paymentDao().insertSync(payment)
                     }
                 }
                 Log.d(tag, "Database transaction completed successfully")
             } catch (e: Exception) {
-                Log.e(tag, "Error during database transaction", e)
+                Log.e(tag, "Error during database transaction, rolling back", e)
                 return@withContext false
             }
 

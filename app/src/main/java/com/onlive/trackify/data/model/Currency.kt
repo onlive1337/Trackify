@@ -21,7 +21,8 @@ data class Currency(
             Currency("INR", "₹", "Indian Rupee"),
             Currency("CAD", "C$", "Canadian Dollar"),
             Currency("AUD", "A$", "Australian Dollar"),
-            Currency("CHF", "Fr", "Swiss Franc", CurrencyFormat.SYMBOL_AFTER)
+            Currency("CHF", "Fr", "Swiss Franc", CurrencyFormat.SYMBOL_AFTER),
+            Currency("UZS", "so'm", "Uzbekistani Som", CurrencyFormat.SYMBOL_AFTER)
         )
 
         fun getCurrencyByCode(code: String): Currency {
@@ -68,6 +69,7 @@ data class Currency(
             "CAD" -> Locale.CANADA
             "AUD" -> Locale.Builder().setLanguage("en").setRegion("AU").build()
             "CHF" -> Locale.Builder().setLanguage("de").setRegion("CH").build()
+            "UZS" -> Locale.Builder().setLanguage("uz").setRegion("UZ").build()
             else -> Locale.getDefault()
         }
     }

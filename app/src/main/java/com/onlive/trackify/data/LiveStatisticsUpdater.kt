@@ -9,7 +9,6 @@ import com.onlive.trackify.data.model.Category
 import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.viewmodel.StatisticsViewModel
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -21,7 +20,8 @@ import java.util.concurrent.ConcurrentHashMap
 class LiveStatisticsUpdater(
     private val context: Context,
     subscriptionsLiveData: LiveData<List<Subscription>>,
-    categoriesLiveData: LiveData<List<Category>>
+    categoriesLiveData: LiveData<List<Category>>,
+    private val calculationScope: CoroutineScope
 ) {
     val totalMonthlySpending = MediatorLiveData<Double>()
     val totalYearlySpending = MediatorLiveData<Double>()
@@ -33,7 +33,6 @@ class LiveStatisticsUpdater(
     private val subscriptions = ConcurrentHashMap<Long, Subscription>()
     private val categories = ConcurrentHashMap<Long, Category>()
 
-    private val calculationScope = CoroutineScope(Dispatchers.Default)
     private var calculationJob: Job? = null
 
     private val tag = "LiveStatisticsUpdater"
@@ -222,14 +221,7 @@ class LiveStatisticsUpdater(
 
                         totalAmount += when (subscription.billingFrequency) {
                             BillingFrequency.MONTHLY -> subscription.price
-                            BillingFrequency.YEARLY -> {
-                                val paymentMonth = subscriptionStart.get(Calendar.MONTH)
-                                if (month == paymentMonth) {
-                                    subscription.price
-                                } else {
-                                    subscription.price / 12
-                                }
-                            }
+                            BillingFrequency.YEARLY -> subscription.price / 12
                         }
                     }
                 }

@@ -48,7 +48,7 @@ class PreferenceManager(context: Context) {
     }
 
     fun areNotificationsEnabled(): Boolean {
-        return prefs.getBoolean(KEY_NOTIFICATIONS_ENABLED, true)
+        return prefs.getBoolean(KEY_NOTIFICATIONS_ENABLED, false)
     }
 
     fun setNotificationsEnabled(enabled: Boolean) {

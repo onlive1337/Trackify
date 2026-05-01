@@ -1,8 +1,6 @@
 package com.onlive.trackify.ui.screens.settings
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -22,17 +20,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.style.TextOverflow
 import com.onlive.trackify.utils.LocalLocalizedContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.onlive.trackify.R
 import com.onlive.trackify.ui.components.TrackifyOutlinedCard
+import com.onlive.trackify.utils.AlarmScheduler
 import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.ThemeManager
 import com.onlive.trackify.utils.stringResource
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SettingsScreen(
     onNavigateToCategoryManagement: () -> Unit,
@@ -44,17 +48,21 @@ fun SettingsScreen(
     themeManager: ThemeManager
 ) {
     val context = LocalLocalizedContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val preferenceManager = remember { PreferenceManager(context) }
     val notificationScheduler = remember { NotificationScheduler(context) }
+    val alarmScheduler = remember { AlarmScheduler(context) }
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+
+    var showExactAlarmDialog by remember { mutableStateOf(value = false) }
 
     val checkNotificationPermission = {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ContextCompat.checkSelfPermission(
                 context,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
+                android.Manifest.permission.POST_NOTIFICATIONS
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
         } else {
             true
         }
@@ -62,6 +70,27 @@ fun SettingsScreen(
 
     var notificationsEnabled by remember {
         mutableStateOf(preferenceManager.areNotificationsEnabled() && checkNotificationPermission())
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                val hasPermission = alarmScheduler.canScheduleExactAlarms()
+                val hasNotificationPermission = checkNotificationPermission()
+
+                if (preferenceManager.areNotificationsEnabled() && (!hasPermission || !hasNotificationPermission)) {
+                    notificationsEnabled = false
+                    preferenceManager.setNotificationsEnabled(false)
+                    notificationScheduler.cancelNotifications()
+                } else if (preferenceManager.areNotificationsEnabled() && hasPermission && hasNotificationPermission) {
+                    notificationsEnabled = true
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
 
     var selectedThemeMode by remember {
@@ -109,28 +138,57 @@ fun SettingsScreen(
             TrackifyOutlinedCard(
                 title = stringResource(R.string.theme_settings)
             ) {
-                Column(
-                    modifier = Modifier.padding(vertical = 4.dp)
+                SingleChoiceSegmentedButtonRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
                 ) {
-                    ThemeOption(
-                        title = stringResource(R.string.light_theme),
+                    SegmentedButton(
                         selected = selectedThemeMode == ThemeManager.MODE_LIGHT,
                         onClick = {
                             selectedThemeMode = ThemeManager.MODE_LIGHT
                             themeManager.setThemeMode(ThemeManager.MODE_LIGHT)
                         },
-                        icon = Icons.Rounded.LightMode
-                    )
-
-                    ThemeOption(
-                        title = stringResource(R.string.dark_theme),
+                        shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Rounded.LightMode,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.light_theme),
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                    SegmentedButton(
                         selected = selectedThemeMode == ThemeManager.MODE_DARK,
                         onClick = {
                             selectedThemeMode = ThemeManager.MODE_DARK
                             themeManager.setThemeMode(ThemeManager.MODE_DARK)
                         },
-                        icon = Icons.Rounded.DarkMode
-                    )
+                        shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Rounded.DarkMode,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.dark_theme),
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
                 }
             }
 
@@ -146,9 +204,13 @@ fun SettingsScreen(
                                     val permissionGranted = checkNotificationPermission()
 
                                     if (permissionGranted) {
-                                        notificationsEnabled = true
-                                        preferenceManager.setNotificationsEnabled(true)
-                                        notificationScheduler.scheduleNotifications()
+                                        if (alarmScheduler.canScheduleExactAlarms()) {
+                                            notificationsEnabled = true
+                                            preferenceManager.setNotificationsEnabled(true)
+                                            notificationScheduler.scheduleNotifications()
+                                        } else {
+                                            showExactAlarmDialog = true
+                                        }
                                     } else {
                                         waitingForPermissionState.value = true
                                         val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
@@ -157,9 +219,13 @@ fun SettingsScreen(
                                         settingsLauncher.launch(intent)
                                     }
                                 } else {
-                                    notificationsEnabled = true
-                                    preferenceManager.setNotificationsEnabled(true)
-                                    notificationScheduler.scheduleNotifications()
+                                    if (alarmScheduler.canScheduleExactAlarms()) {
+                                        notificationsEnabled = true
+                                        preferenceManager.setNotificationsEnabled(true)
+                                        notificationScheduler.scheduleNotifications()
+                                    } else {
+                                        showExactAlarmDialog = true
+                                    }
                                 }
                             } else {
                                 notificationsEnabled = false
@@ -234,52 +300,38 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(120.dp))
         }
     }
-}
 
-@Composable
-private fun ThemeOption(
-    title: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-    icon: ImageVector
-) {
-    val haptic = LocalHapticFeedback.current
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                onClick()
+    if (showExactAlarmDialog) {
+        AlertDialog(
+            onDismissRequest = { 
+                showExactAlarmDialog = false 
+            },
+            title = { Text(stringResource(R.string.exact_alarm_permission_title)) },
+            text = { Text(stringResource(R.string.exact_alarm_permission_description)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        alarmScheduler.openAlarmSettings()
+                        showExactAlarmDialog = false
+                    }
+                ) {
+                    Text(stringResource(R.string.open_settings))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { 
+                        showExactAlarmDialog = false 
+                    }
+                ) {
+                    Text(stringResource(R.string.cancel))
+                }
             }
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(24.dp)
-        )
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyLarge,
-            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f)
-        )
-
-        RadioButton(
-            selected = selected,
-            onClick = onClick,
-            colors = RadioButtonDefaults.colors(
-                selectedColor = MaterialTheme.colorScheme.primary,
-                unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         )
     }
 }
+
+
 
 @Composable
 private fun NotificationToggleRow(

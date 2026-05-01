@@ -7,7 +7,6 @@
     <string name="title_settings">Настройки</string>
     <string name="yes">Да</string>
     <string name="enter_name">Введите название</string>
-    <string name="enter_correct_price">Введите корректную цену</string>
 
     <!-- Error messages -->
     <string name="error_creating_payment">Ошибка при создании платежа</string>
@@ -92,6 +91,9 @@
 
     <string name="notification_settings">Настройки уведомлений</string>
     <string name="notification_permission_denied">Для работы уведомлений необходимо разрешение. Включите уведомления в настройках приложения.</string>
+    <string name="exact_alarm_permission_title">Требуются точные уведомления</string>
+    <string name="exact_alarm_permission_description">Чтобы доставлять уведомления точно вовремя, Trackify нужно разрешение на использование будильников. Пожалуйста, включите его в настройках системы.</string>
+    <string name="open_settings">Открыть настройки</string>
     <string name="notification_time">Время уведомлений</string>
     <string name="notification_time_description">Выберите время, когда вы хотите получать уведомления о подписках</string>
     <string name="reminder_days">Дни напоминаний</string>
@@ -135,8 +137,6 @@
     <string name="in_a_month">Через месяц</string>
     <string name="one_year_later">Через год</string>
     <string name="unknown_error">Произошла неизвестная ошибка</string>
-    <string name="more_actions">Дополнительные действия</string>
-    <string name="notes">Примечания</string>
     <string name="import_restart_message">Для применения всех изменений рекомендуется перезапустить приложение.</string>
 
     <string name="per_year">в год</string>
@@ -153,7 +153,6 @@
     <string name="delete_subscription_confirmation">Удаление подписки</string>
     <string name="delete_subscription_message">Вы уверены, что хотите удалить эту подписку? Это действие нельзя отменить.</string>
 
-    <string name="delete_category">Удалить категорию</string>
     <string name="delete_category_confirmation">Удаление категории</string>
     <string name="delete_category_message">Вы уверены, что хотите удалить эту категорию?</string>
     <string name="category_no_name">Введите название категории</string>
@@ -173,15 +172,8 @@
     <string name="import_success">Данные успешно импортированы</string>
     <string name="import_error">Ошибка при импорте данных</string>
     <string name="subscription_types_spending">Расходы по типам подписок</string>
-    <string name="enter_correct_amount">Введите корректную сумму</string>
     <string name="select_subscription">Выберите подписку</string>
 
-    <plurals name="and_more_count">
-        <item quantity="one">…и ещё %d</item>
-        <item quantity="few">…и ещё %d</item>
-        <item quantity="many">…и ещё %d</item>
-        <item quantity="other">…и ещё %d</item>
-    </plurals>
     <string name="month_fallback">Месяц %d</string>
 
     <string name="no_internet_connection">Нет подключения к интернету</string>
@@ -213,5 +205,4 @@
     <string name="expense_tracking">Отслеживание расходов</string>
     <string name="expense_tracking_description">Контролируйте свои регулярные расходы и бюджет</string>
 
-    <string name="checking_subscriptions">Проверка подписок…</string>
 </resources>

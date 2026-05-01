@@ -1,173 +1,137 @@
 package com.onlive.trackify.ui.screens.payments
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Popup
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.utils.CurrencyFormatter
 import com.onlive.trackify.utils.DateUtils
-import com.onlive.trackify.utils.LocalLocalizedContext
 import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.PaymentViewModel
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
-import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun PaymentsScreen(
     onAddPayment: (Long, Long) -> Unit,
     paymentViewModel: PaymentViewModel = viewModel(),
     subscriptionViewModel: SubscriptionViewModel = viewModel()
 ) {
-    val payments by paymentViewModel.allPayments.observeAsState(emptyList())
-    val subscriptions by subscriptionViewModel.allSubscriptions.observeAsState(emptyList())
-    val context = LocalLocalizedContext.current
-    val haptic = LocalHapticFeedback.current
+    val context = LocalContext.current
+    val allPayments by paymentViewModel.allPayments.observeAsState(emptyList())
+    val allSubscriptions by subscriptionViewModel.allSubscriptions.observeAsState(emptyList())
 
-    val paymentToDeleteState = remember { mutableStateOf<Payment?>(null) }
-    val showDeleteDialogState = remember { mutableStateOf(false) }
-
-    val listState = rememberLazyListState()
-    val pageSize = 20
-    var displayedPayments by remember { mutableStateOf(payments.take(pageSize)) }
-    var isLoadingMore by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
-
-    LaunchedEffect(payments) {
-        displayedPayments = payments.take(pageSize)
-    }
-
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
-            .collect { lastVisibleIndex ->
-                if (lastVisibleIndex != null &&
-                    lastVisibleIndex >= displayedPayments.size - 5 &&
-                    displayedPayments.size < payments.size &&
-                    !isLoadingMore) {
-
-                    isLoadingMore = true
-                    coroutineScope.launch {
-                        try {
-                            val nextPageEnd = minOf(displayedPayments.size + pageSize, payments.size)
-                            displayedPayments = payments.take(nextPageEnd)
-                        } finally {
-                            isLoadingMore = false
-                        }
-                    }
-                }
-            }
-    }
+    val showDeleteDialogState = remember { mutableStateOf<Payment?>(null) }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp)
-        ) {
-            if (payments.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = stringResource(R.string.no_payments),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                    )
-                }
-            } else {
-                LazyColumn(
-                    state = listState,
-                    contentPadding = PaddingValues(top = 8.dp, bottom = 120.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                items(displayedPayments, key = { it.paymentId }) { payment ->
-                        val subscription = subscriptions.find { it.subscriptionId == payment.subscriptionId }
-                        PaymentItem(
-                            payment = payment,
-                            subscriptionName = subscription?.name ?: stringResource(R.string.unknown),
-                            formatAmount = { amount -> CurrencyFormatter.formatAmount(context, amount) },
-                            onPaymentClick = {
-                                onAddPayment(payment.subscriptionId, payment.paymentId)
-                            },
-                            onDeleteClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                paymentToDeleteState.value = payment
-                                showDeleteDialogState.value = true
-                            },
-                            modifier = Modifier.animateItem()
-                        )
-                    }
+        if (allPayments.isEmpty()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.no_payments),
+                    style = MaterialTheme.typography.headlineMediumEmphasized,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+                )
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 140.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(
+                    items = allPayments.sortedByDescending { it.date },
+                    key = { it.paymentId }
+                ) { payment ->
+                    val subscription = allSubscriptions.find { it.subscriptionId == payment.subscriptionId }
+                    val subscriptionName = subscription?.name ?: stringResource(R.string.unknown)
 
-                    if (isLoadingMore) {
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                            }
-                        }
-                    }
+                    PaymentItem(
+                        payment = payment,
+                        subscriptionName = subscriptionName,
+                        formatAmount = { amount -> CurrencyFormatter.formatAmount(context, amount) },
+                        onEdit = { onAddPayment(payment.subscriptionId, payment.paymentId) },
+                        onDelete = { showDeleteDialogState.value = payment }
+                    )
                 }
             }
         }
 
         FloatingActionButton(
-            onClick = {
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                onAddPayment(-1L, -1L)
-            },
+            onClick = { onAddPayment(-1L, -1L) },
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary,
-            shape = RoundedCornerShape(16.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = 130.dp)
+                .padding(end = 24.dp, bottom = 136.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.Add,
+                imageVector = Icons.Default.Add, 
                 contentDescription = stringResource(R.string.add_payment)
             )
         }
     }
 
-    if (showDeleteDialogState.value && paymentToDeleteState.value != null) {
+    if (showDeleteDialogState.value != null) {
         AlertDialog(
-            onDismissRequest = {
-                showDeleteDialogState.value = false
-                paymentToDeleteState.value = null
-            },
+            onDismissRequest = { showDeleteDialogState.value = null },
             title = { Text(stringResource(R.string.delete_payment_confirmation)) },
             text = { Text(stringResource(R.string.delete_payment_message)) },
             confirmButton = {
                 Button(
                     onClick = {
-                        paymentToDeleteState.value?.let { payment ->
-                            paymentViewModel.delete(payment)
+                        showDeleteDialogState.value?.let {
+                            paymentViewModel.delete(it)
                         }
-                        showDeleteDialogState.value = false
-                        paymentToDeleteState.value = null
+                        showDeleteDialogState.value = null
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error
@@ -177,12 +141,7 @@ fun PaymentsScreen(
                 }
             },
             dismissButton = {
-                TextButton(
-                    onClick = {
-                        showDeleteDialogState.value = false
-                        paymentToDeleteState.value = null
-                    }
-                ) {
+                TextButton(onClick = { showDeleteDialogState.value = null }) {
                     Text(stringResource(R.string.cancel))
                 }
             }
@@ -190,133 +149,112 @@ fun PaymentsScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun PaymentItem(
     payment: Payment,
     subscriptionName: String,
     formatAmount: (Double) -> String,
-    onPaymentClick: () -> Unit,
-    onDeleteClick: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var showMenu by remember { mutableStateOf(false) }
-
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
+        modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            contentColor = MaterialTheme.colorScheme.onSurface
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                modifier = Modifier.fillMaxWidth()
             ) {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(MaterialTheme.shapes.medium)
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = subscriptionName.take(1).uppercase(),
+                        style = MaterialTheme.typography.titleLargeEmphasized,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = subscriptionName,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        color = MaterialTheme.colorScheme.onSurface
+                        style = MaterialTheme.typography.titleMediumEmphasized
                     )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
                     Text(
                         text = DateUtils.formatDate(payment.date),
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
                 Text(
                     text = formatAmount(payment.amount),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMediumEmphasized,
                     color = MaterialTheme.colorScheme.primary
                 )
+            }
 
-                IconButton(
-                    onClick = { showMenu = true },
-                    modifier = Modifier.size(36.dp)
+            if (!payment.notes.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.5f),
+                    shape = MaterialTheme.shapes.small,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = stringResource(R.string.more_actions),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    Text(
+                        text = payment.notes,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(12.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-
-                    DropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.edit_payment)) },
-                            onClick = {
-                                showMenu = false
-                                onPaymentClick()
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.delete)) },
-                            onClick = {
-                                showMenu = false
-                                onDeleteClick()
-                            }
-                        )
-                    }
                 }
             }
 
-            if (!payment.notes.isNullOrEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                IconButton(
+                    onClick = onEdit,
+                    colors = IconButtonDefaults.iconButtonColors(
+                        contentColor = MaterialTheme.colorScheme.primary
+                    )
                 ) {
-                    Box {
-                        var showNotes by remember { mutableStateOf(false) }
+                    Icon(
+                        imageVector = Icons.Default.Edit, 
+                        contentDescription = stringResource(R.string.save),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
 
-                        IconButton(onClick = { showNotes = !showNotes }) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = stringResource(R.string.notes),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-
-                        if (showNotes) {
-                            Popup(
-                                alignment = Alignment.CenterEnd,
-                                onDismissRequest = { showNotes = false }
-                            ) {
-                                Surface(
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = MaterialTheme.colorScheme.surface,
-                                    tonalElevation = 3.dp,
-                                    shadowElevation = 3.dp
-                                ) {
-                                    Text(
-                                        text = payment.notes,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        modifier = Modifier.padding(12.dp),
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                }
-                            }
-                        }
-                    }
+                IconButton(
+                    onClick = onDelete,
+                    colors = IconButtonDefaults.iconButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete, 
+                        contentDescription = stringResource(R.string.delete),
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
         }

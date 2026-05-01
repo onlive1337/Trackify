@@ -7,6 +7,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -36,7 +37,7 @@ fun BarChart(
             val canvasHeight = size.height
             val barWidth = canvasWidth / data.size * 0.6f
             val spacing = canvasWidth / data.size * 0.4f / 2
-            val heightRatio = canvasHeight / maxValue.toFloat()
+            val heightRatio = if (maxValue > 0) canvasHeight / maxValue.toFloat() else 0f
 
             drawLine(
                 color = axisColor,
@@ -53,7 +54,7 @@ fun BarChart(
                     color = barColor,
                     topLeft = Offset(left, canvasHeight - barHeight),
                     size = Size(barWidth, barHeight),
-                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(4f, 4f)
+                    cornerRadius = CornerRadius(8f, 8f)
                 )
             }
         }
@@ -69,7 +70,7 @@ fun BarChart(
                 data.forEach { item ->
                     Text(
                         text = item.label,
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.width(32.dp)

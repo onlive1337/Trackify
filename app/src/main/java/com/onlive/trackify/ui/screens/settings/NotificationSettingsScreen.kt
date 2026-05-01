@@ -7,6 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import com.onlive.trackify.utils.stringResource
 import androidx.compose.ui.unit.dp
@@ -22,6 +23,8 @@ fun NotificationSettingsScreen(
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val configuration = LocalConfiguration.current
+    val locale = configuration.locales[0]
     val preferenceManager = remember { PreferenceManager(context) }
     val notificationScheduler = remember { NotificationScheduler(context) }
 
@@ -32,8 +35,8 @@ fun NotificationSettingsScreen(
     val (hour, minute) = preferenceManager.getNotificationTime()
     val notificationHourState = remember { mutableIntStateOf(hour) }
     val notificationMinuteState = remember { mutableIntStateOf(minute) }
-    var notificationTime by remember {
-        mutableStateOf(formatTime(notificationHourState.intValue, notificationMinuteState.intValue))
+    var notificationTime by remember(locale) {
+        mutableStateOf(formatTime(notificationHourState.intValue, notificationMinuteState.intValue, locale))
     }
 
     val showTimePickerDialogState = remember { mutableStateOf(false) }
@@ -166,7 +169,7 @@ fun NotificationSettingsScreen(
             onConfirm = { selectedHour, selectedMinute ->
                 notificationHourState.intValue = selectedHour
                 notificationMinuteState.intValue = selectedMinute
-                notificationTime = formatTime(selectedHour, selectedMinute)
+                notificationTime = formatTime(selectedHour, selectedMinute, locale)
                 preferenceManager.setNotificationTime(selectedHour, selectedMinute)
                 notificationScheduler.scheduleNotifications()
                 showTimePickerDialogState.value = false
@@ -182,6 +185,8 @@ fun TimePickerDialog(
     onDismiss: () -> Unit,
     onConfirm: (Int, Int) -> Unit
 ) {
+    val configuration = LocalConfiguration.current
+    val locale = configuration.locales[0]
     var hour by remember { mutableIntStateOf(initialHour) }
     var minute by remember { mutableIntStateOf(initialMinute) }
 
@@ -202,6 +207,7 @@ fun TimePickerDialog(
                 NumberPicker(
                     value = hour,
                     range = 0..23,
+                    locale = locale,
                     onValueChange = { hour = it }
                 )
 
@@ -214,6 +220,7 @@ fun TimePickerDialog(
                 NumberPicker(
                     value = minute,
                     range = 0..59,
+                    locale = locale,
                     onValueChange = { minute = it }
                 )
             }
@@ -237,6 +244,7 @@ fun TimePickerDialog(
 fun NumberPicker(
     value: Int,
     range: IntRange,
+    locale: Locale,
     onValueChange: (Int) -> Unit
 ) {
     Column(
@@ -266,7 +274,7 @@ fun NumberPicker(
             modifier = Modifier.padding(horizontal = 4.dp)
         ) {
             Text(
-                text = String.format(Locale.getDefault(), "%02d", value),
+                text = String.format(locale, "%02d", value),
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
             )
@@ -332,6 +340,6 @@ private fun ReminderDayOption(
     }
 }
 
-private fun formatTime(hour: Int, minute: Int): String {
-    return String.format(Locale.getDefault(), "%02d:%02d", hour, minute)
+private fun formatTime(hour: Int, minute: Int, locale: Locale): String {
+    return String.format(locale, "%02d:%02d", hour, minute)
 }
