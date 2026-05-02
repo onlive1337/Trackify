@@ -189,21 +189,17 @@ private fun CategoryItem(
             )
         }
 
-        Box(
+        LinearWavyProgressIndicator(
+            progress = { animatedProgress },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(5.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f))
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(animatedProgress)
-                    .fillMaxHeight()
-                    .clip(CircleShape)
-                    .background(accentColor)
-            )
-        }
+                .height(10.dp),
+            color = accentColor,
+            trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+            stopSize = WavyProgressIndicatorDefaults.LinearTrackStopIndicatorSize,
+            amplitude = { 1f },
+            waveSpeed = 0.dp
+        )
 
         Text(
             text = "${(percentage * 100).toInt()}%",

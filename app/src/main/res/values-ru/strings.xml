@@ -156,6 +156,11 @@
     <string name="delete_category_confirmation">Удаление категории</string>
     <string name="delete_category_message">Вы уверены, что хотите удалить эту категорию?</string>
     <string name="category_no_name">Введите название категории</string>
+    <string name="preview">Предпросмотр</string>
+    <string name="preview_category_list">Список категорий</string>
+    <string name="preview_subscription_list">Карточка подписки</string>
+    <string name="mock_subscription_name">Пример подписки</string>
+    <string name="mock_subscription_price">899 ₽</string>
 
     <string name="without_category">Без категории</string>
     <string name="unknown">Неизвестно</string>
