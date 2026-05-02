@@ -69,15 +69,8 @@ fun TrackifyApp(
                 TrackifyTopAppBar(title = topBarTitle)
             }
         },
-        bottomBar = {
-            if (showBottomBar) {
-                TrackifyBottomBar(
-                    navController = navController,
-                    currentRoute = currentDestination?.route ?: Screen.Home.route
-                )
-            }
-        },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets(0)
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -90,6 +83,14 @@ fun TrackifyApp(
                 themeManager = themeManager,
                 localeManager = localeManager
             )
+
+            if (showBottomBar) {
+                TrackifyBottomBar(
+                    navController = navController,
+                    currentRoute = currentDestination?.route ?: Screen.Home.route,
+                    modifier = Modifier.align(androidx.compose.ui.Alignment.BottomCenter)
+                )
+            }
         }
     }
 }

@@ -22,7 +22,7 @@ data class Currency(
             Currency("CAD", "C$", "Canadian Dollar"),
             Currency("AUD", "A$", "Australian Dollar"),
             Currency("CHF", "Fr", "Swiss Franc", CurrencyFormat.SYMBOL_AFTER),
-            Currency("UZS", "so'm", "Uzbekistani Som", CurrencyFormat.SYMBOL_AFTER)
+            Currency("UZS", "UZS", "Uzbekistani Som", CurrencyFormat.SYMBOL_AFTER)
         )
 
         fun getCurrencyByCode(code: String): Currency {

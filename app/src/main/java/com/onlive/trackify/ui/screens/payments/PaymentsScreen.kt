@@ -84,7 +84,7 @@ fun PaymentsScreen(
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 140.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(
                     items = allPayments.sortedByDescending { it.date },
@@ -111,7 +111,7 @@ fun PaymentsScreen(
             shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 24.dp, bottom = 136.dp)
+                .padding(end = 24.dp, bottom = 140.dp)
         ) {
             Icon(
                 imageVector = Icons.Default.Add, 

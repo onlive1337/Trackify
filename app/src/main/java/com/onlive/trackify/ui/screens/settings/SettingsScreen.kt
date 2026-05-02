@@ -236,8 +236,6 @@ fun SettingsScreen(
                     )
 
                     if (notificationsEnabled) {
-                        SettingsDivider()
-
                         SettingsItem(
                             icon = Icons.Outlined.Notifications,
                             title = stringResource(R.string.notification_settings),
@@ -259,79 +257,66 @@ fun SettingsScreen(
                         onClick = onNavigateToCategoryManagement
                     )
 
-                    SettingsDivider()
-
                     SettingsItem(
                         icon = Icons.Outlined.Payments,
                         title = stringResource(R.string.currency_settings),
                         onClick = onNavigateToCurrencySettings
                     )
 
-                    SettingsDivider()
-
                     SettingsItem(
                         icon = Icons.Outlined.Language,
                         title = stringResource(R.string.language_settings),
                         onClick = onNavigateToLanguageSettings
                     )
+
+                    SettingsItem(
+                        icon = Icons.Outlined.DataObject,
+                        title = stringResource(R.string.data_management),
+                        onClick = onNavigateToDataManagement
+                    )
+
+
+                    SettingsItem(
+                        icon = Icons.Outlined.Info,
+                        title = stringResource(R.string.about_app),
+                        onClick = onNavigateToAboutApp
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars).then(Modifier.height(112.dp)))
+        }
 
-            TrackifyOutlinedCard {
-                SettingsItem(
-                    icon = Icons.Outlined.DataObject,
-                    title = stringResource(R.string.data_management),
-                    onClick = onNavigateToDataManagement
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            TrackifyOutlinedCard {
-                SettingsItem(
-                    icon = Icons.Outlined.Info,
-                    title = stringResource(R.string.about_app),
-                    onClick = onNavigateToAboutApp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(120.dp))
+        if (showExactAlarmDialog) {
+            AlertDialog(
+                onDismissRequest = {
+                    showExactAlarmDialog = false
+                },
+                title = { Text(stringResource(R.string.exact_alarm_permission_title)) },
+                text = { Text(stringResource(R.string.exact_alarm_permission_description)) },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            alarmScheduler.openAlarmSettings()
+                            showExactAlarmDialog = false
+                        }
+                    ) {
+                        Text(stringResource(R.string.open_settings))
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            showExactAlarmDialog = false
+                        }
+                    ) {
+                        Text(stringResource(R.string.cancel))
+                    }
+                }
+            )
         }
     }
-
-    if (showExactAlarmDialog) {
-        AlertDialog(
-            onDismissRequest = { 
-                showExactAlarmDialog = false 
-            },
-            title = { Text(stringResource(R.string.exact_alarm_permission_title)) },
-            text = { Text(stringResource(R.string.exact_alarm_permission_description)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        alarmScheduler.openAlarmSettings()
-                        showExactAlarmDialog = false
-                    }
-                ) {
-                    Text(stringResource(R.string.open_settings))
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = { 
-                        showExactAlarmDialog = false 
-                    }
-                ) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
-        )
-    }
 }
-
-
 
 @Composable
 private fun NotificationToggleRow(
@@ -418,12 +403,4 @@ private fun SettingsItem(
             modifier = Modifier.size(20.dp)
         )
     }
-}
-
-@Composable
-private fun SettingsDivider() {
-    HorizontalDivider(
-        modifier = Modifier.padding(vertical = 8.dp),
-        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-    )
 }

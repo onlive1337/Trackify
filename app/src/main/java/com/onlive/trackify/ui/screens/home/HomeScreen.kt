@@ -123,7 +123,7 @@ fun HomeScreen(
             shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 24.dp, bottom = 136.dp)
+                .padding(end = 24.dp, bottom = 140.dp)
         ) {
             Icon(
                 imageVector = Icons.Filled.Add, 
