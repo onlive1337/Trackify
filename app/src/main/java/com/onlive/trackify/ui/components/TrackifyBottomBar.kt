@@ -37,9 +37,9 @@ fun TrackifyBottomBar(
     Row(
         modifier = modifier
             .navigationBarsPadding()
-            .padding(horizontal = 24.dp, vertical = 12.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
             .fillMaxWidth()
-            .clip(RoundedCornerShape(32.dp))
+            .clip(RoundedCornerShape(24.dp))
             .background(MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.97f))
             .padding(horizontal = 8.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
@@ -73,10 +73,9 @@ fun TrackifyBottomBar(
                     Text(
                         text = item.label,
                         maxLines = 1,
-                        softWrap = false,
                         overflow = TextOverflow.Ellipsis,
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.labelSmall
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Medium
                     )
                 },
                 colors = NavigationBarItemDefaults.colors(
