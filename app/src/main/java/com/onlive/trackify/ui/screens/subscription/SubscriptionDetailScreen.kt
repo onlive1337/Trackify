@@ -115,6 +115,9 @@ fun SubscriptionDetailScreen(
     val showEndDatePicker = remember { mutableStateOf(false) }
     val showDeleteDialog = remember { mutableStateOf(false) }
 
+    var nameError by remember { mutableStateOf(false) }
+    var priceError by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             TrackifyTopAppBar(
@@ -147,10 +150,17 @@ fun SubscriptionDetailScreen(
             TrackifyOutlinedCard(title = stringResource(R.string.subscription_name)) {
                 OutlinedTextField(
                     value = name,
-                    onValueChange = { name = it },
+                    onValueChange = {
+                        name = it
+                        if (nameError && it.isNotBlank()) nameError = false
+                    },
                     placeholder = { Text(stringResource(R.string.enter_name)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
+                    isError = nameError,
+                    supportingText = if (nameError) {
+                        { Text("Required field") }
+                    } else null,
                     shape = MaterialTheme.shapes.medium,
                     colors = OutlinedTextFieldDefaults.colors(
                         unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
@@ -171,10 +181,19 @@ fun SubscriptionDetailScreen(
                 ) {
                     OutlinedTextField(
                         value = price,
-                        onValueChange = { if (it.isEmpty() || it.toDoubleOrNull() != null) price = it },
+                        onValueChange = {
+                            if (it.isEmpty() || it.toDoubleOrNull() != null) {
+                                price = it
+                                if (priceError && it.toDoubleOrNull()?.let { v -> v > 0 } == true) priceError = false
+                            }
+                        },
                         placeholder = { Text("0.00") },
                         modifier = Modifier.fillMaxWidth().fillMaxHeight(),
                         singleLine = true,
+                        isError = priceError,
+                        supportingText = if (priceError) {
+                            { Text("Invalid price") }
+                        } else null,
                         keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                             keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal
                         ),
@@ -282,7 +301,13 @@ fun SubscriptionDetailScreen(
             Button(
                 onClick = {
                     val priceValue = price.toDoubleOrNull() ?: 0.0
-                    if (name.isNotEmpty() && priceValue > 0) {
+                    val isNameValid = name.isNotBlank()
+                    val isPriceValid = priceValue > 0
+
+                    nameError = !isNameValid
+                    priceError = !isPriceValid
+
+                    if (isNameValid && isPriceValid) {
                         val sub = Subscription(
                             subscriptionId = if (subscriptionId == -1L) 0 else subscriptionId,
                             name = name,

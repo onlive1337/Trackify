@@ -55,6 +55,10 @@ fun AddPaymentScreen(
     }
 
     val showDatePicker = remember { mutableStateOf(false) }
+    var showDeleteDialog = remember { mutableStateOf(false) }
+
+    var subError by remember { mutableStateOf(false) }
+    var amountError by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -75,11 +79,24 @@ fun AddPaymentScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             TrackifyOutlinedCard(title = stringResource(R.string.payment_subscription)) {
-                SubscriptionSelector(
-                    subscriptions = allSubscriptions,
-                    selectedSubscriptionId = selectedSubscriptionId,
-                    onSubscriptionSelected = { selectedSubscriptionId = it }
-                )
+                Column {
+                    SubscriptionSelector(
+                        subscriptions = allSubscriptions,
+                        selectedSubscriptionId = selectedSubscriptionId,
+                        onSubscriptionSelected = {
+                            selectedSubscriptionId = it ?: -1L
+                            if (subError && selectedSubscriptionId != -1L) subError = false
+                        }
+                    )
+                    if (subError) {
+                        Text(
+                            text = "Required field",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -87,10 +104,19 @@ fun AddPaymentScreen(
             TrackifyOutlinedCard(title = stringResource(R.string.payment_amount)) {
                 OutlinedTextField(
                     value = amount,
-                    onValueChange = { if (it.isEmpty() || it.toDoubleOrNull() != null) amount = it },
+                    onValueChange = {
+                        if (it.isEmpty() || it.toDoubleOrNull() != null) {
+                            amount = it
+                            if (amountError && it.toDoubleOrNull()?.let { v -> v > 0 } == true) amountError = false
+                        }
+                    },
                     placeholder = { Text("0.00") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
+                    isError = amountError,
+                    supportingText = if (amountError) {
+                        { Text("Invalid amount") }
+                    } else null,
                     keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                         keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal
                     ),
@@ -135,7 +161,13 @@ fun AddPaymentScreen(
             Button(
                 onClick = {
                     val amountValue = amount.toDoubleOrNull() ?: 0.0
-                    if (selectedSubscriptionId != -1L && amountValue > 0) {
+                    val isSubValid = selectedSubscriptionId != -1L
+                    val isAmountValid = amountValue > 0
+
+                    subError = !isSubValid
+                    amountError = !isAmountValid
+
+                    if (isSubValid && isAmountValid) {
                         val payment = Payment(
                             paymentId = if (paymentId == -1L) 0 else paymentId,
                             subscriptionId = selectedSubscriptionId,
