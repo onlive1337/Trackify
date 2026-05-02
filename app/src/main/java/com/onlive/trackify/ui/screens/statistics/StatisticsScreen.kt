@@ -1,8 +1,10 @@
 package com.onlive.trackify.ui.screens.statistics
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -13,101 +15,66 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.onlive.trackify.R
 import com.onlive.trackify.utils.CurrencyFormatter
 import com.onlive.trackify.utils.LocalLocalizedContext
-import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.StatisticsViewModel
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun StatisticsScreen(
-    viewModel: StatisticsViewModel = viewModel()
-) {
+fun StatisticsScreen(viewModel: StatisticsViewModel = viewModel()) {
     val context = LocalLocalizedContext.current
     val isLoading by viewModel.isLoading.observeAsState(true)
     val totalMonthlySpending by viewModel.totalMonthlySpending.observeAsState(0.0)
     val totalYearlySpending by viewModel.totalYearlySpending.observeAsState(0.0)
     val spendingByCategory by viewModel.spendingByCategory.observeAsState(emptyList())
-    val monthlySpendingHistory by viewModel.monthlySpendingHistory.observeAsState(emptyList())
-    val subscriptionTypeSpending by viewModel.subscriptionTypeSpending.observeAsState(emptyList())
-
-    val formattedMonthlySpending = CurrencyFormatter.formatAmount(context, totalMonthlySpending)
-    val formattedYearlySpending = CurrencyFormatter.formatAmount(context, totalYearlySpending)
 
     Box(modifier = Modifier.fillMaxSize()) {
         AnimatedVisibility(
             visible = isLoading,
             enter = fadeIn(),
-            exit = fadeOut()
+            exit = fadeOut(animationSpec = tween(300))
         ) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    LoadingIndicator(
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = stringResource(R.string.loading),
-                        style = MaterialTheme.typography.titleMediumEmphasized,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                LoadingIndicator(color = MaterialTheme.colorScheme.primary)
             }
         }
 
         AnimatedVisibility(
             visible = !isLoading,
-            enter = fadeIn(),
+            enter = fadeIn(animationSpec = tween(400)) +
+                    slideInVertically(
+                        animationSpec = tween(400),
+                        initialOffsetY = { it / 12 }
+                    ),
             exit = fadeOut()
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp)
                     .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(0.dp))
 
-                TotalSpendingCard(
-                    formattedMonthlySpending = formattedMonthlySpending,
-                    formattedYearlySpending = formattedYearlySpending
+                SpendingHeroCard(
+                    monthlyAmount = totalMonthlySpending,
+                    yearlyAmount = totalYearlySpending,
+                    formatAmount = { CurrencyFormatter.formatAmount(context, it) }
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
-
                 if (spendingByCategory.isNotEmpty()) {
-                    CategorySpendingCard(
+                    CategoryBreakdownCard(
                         categories = spendingByCategory,
                         totalAmount = totalMonthlySpending,
-                        formattedTotalAmount = formattedMonthlySpending,
-                        perMonthText = stringResource(R.string.per_month),
-                        formatAmount = { amount -> CurrencyFormatter.formatAmount(context, amount) }
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-                }
-
-                if (monthlySpendingHistory.isNotEmpty()) {
-                    MonthlySpendingCard(monthlySpending = monthlySpendingHistory)
-
-                    Spacer(modifier = Modifier.height(20.dp))
-                }
-
-                if (subscriptionTypeSpending.isNotEmpty()) {
-                    SubscriptionTypeCard(
-                        subscriptionTypes = subscriptionTypeSpending,
-                        formatAmount = { amount -> CurrencyFormatter.formatAmount(context, amount) }
+                        formatAmount = { CurrencyFormatter.formatAmount(context, it) }
                     )
                 }
 
-                Spacer(modifier = Modifier.height(140.dp))
+                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     }

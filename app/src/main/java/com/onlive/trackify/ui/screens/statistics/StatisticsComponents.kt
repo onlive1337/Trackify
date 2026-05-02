@@ -1,171 +1,215 @@
 package com.onlive.trackify.ui.screens.statistics
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.toColorInt
 import com.onlive.trackify.R
 import com.onlive.trackify.ui.components.AutoSizeText
-import com.onlive.trackify.ui.components.TrackifyCard
-import com.onlive.trackify.ui.components.charts.BarChart
-import com.onlive.trackify.ui.components.charts.BarChartData
-import com.onlive.trackify.ui.components.charts.CategorySpendingBar
 import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.StatisticsViewModel
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun TotalSpendingCard(
-    formattedMonthlySpending: String,
-    formattedYearlySpending: String,
-    modifier: Modifier = Modifier,
-) {
-    TrackifyCard(
-        modifier = modifier
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.weight(1f)
-            ) {
-                AutoSizeText(
-                    text = formattedMonthlySpending,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Black,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = stringResource(R.string.per_month),
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Box(
-                modifier = Modifier
-                    .width(1.dp)
-                    .height(40.dp)
-                    .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-            )
-
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.weight(1f)
-            ) {
-                AutoSizeText(
-                    text = formattedYearlySpending,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Black,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = stringResource(R.string.per_year),
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun CategorySpendingCard(
-    categories: List<StatisticsViewModel.CategorySpending>,
-    totalAmount: Double,
-    formattedTotalAmount: String,
-    perMonthText: String,
+fun SpendingHeroCard(
+    monthlyAmount: Double,
+    yearlyAmount: Double,
     formatAmount: (Double) -> String,
     modifier: Modifier = Modifier
 ) {
-    TrackifyCard(
-        title = stringResource(R.string.spending_by_category),
-        modifier = modifier
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.extraLarge,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 28.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+            Text(
+                text = stringResource(R.string.monthly_spending),
+                style = MaterialTheme.typography.labelLargeEmphasized,
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            AutoSizeText(
+                text = formatAmount(monthlyAmount),
+                style = MaterialTheme.typography.headlineLargeEmphasized,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.12f),
+                thickness = 1.dp
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = stringResource(R.string.total_category),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    AutoSizeText(
-                        text = formattedTotalAmount,
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Black,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.weight(1f, fill = false)
-                    )
-                }
-
                 Text(
-                    text = perMonthText,
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp)
+                    text = stringResource(R.string.per_year),
+                    style = MaterialTheme.typography.labelMediumEmphasized,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.55f)
+                )
+                Text(
+                    text = formatAmount(yearlyAmount),
+                    style = MaterialTheme.typography.titleLargeEmphasized,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
-
-            CategorySpendingBar(
-                categories = categories,
-                totalAmount = totalAmount,
-                formatAmount = formatAmount
-            )
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun MonthlySpendingCard(
-    monthlySpending: List<StatisticsViewModel.MonthlySpending>,
+fun CategoryBreakdownCard(
+    categories: List<StatisticsViewModel.CategorySpending>,
+    totalAmount: Double,
+    formatAmount: (Double) -> String,
     modifier: Modifier = Modifier
 ) {
-    val barChartData = monthlySpending.map { monthly ->
-        BarChartData(
-            label = monthly.month,
-            value = monthly.amount
-        )
-    }
-
-    TrackifyCard(
-        title = stringResource(R.string.spending_over_time),
-        modifier = modifier
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        BarChart(
-            data = barChartData,
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(220.dp)
-                .padding(top = 8.dp, bottom = 8.dp)
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.spending_by_category),
+                style = MaterialTheme.typography.labelLargeEmphasized,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            categories.take(6).forEach { category ->
+                CategoryItem(
+                    category = category,
+                    totalAmount = totalAmount,
+                    formatAmount = formatAmount
+                )
+            }
+
+            if (categories.size > 6) {
+                Text(
+                    text = "+${categories.size - 6}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun CategoryItem(
+    category: StatisticsViewModel.CategorySpending,
+    totalAmount: Double,
+    formatAmount: (Double) -> String
+) {
+    val categoryColor = remember(category.colorCode) {
+        runCatching { Color(category.colorCode.toColorInt()) }.getOrNull()
+    }
+    val accentColor = categoryColor ?: Color(0xFF808080)
+
+    val percentage = if (totalAmount > 0.0) (category.amount / totalAmount).toFloat() else 0f
+
+    var startAnimation by remember { mutableStateOf(false) }
+    val animatedProgress by animateFloatAsState(
+        targetValue = if (startAnimation) percentage else 0f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "bar_${category.categoryId}"
+    )
+
+    LaunchedEffect(Unit) { startAnimation = true }
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .clip(CircleShape)
+                    .background(accentColor)
+            )
+
+            Text(
+                text = category.categoryName,
+                style = MaterialTheme.typography.bodyMediumEmphasized,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f)
+            )
+
+            Text(
+                text = formatAmount(category.amount),
+                style = MaterialTheme.typography.bodyMediumEmphasized,
+                color = accentColor,
+                fontWeight = FontWeight.Black,
+                maxLines = 1
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(5.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f))
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(animatedProgress)
+                    .fillMaxHeight()
+                    .clip(CircleShape)
+                    .background(accentColor)
+            )
+        }
+
+        Text(
+            text = "${(percentage * 100).toInt()}%",
+            style = MaterialTheme.typography.labelSmallEmphasized,
+            color = accentColor.copy(alpha = 0.8f),
+            modifier = Modifier.align(Alignment.End)
         )
     }
 }

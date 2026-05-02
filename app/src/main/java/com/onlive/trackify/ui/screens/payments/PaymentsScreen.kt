@@ -83,7 +83,7 @@ fun PaymentsScreen(
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 140.dp),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(
@@ -111,10 +111,10 @@ fun PaymentsScreen(
             shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 24.dp, bottom = 140.dp)
+                .padding(end = 24.dp, bottom = 24.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.Add, 
+                imageVector = Icons.Default.Add,
                 contentDescription = stringResource(R.string.add_payment)
             )
         }
@@ -128,9 +128,7 @@ fun PaymentsScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        showDeleteDialogState.value?.let {
-                            paymentViewModel.delete(it)
-                        }
+                        showDeleteDialogState.value?.let { paymentViewModel.delete(it) }
                         showDeleteDialogState.value = null
                     },
                     colors = ButtonDefaults.buttonColors(
@@ -167,9 +165,7 @@ fun PaymentItem(
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -238,7 +234,7 @@ fun PaymentItem(
                     )
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Edit, 
+                        imageVector = Icons.Default.Edit,
                         contentDescription = stringResource(R.string.save),
                         modifier = Modifier.size(20.dp)
                     )
@@ -251,7 +247,7 @@ fun PaymentItem(
                     )
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Delete, 
+                        imageVector = Icons.Default.Delete,
                         contentDescription = stringResource(R.string.delete),
                         modifier = Modifier.size(20.dp)
                     )

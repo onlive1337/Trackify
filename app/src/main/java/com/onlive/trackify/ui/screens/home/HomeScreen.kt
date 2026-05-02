@@ -65,9 +65,7 @@ fun HomeScreen(
                 inputField = {
                     SearchBarDefaults.InputField(
                         query = query,
-                        onQueryChange = { newQuery ->
-                            query = newQuery
-                        },
+                        onQueryChange = { newQuery -> query = newQuery },
                         onSearch = { },
                         expanded = false,
                         onExpandedChange = { },
@@ -91,9 +89,7 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    LoadingIndicator(
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    LoadingIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             } else if (allSubscriptions.isEmpty()) {
                 EmptySubscriptionsView()
@@ -123,10 +119,10 @@ fun HomeScreen(
             shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 24.dp, bottom = 140.dp)
+                .padding(end = 24.dp, bottom = 24.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.Add, 
+                imageVector = Icons.Filled.Add,
                 contentDescription = stringResource(R.string.add_subscription)
             )
         }
@@ -156,7 +152,7 @@ fun SubscriptionsList(
     onSubscriptionClick: (Long) -> Unit
 ) {
     LazyColumn(
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 140.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(subscriptions) { subscription ->
