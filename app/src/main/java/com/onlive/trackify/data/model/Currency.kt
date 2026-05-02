@@ -34,8 +34,14 @@ data class Currency(
         try {
             val targetLocale = getLocaleForCurrency()
             val format = NumberFormat.getCurrencyInstance(targetLocale)
-            val javaCurrency = JavaCurrency.getInstance(code)
-            format.currency = javaCurrency
+            if (format is java.text.DecimalFormat) {
+                val symbols = format.decimalFormatSymbols
+                symbols.currencySymbol = symbol
+                format.decimalFormatSymbols = symbols
+            } else {
+                val javaCurrency = JavaCurrency.getInstance(code)
+                format.currency = javaCurrency
+            }
             format.maximumFractionDigits = maxDecimals
 
             if (includeSymbol) {
