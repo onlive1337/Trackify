@@ -136,20 +136,20 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState()),
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-
+            
             TrackifyOutlinedCard {
-                Column {
+                Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         text = stringResource(R.string.theme_settings),
-                        style = MaterialTheme.typography.labelLarge,
+                        style = MaterialTheme.typography.labelLargeEmphasized,
                         color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        modifier = Modifier.padding(bottom = 12.dp)
                     )
 
                     SingleChoiceSegmentedButtonRow(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp)
+                            .padding(bottom = 8.dp)
                     ) {
                         SegmentedButton(
                             selected = selectedThemeMode == ThemeManager.MODE_LIGHT,
@@ -199,7 +199,7 @@ fun SettingsScreen(
                         }
                     }
 
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     NotificationToggleRow(
                         enabled = notificationsEnabled,
@@ -248,13 +248,13 @@ fun SettingsScreen(
                         )
                     }
 
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
                         text = stringResource(R.string.general_settings),
-                        style = MaterialTheme.typography.labelLarge,
+                        style = MaterialTheme.typography.labelLargeEmphasized,
                         color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(vertical = 8.dp)
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
 
                     SettingsItem(
@@ -288,8 +288,6 @@ fun SettingsScreen(
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(100.dp))
         }
 
         if (showExactAlarmDialog) {

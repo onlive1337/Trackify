@@ -10,16 +10,22 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.onlive.trackify.R
 import com.onlive.trackify.ui.navigation.Screen
+import com.onlive.trackify.ui.theme.TrackifyTheme
+import com.onlive.trackify.utils.LocalLocalizedContext
 import com.onlive.trackify.utils.stringResource
 
 private data class NavItem(
@@ -37,10 +43,11 @@ fun TrackifyBottomBar(
     Row(
         modifier = modifier
             .navigationBarsPadding()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 24.dp, vertical = 12.dp)
             .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.97f))
+            .clip(RoundedCornerShape(32.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.98f))
+            .height(64.dp)
             .padding(horizontal = 8.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
@@ -67,7 +74,11 @@ fun TrackifyBottomBar(
                     }
                 },
                 icon = {
-                    Icon(item.icon, contentDescription = item.label)
+                    Icon(
+                        imageVector = item.icon, 
+                        contentDescription = item.label,
+                        modifier = Modifier.size(22.dp)
+                    )
                 },
                 label = {
                     Text(
@@ -75,7 +86,7 @@ fun TrackifyBottomBar(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Bold
                     )
                 },
                 colors = NavigationBarItemDefaults.colors(
@@ -85,8 +96,24 @@ fun TrackifyBottomBar(
                     unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                 ),
-                alwaysShowLabel = false
+                alwaysShowLabel = true
             )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun TrackifyBottomBarPreview() {
+    val context = LocalContext.current
+    CompositionLocalProvider(LocalLocalizedContext provides context) {
+        TrackifyTheme {
+            Box(modifier = Modifier.padding(16.dp)) {
+                TrackifyBottomBar(
+                    navController = rememberNavController(),
+                    currentRoute = Screen.Home.route
+                )
+            }
         }
     }
 }
