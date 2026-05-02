@@ -135,67 +135,72 @@ fun SettingsScreen(
                 .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
-            TrackifyOutlinedCard(
-                title = stringResource(R.string.theme_settings)
-            ) {
-                SingleChoiceSegmentedButtonRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                ) {
-                    SegmentedButton(
-                        selected = selectedThemeMode == ThemeManager.MODE_LIGHT,
-                        onClick = {
-                            selectedThemeMode = ThemeManager.MODE_LIGHT
-                            themeManager.setThemeMode(ThemeManager.MODE_LIGHT)
-                        },
-                        shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Rounded.LightMode,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = stringResource(R.string.light_theme),
-                                style = MaterialTheme.typography.bodyMedium,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                    SegmentedButton(
-                        selected = selectedThemeMode == ThemeManager.MODE_DARK,
-                        onClick = {
-                            selectedThemeMode = ThemeManager.MODE_DARK
-                            themeManager.setThemeMode(ThemeManager.MODE_DARK)
-                        },
-                        shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Rounded.DarkMode,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = stringResource(R.string.dark_theme),
-                                style = MaterialTheme.typography.bodyMedium,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                }
-            }
-
             Spacer(modifier = Modifier.height(16.dp))
 
             TrackifyOutlinedCard {
                 Column {
+                    Text(
+                        text = stringResource(R.string.theme_settings),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    SingleChoiceSegmentedButtonRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp)
+                    ) {
+                        SegmentedButton(
+                            selected = selectedThemeMode == ThemeManager.MODE_LIGHT,
+                            onClick = {
+                                selectedThemeMode = ThemeManager.MODE_LIGHT
+                                themeManager.setThemeMode(ThemeManager.MODE_LIGHT)
+                            },
+                            shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Rounded.LightMode,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = stringResource(R.string.light_theme),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                        SegmentedButton(
+                            selected = selectedThemeMode == ThemeManager.MODE_DARK,
+                            onClick = {
+                                selectedThemeMode = ThemeManager.MODE_DARK
+                                themeManager.setThemeMode(ThemeManager.MODE_DARK)
+                            },
+                            shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Rounded.DarkMode,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = stringResource(R.string.dark_theme),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                    }
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+
                     NotificationToggleRow(
                         enabled = notificationsEnabled,
                         onToggle = { enabled ->
@@ -242,15 +247,16 @@ fun SettingsScreen(
                             onClick = onNavigateToNotificationSettings
                         )
                     }
-                }
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
 
-            TrackifyOutlinedCard(
-                title = stringResource(R.string.general_settings)
-            ) {
-                Column {
+                    Text(
+                        text = stringResource(R.string.general_settings),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+
                     SettingsItem(
                         icon = Icons.Outlined.Category,
                         title = stringResource(R.string.manage_categories),
@@ -275,7 +281,6 @@ fun SettingsScreen(
                         onClick = onNavigateToDataManagement
                     )
 
-
                     SettingsItem(
                         icon = Icons.Outlined.Info,
                         title = stringResource(R.string.about_app),
@@ -284,7 +289,7 @@ fun SettingsScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars).then(Modifier.height(112.dp)))
+            Spacer(modifier = Modifier.height(100.dp))
         }
 
         if (showExactAlarmDialog) {
