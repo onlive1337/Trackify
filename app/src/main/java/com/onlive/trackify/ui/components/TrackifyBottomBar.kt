@@ -1,8 +1,6 @@
 package com.onlive.trackify.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material.icons.filled.AttachMoney
@@ -11,9 +9,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -40,18 +36,13 @@ fun TrackifyBottomBar(
     currentRoute: String,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier
-            .navigationBarsPadding()
-            .padding(horizontal = 24.dp, vertical = 12.dp)
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(32.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.98f))
-            .height(64.dp)
-            .padding(horizontal = 8.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically
+    NavigationBar(
+        modifier = modifier.fillMaxWidth(),
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
     ) {
+        Spacer(modifier = Modifier.width(12.dp))
+
         val navItems = listOf(
             NavItem(Icons.Filled.Home, stringResource(R.string.title_subscriptions), Screen.Home.route),
             NavItem(Icons.Filled.AttachMoney, stringResource(R.string.title_payments), Screen.Payments.route),
@@ -77,7 +68,7 @@ fun TrackifyBottomBar(
                     Icon(
                         imageVector = item.icon, 
                         contentDescription = item.label,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(24.dp)
                     )
                 },
                 label = {
@@ -85,20 +76,15 @@ fun TrackifyBottomBar(
                         text = item.label,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Medium
                     )
                 },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    selectedTextColor = MaterialTheme.colorScheme.primary,
-                    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-                ),
-                alwaysShowLabel = true
+                alwaysShowLabel = false
             )
         }
+
+        Spacer(modifier = Modifier.width(12.dp))
     }
 }
 

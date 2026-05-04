@@ -6,15 +6,14 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -30,6 +29,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -67,6 +67,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -133,28 +134,31 @@ fun OnboardingScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 24.dp)
+                    .statusBarsPadding()
                     .padding(bottom = if (showBottomContinue) 80.dp + 24.dp else 0.dp)
             ) {
                 OnboardingProgressIndicator(
                     currentStep = currentStep,
-                    modifier = Modifier.padding(vertical = 24.dp)
+                    onStepClick = { step -> currentStep = step },
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 24.dp)
                 )
 
-                val spatialSpec = MaterialTheme.motionScheme.defaultSpatialSpec<androidx.compose.ui.unit.IntOffset>()
                 AnimatedContent(
                     targetState = currentStep,
                     transitionSpec = {
-                        slideIntoContainer(
-                            towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                            animationSpec = spatialSpec
-                        ) togetherWith slideOutOfContainer(
-                            towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                            animationSpec = spatialSpec
-                        )
+                        (androidx.compose.animation.fadeIn(
+                            animationSpec = tween(400)
+                        ) + androidx.compose.animation.scaleIn(
+                            initialScale = 0.95f,
+                            animationSpec = tween(400)
+                        )) togetherWith androidx.compose.animation.fadeOut(
+                            animationSpec = tween(400)
+                        ) using androidx.compose.animation.SizeTransform(clip = false)
                     },
                     label = "onboarding_step",
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .clipToBounds()
                 ) { step ->
                     when (step) {
                         0 -> WelcomeStep(
@@ -224,6 +228,7 @@ fun OnboardingScreen(
 @Composable
 private fun OnboardingProgressIndicator(
     currentStep: Int,
+    onStepClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val totalSteps = 4
@@ -249,6 +254,10 @@ private fun OnboardingProgressIndicator(
                         if (isActive) MaterialTheme.colorScheme.primary
                         else MaterialTheme.colorScheme.surfaceVariant
                     )
+                    .clickable(
+                        enabled = index < currentStep,
+                        onClick = { onStepClick(index) }
+                    )
             )
         }
     }
@@ -267,15 +276,16 @@ private fun WelcomeStep(
 
     AnimatedVisibility(
         visible = isVisible,
-        enter = fadeIn(animationSpec = tween(800)) + slideInVertically(
+        enter = fadeIn(animationSpec = tween(800)) + androidx.compose.animation.slideInVertically(
             animationSpec = spring(stiffness = Spring.StiffnessLow),
-            initialOffsetY = { it / 3 }
+            initialOffsetY = { fullHeight -> fullHeight / 3 }
         )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -340,7 +350,7 @@ private fun LanguageSelectionStep(
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(bottom = 24.dp)
+        contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp)
     ) {
         item {
             OnboardingStepHeader(
@@ -370,7 +380,7 @@ private fun CurrencySelectionStep(
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(bottom = 24.dp)
+        contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp)
     ) {
         item {
             OnboardingStepHeader(
@@ -411,6 +421,7 @@ private fun NotificationPermissionStep(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp)
     ) {
         OnboardingStepHeader(
             icon = Icons.Default.Notifications,

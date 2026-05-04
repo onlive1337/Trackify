@@ -22,8 +22,14 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -47,6 +53,13 @@ fun HomeScreen(
     val allSubscriptions by viewModel.allSubscriptions.observeAsState(emptyList())
     val loading by viewModel.isLoading.observeAsState(false)
 
+    var isTransitioning by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(400)
+        isTransitioning = false
+    }
+
     var query by remember { mutableStateOf("") }
 
     val filteredSubscriptions = remember(query, allSubscriptions) {
@@ -59,72 +72,89 @@ fun HomeScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            SearchBar(
-                inputField = {
-                    SearchBarDefaults.InputField(
-                        query = query,
-                        onQueryChange = { newQuery -> query = newQuery },
-                        onSearch = { },
+    AnimatedContent(
+        targetState = isTransitioning,
+        transitionSpec = {
+            fadeIn(animationSpec = tween(400)) togetherWith fadeOut(animationSpec = tween(400)) using androidx.compose.animation.SizeTransform(clip = false)
+        },
+        label = "home_loading_transition"
+    ) { transitioning ->
+        if (transitioning) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                LoadingIndicator(color = MaterialTheme.colorScheme.primary)
+            }
+        } else {
+            Box(modifier = Modifier.fillMaxSize()) {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    SearchBar(
+                        inputField = {
+                            SearchBarDefaults.InputField(
+                                query = query,
+                                onQueryChange = { newQuery -> query = newQuery },
+                                onSearch = { },
+                                expanded = false,
+                                onExpandedChange = { },
+                                placeholder = { Text(stringResource(R.string.search_subscriptions)) },
+                                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) }
+                            )
+                        },
                         expanded = false,
                         onExpandedChange = { },
-                        placeholder = { Text(stringResource(R.string.search_subscriptions)) },
-                        leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) }
-                    )
-                },
-                expanded = false,
-                onExpandedChange = { },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 24.dp),
-                shape = MaterialTheme.shapes.extraLarge,
-                colors = SearchBarDefaults.colors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                )
-            ) {}
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp, vertical = 24.dp),
+                        shape = MaterialTheme.shapes.extraLarge,
+                        colors = SearchBarDefaults.colors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                        )
+                    ) {}
 
-            if (loading) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    LoadingIndicator(color = MaterialTheme.colorScheme.primary)
+                    if (loading) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            LoadingIndicator(color = MaterialTheme.colorScheme.primary)
+                        }
+                    } else if (allSubscriptions.isEmpty()) {
+                        EmptySubscriptionsView()
+                    } else if (filteredSubscriptions.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = stringResource(R.string.subscriptions_not_found),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                            )
+                        }
+                    } else {
+                        SubscriptionsList(
+                            subscriptions = filteredSubscriptions,
+                            onSubscriptionClick = onSubscriptionClick
+                        )
+                    }
                 }
-            } else if (allSubscriptions.isEmpty()) {
-                EmptySubscriptionsView()
-            } else if (filteredSubscriptions.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+
+                FloatingActionButton(
+                    onClick = onAddSubscription,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 24.dp, bottom = 24.dp)
                 ) {
-                    Text(
-                        text = stringResource(R.string.subscriptions_not_found),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = stringResource(R.string.add_subscription)
                     )
                 }
-            } else {
-                SubscriptionsList(
-                    subscriptions = filteredSubscriptions,
-                    onSubscriptionClick = onSubscriptionClick
-                )
             }
-        }
-
-        FloatingActionButton(
-            onClick = onAddSubscription,
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 24.dp, bottom = 24.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Add,
-                contentDescription = stringResource(R.string.add_subscription)
-            )
         }
     }
 }
