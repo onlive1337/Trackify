@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.onlive.trackify.R
+import com.onlive.trackify.ui.components.TrackifyCard
 import com.onlive.trackify.ui.components.TrackifyOutlinedCard
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.LocaleHelper
@@ -99,10 +100,10 @@ private fun LanguageItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    TrackifyOutlinedCard(
-        modifier = modifier
-            .padding(vertical = 4.dp),
+    TrackifyCard(
+        modifier = modifier.padding(vertical = 4.dp),
         onClick = onClick,
+        useOutline = false,
         backgroundColor = if (selected)
             MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
         else
@@ -123,7 +124,7 @@ private fun LanguageItem(
 
             RadioButton(
                 selected = selected,
-                onClick = null // Handled by Card click
+                onClick = null
             )
         }
     }

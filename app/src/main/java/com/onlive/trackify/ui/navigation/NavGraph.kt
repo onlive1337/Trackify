@@ -1,5 +1,7 @@
 package com.onlive.trackify.ui.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -27,6 +29,18 @@ import com.onlive.trackify.ui.screens.subscription.SubscriptionDetailScreen
 import com.onlive.trackify.utils.LocaleManager
 import com.onlive.trackify.utils.ThemeManager
 
+private val mainTabRoutes = listOf(
+    Screen.Home.route,
+    Screen.Payments.route,
+    Screen.Statistics.route,
+    Screen.Settings.route
+)
+
+private fun getTabIndex(route: String?): Int {
+    if (route == null) return -1
+    return mainTabRoutes.indexOf(route)
+}
+
 sealed class Screen(val route: String) {
     object Onboarding : Screen("onboarding")
     object Home : Screen("home")
@@ -51,7 +65,6 @@ sealed class Screen(val route: String) {
         fun createRoute(categoryId: Long) = "category_detail/$categoryId"
     }
 
-
     object CurrencySettings : Screen("currency_settings")
     object LanguageSettings : Screen("language_settings")
     object NotificationSettings : Screen("notification_settings")
@@ -65,47 +78,36 @@ class NavigationActions(navController: NavHostController) {
             popUpTo(0) { inclusive = true }
         }
     }
-
     val navigateToAddSubscription: () -> Unit = {
         navController.navigate(Screen.AddSubscription.route)
     }
-
     val navigateToSubscriptionDetail: (Long) -> Unit = { subscriptionId ->
         navController.navigate(Screen.SubscriptionDetail.createRoute(subscriptionId))
     }
-
     val navigateToAddPayment: (Long, Long) -> Unit = { subscriptionId, paymentId ->
         navController.navigate(Screen.AddPayment.createRoute(subscriptionId, paymentId))
     }
-
     val navigateToCategoryManagement: () -> Unit = {
         navController.navigate(Screen.CategoryManagement.route)
     }
-
     val navigateToCategoryDetail: (Long) -> Unit = { categoryId ->
         navController.navigate(Screen.CategoryDetail.createRoute(categoryId))
     }
-
     val navigateToCurrencySettings: () -> Unit = {
         navController.navigate(Screen.CurrencySettings.route)
     }
-
     val navigateToLanguageSettings: () -> Unit = {
         navController.navigate(Screen.LanguageSettings.route)
     }
-
     val navigateToNotificationSettings: () -> Unit = {
         navController.navigate(Screen.NotificationSettings.route)
     }
-
     val navigateToDataManagement: () -> Unit = {
         navController.navigate(Screen.DataManagement.route)
     }
-
     val navigateToAboutApp: () -> Unit = {
         navController.navigate(Screen.AboutApp.route)
     }
-
     val navigateBack: () -> Unit = {
         navController.popBackStack()
     }
@@ -128,29 +130,41 @@ fun TrackifyNavGraph(
         startDestination = startDestination,
         modifier = modifier,
         enterTransition = {
-            androidx.compose.animation.fadeIn(
-                animationSpec = androidx.compose.animation.core.tween(300)
-            ) + androidx.compose.animation.scaleIn(
-                initialScale = 0.95f,
-                animationSpec = androidx.compose.animation.core.tween(300)
-            )
+            val initIndex = getTabIndex(initialState.destination.route)
+            val targetIndex = getTabIndex(targetState.destination.route)
+            if (initIndex != -1 && targetIndex != -1) {
+                if (targetIndex > initIndex) slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left, tween(250))
+                else slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right, tween(250))
+            } else {
+                slideIntoContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(250)
+                )
+            }
         },
         exitTransition = {
-            androidx.compose.animation.fadeOut(
-                animationSpec = androidx.compose.animation.core.tween(300)
-            )
+            val initIndex = getTabIndex(initialState.destination.route)
+            val targetIndex = getTabIndex(targetState.destination.route)
+            if (initIndex != -1 && targetIndex != -1) {
+                if (targetIndex > initIndex) slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left, tween(250))
+                else slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right, tween(250))
+            } else {
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(250)
+                )
+            }
         },
         popEnterTransition = {
-            androidx.compose.animation.fadeIn(
-                animationSpec = androidx.compose.animation.core.tween(300)
-            ) + androidx.compose.animation.scaleIn(
-                initialScale = 0.95f,
-                animationSpec = androidx.compose.animation.core.tween(300)
+            slideIntoContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                animationSpec = tween(250)
             )
         },
         popExitTransition = {
-            androidx.compose.animation.fadeOut(
-                animationSpec = androidx.compose.animation.core.tween(300)
+            slideOutOfContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                animationSpec = tween(250)
             )
         }
     ) {
@@ -160,24 +174,18 @@ fun TrackifyNavGraph(
                 localeManager = localeManager
             )
         }
-
         composable(Screen.Home.route) {
             HomeScreen(
                 onAddSubscription = navigationActions.navigateToAddSubscription,
                 onSubscriptionClick = navigationActions.navigateToSubscriptionDetail
             )
         }
-
         composable(Screen.Payments.route) {
-            PaymentsScreen(
-                onAddPayment = navigationActions.navigateToAddPayment
-            )
+            PaymentsScreen(onAddPayment = navigationActions.navigateToAddPayment)
         }
-
         composable(Screen.Statistics.route) {
             StatisticsScreen()
         }
-
         composable(Screen.Settings.route) {
             SettingsScreen(
                 onNavigateToCategoryManagement = navigationActions.navigateToCategoryManagement,
@@ -189,12 +197,9 @@ fun TrackifyNavGraph(
                 themeManager = themeManager ?: ThemeManager(LocalContext.current)
             )
         }
-
         composable(
             route = Screen.SubscriptionDetail.route,
-            arguments = listOf(
-                navArgument("subscriptionId") { type = NavType.LongType }
-            )
+            arguments = listOf(navArgument("subscriptionId") { type = NavType.LongType })
         ) { entry ->
             val subscriptionId = entry.arguments?.getLong("subscriptionId") ?: -1L
             SubscriptionDetailScreen(
@@ -202,25 +207,17 @@ fun TrackifyNavGraph(
                 onNavigateBack = navigationActions.navigateBack
             )
         }
-
         composable(Screen.AddSubscription.route) {
             SubscriptionDetailScreen(
                 subscriptionId = -1L,
                 onNavigateBack = navigationActions.navigateBack
             )
         }
-
         composable(
             route = Screen.AddPayment.route,
             arguments = listOf(
-                navArgument("subscriptionId") {
-                    type = NavType.LongType
-                    defaultValue = -1L
-                },
-                navArgument("paymentId") {
-                    type = NavType.LongType
-                    defaultValue = -1L
-                }
+                navArgument("subscriptionId") { type = NavType.LongType; defaultValue = -1L },
+                navArgument("paymentId") { type = NavType.LongType; defaultValue = -1L }
             )
         ) { entry ->
             val subscriptionId = entry.arguments?.getLong("subscriptionId") ?: -1L
@@ -231,7 +228,6 @@ fun TrackifyNavGraph(
                 onNavigateBack = navigationActions.navigateBack
             )
         }
-
         composable(Screen.CategoryManagement.route) {
             CategoryManagementScreen(
                 onNavigateBack = navigationActions.navigateBack,
@@ -239,12 +235,9 @@ fun TrackifyNavGraph(
                 onEditCategory = navigationActions.navigateToCategoryDetail
             )
         }
-
         composable(
             route = Screen.CategoryDetail.route,
-            arguments = listOf(
-                navArgument("categoryId") { type = NavType.LongType }
-            )
+            arguments = listOf(navArgument("categoryId") { type = NavType.LongType })
         ) { entry ->
             val categoryId = entry.arguments?.getLong("categoryId") ?: -1L
             CategoryDetailScreen(
@@ -252,35 +245,20 @@ fun TrackifyNavGraph(
                 onNavigateBack = navigationActions.navigateBack
             )
         }
-
         composable(Screen.CurrencySettings.route) {
-            CurrencySettingsScreen(
-                onNavigateBack = navigationActions.navigateBack
-            )
+            CurrencySettingsScreen(onNavigateBack = navigationActions.navigateBack)
         }
-
         composable(Screen.LanguageSettings.route) {
-            LanguageSettingsScreen(
-                onNavigateBack = navigationActions.navigateBack
-            )
+            LanguageSettingsScreen(onNavigateBack = navigationActions.navigateBack)
         }
-
         composable(Screen.NotificationSettings.route) {
-            NotificationSettingsScreen(
-                onNavigateBack = navigationActions.navigateBack
-            )
+            NotificationSettingsScreen(onNavigateBack = navigationActions.navigateBack)
         }
-
         composable(Screen.DataManagement.route) {
-            DataManagementScreen(
-                onNavigateBack = navigationActions.navigateBack
-            )
+            DataManagementScreen(onNavigateBack = navigationActions.navigateBack)
         }
-
         composable(Screen.AboutApp.route) {
-            AboutAppScreen(
-                onNavigateBack = navigationActions.navigateBack
-            )
+            AboutAppScreen(onNavigateBack = navigationActions.navigateBack)
         }
     }
 }
