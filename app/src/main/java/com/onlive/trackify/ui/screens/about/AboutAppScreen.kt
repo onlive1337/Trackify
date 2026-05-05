@@ -16,8 +16,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
-import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +43,8 @@ import com.onlive.trackify.utils.stringResource
 fun AboutAppScreen(
     onNavigateBack: () -> Unit
 ) {
+    val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
+
     Scaffold(
         topBar = {
             TrackifyTopAppBar(
@@ -114,7 +116,7 @@ fun AboutAppScreen(
             AboutLinkItem(
                 icon = Icons.AutoMirrored.Filled.Chat,
                 label = stringResource(R.string.telegram),
-                onClick = {}
+                onClick = { uriHandler.openUri("https://t.me/onswix") }
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -122,26 +124,31 @@ fun AboutAppScreen(
             AboutLinkItem(
                 icon = Icons.Default.Code,
                 label = stringResource(R.string.github),
-                onClick = {}
+                onClick = { uriHandler.openUri("https://github.com/onlive1337/Trackify") }
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            AboutLinkItem(
-                icon = Icons.Default.BugReport,
-                label = stringResource(R.string.report_error),
-                onClick = {}
-            )
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            Text(
-                text = stringResource(R.string.credits),
-                style = MaterialTheme.typography.labelMedium,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 32.dp)
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 32.dp),
+                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Made by onlive with ",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Icon(
+                    imageVector = androidx.compose.material.icons.Icons.Default.Favorite,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
         }
     }
 }
