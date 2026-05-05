@@ -143,7 +143,7 @@ fun AboutAppScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Icon(
-                    imageVector = androidx.compose.material.icons.Icons.Default.Favorite,
+                    imageVector = Icons.Default.Favorite,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(14.dp)

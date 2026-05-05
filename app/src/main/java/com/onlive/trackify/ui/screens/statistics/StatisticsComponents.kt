@@ -146,9 +146,9 @@ private fun CategoryItem(
 
     val percentage = if (totalAmount > 0.0) (category.amount / totalAmount).toFloat() else 0f
 
-    var startAnimation by remember { mutableStateOf(false) }
+    val startAnimation = remember { mutableStateOf(false) }
     val animatedProgress by animateFloatAsState(
-        targetValue = if (startAnimation) percentage else 0f,
+        targetValue = if (startAnimation.value) percentage else 0f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessLow
@@ -156,7 +156,7 @@ private fun CategoryItem(
         label = "bar_${category.categoryId}"
     )
 
-    LaunchedEffect(Unit) { startAnimation = true }
+    LaunchedEffect(Unit) { startAnimation.value = true }
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(

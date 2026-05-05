@@ -82,7 +82,6 @@ fun SubscriptionDetailScreen(
     categoryViewModel: CategoryViewModel = viewModel(),
     paymentViewModel: PaymentViewModel = viewModel()
 ) {
-    val context = LocalContext.current
     val allCategories by categoryViewModel.allCategories.observeAsState(emptyList())
     val subscriptionState = subscriptionViewModel.getSubscriptionById(subscriptionId).observeAsState()
     val allPayments by paymentViewModel.getPaymentsBySubscription(subscriptionId).observeAsState(emptyList())
@@ -421,7 +420,7 @@ fun CategorySelector(
                         .clip(CircleShape)
                         .background(
                             selectedCategory?.colorCode?.let {
-                                try { Color(it.toColorInt()) } catch (e: Exception) { Color.Gray }
+                                try { Color(it.toColorInt()) } catch (_: Exception) { Color.Gray }
                             } ?: MaterialTheme.colorScheme.outline
                         )
                 )
@@ -456,7 +455,7 @@ fun CategorySelector(
                                     .size(16.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        try { Color(category.colorCode.toColorInt()) } catch (e: Exception) { Color.Gray }
+                                        try { Color(category.colorCode.toColorInt()) } catch (_: Exception) { Color.Gray }
                                     )
                             )
                             Spacer(modifier = Modifier.width(12.dp))

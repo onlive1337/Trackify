@@ -146,7 +146,7 @@ fun OnboardingScreen(
                 AnimatedContent(
                     targetState = currentStep,
                     transitionSpec = {
-                        (androidx.compose.animation.fadeIn(
+                        (fadeIn(
                             animationSpec = tween(400)
                         ) + androidx.compose.animation.scaleIn(
                             initialScale = 0.95f,

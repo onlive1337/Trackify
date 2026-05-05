@@ -54,8 +54,3 @@ fun stringResource(id: Int, vararg formatArgs: Any): String {
     return context.getString(id, *formatArgs)
 }
 
-@Composable
-fun pluralStringResource(id: Int, quantity: Int, vararg formatArgs: Any): String {
-    val context = LocalLocalizedContext.current
-    return context.resources.getQuantityString(id, quantity, *formatArgs)
-}

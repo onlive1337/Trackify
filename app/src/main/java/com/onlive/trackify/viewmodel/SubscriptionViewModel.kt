@@ -4,7 +4,6 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.onlive.trackify.TrackifyApplication
 import com.onlive.trackify.data.database.AppDatabase
@@ -19,8 +18,6 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
     private val repository: SubscriptionRepository
     private val errorHandler: ErrorHandler = (application as TrackifyApplication).errorHandler
 
-    private val _isLoading = MutableLiveData<Boolean>()
-    val isLoading: LiveData<Boolean> = _isLoading
 
     val allSubscriptions: LiveData<List<Subscription>>
 
@@ -35,8 +32,6 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
     }
 
     fun insert(subscription: Subscription) = viewModelScope.launch {
-        _isLoading.value = true
-
         try {
             val result = repository.insert(subscription)
 
@@ -45,14 +40,10 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
             }
         } catch (e: Exception) {
             errorHandler.handleError(e, true)
-        } finally {
-            _isLoading.value = false
         }
     }
 
     fun update(subscription: Subscription) = viewModelScope.launch {
-        _isLoading.value = true
-
         try {
             val result = repository.update(subscription)
 
@@ -61,14 +52,10 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
             }
         } catch (e: Exception) {
             errorHandler.handleError(e, true)
-        } finally {
-            _isLoading.value = false
         }
     }
 
     fun delete(subscription: Subscription) = viewModelScope.launch {
-        _isLoading.value = true
-
         try {
             val result = repository.delete(subscription)
 
@@ -77,8 +64,6 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
             }
         } catch (e: Exception) {
             errorHandler.handleError(e, true)
-        } finally {
-            _isLoading.value = false
         }
     }
 

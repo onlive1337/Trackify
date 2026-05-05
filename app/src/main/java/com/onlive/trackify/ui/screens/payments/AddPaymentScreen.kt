@@ -55,7 +55,6 @@ fun AddPaymentScreen(
     }
 
     val showDatePicker = remember { mutableStateOf(false) }
-    var showDeleteDialog = remember { mutableStateOf(false) }
 
     var subError by remember { mutableStateOf(false) }
     var amountError by remember { mutableStateOf(false) }
@@ -84,7 +83,7 @@ fun AddPaymentScreen(
                         subscriptions = allSubscriptions,
                         selectedSubscriptionId = selectedSubscriptionId,
                         onSubscriptionSelected = {
-                            selectedSubscriptionId = it ?: -1L
+                            selectedSubscriptionId = it
                             if (subError && selectedSubscriptionId != -1L) subError = false
                         }
                     )
