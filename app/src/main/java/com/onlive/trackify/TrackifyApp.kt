@@ -3,6 +3,7 @@ package com.onlive.trackify
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -19,7 +20,8 @@ import com.onlive.trackify.utils.ThemeManager
 @Composable
 fun TrackifyApp(
     themeManager: ThemeManager,
-    localeManager: LocaleManager
+    localeManager: LocaleManager,
+    initialSubscriptionId: Long = -1L
 ) {
     val context = LocalContext.current
     val preferenceManager = remember { PreferenceManager(context) }
@@ -40,6 +42,12 @@ fun TrackifyApp(
         Screen.Home.route
     } else {
         Screen.Onboarding.route
+    }
+
+    LaunchedEffect(initialSubscriptionId) {
+        if (initialSubscriptionId != -1L && preferenceManager.isOnboardingCompleted()) {
+            navController.navigate(Screen.SubscriptionDetail.createRoute(initialSubscriptionId))
+        }
     }
 
     Scaffold(

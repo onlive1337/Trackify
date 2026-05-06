@@ -1,6 +1,7 @@
 package com.onlive.trackify
 
 import android.app.Application
+import android.content.Context
 import android.util.Log
 import androidx.work.Configuration
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -13,8 +14,10 @@ import com.onlive.trackify.utils.NotificationHelper
 import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.workers.DatabaseCleanupWorker
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.system.exitProcess
+import androidx.core.content.edit
 
 class TrackifyApplication : Application(), Configuration.Provider {
 
@@ -43,10 +46,11 @@ class TrackifyApplication : Application(), Configuration.Provider {
         try {
             FirebaseApp.initializeApp(this)
 
+            val userId = getOrCreatePersistentUserId()
+
             FirebaseCrashlytics.getInstance().apply {
                 isCrashlyticsCollectionEnabled = true
-
-                setUserId("user_${System.currentTimeMillis()}")
+                setUserId(userId)
                 setCustomKey("app_version", BuildConfig.VERSION_NAME)
                 setCustomKey("version_code", BuildConfig.VERSION_CODE)
                 setCustomKey("debug_build", BuildConfig.DEBUG)
@@ -55,6 +59,15 @@ class TrackifyApplication : Application(), Configuration.Provider {
             Log.i("TrackifyApp", "Firebase initialized successfully")
         } catch (e: Exception) {
             Log.e("TrackifyApp", "Firebase initialization failed", e)
+        }
+    }
+
+    private fun getOrCreatePersistentUserId(): String {
+        val prefs = getSharedPreferences("trackify_analytics", Context.MODE_PRIVATE)
+        return prefs.getString("persistent_user_id", null) ?: run {
+            val newId = UUID.randomUUID().toString()
+            prefs.edit { putString("persistent_user_id", newId) }
+            newId
         }
     }
 

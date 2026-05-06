@@ -1,6 +1,6 @@
 [versions]
 activityCompose = "1.13.0"
-agp = "9.2.0"
+agp = "9.2.1"
 composeBomVersion = "2026.04.01"
 coreKtxVersion = "1.18.0"
 googleServicesVersion = "4.4.4"

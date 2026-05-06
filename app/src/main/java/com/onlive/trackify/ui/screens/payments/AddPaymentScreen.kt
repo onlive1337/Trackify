@@ -32,7 +32,7 @@ fun AddPaymentScreen(
     subscriptionViewModel: SubscriptionViewModel = viewModel()
 ) {
     val allSubscriptions by subscriptionViewModel.allSubscriptions.observeAsState(emptyList())
-    
+
     var selectedSubscriptionId by remember { mutableLongStateOf(subscriptionId) }
     var amount by remember { mutableStateOf("") }
     var date by remember { mutableStateOf(Date()) }
@@ -58,6 +58,9 @@ fun AddPaymentScreen(
 
     var subError by remember { mutableStateOf(false) }
     var amountError by remember { mutableStateOf(false) }
+
+    val requiredFieldStr = stringResource(R.string.required_field)
+    val invalidAmountStr = stringResource(R.string.invalid_amount)
 
     Scaffold(
         topBar = {
@@ -89,7 +92,7 @@ fun AddPaymentScreen(
                     )
                     if (subError) {
                         Text(
-                            text = "Required field",
+                            text = requiredFieldStr,
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(start = 16.dp, top = 4.dp)
@@ -114,7 +117,7 @@ fun AddPaymentScreen(
                     singleLine = true,
                     isError = amountError,
                     supportingText = if (amountError) {
-                        { Text("Invalid amount") }
+                        { Text(invalidAmountStr) }
                     } else null,
                     keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                         keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal

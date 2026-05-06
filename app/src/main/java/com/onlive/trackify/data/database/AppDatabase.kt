@@ -15,7 +15,7 @@ import androidx.room.withTransaction
 @Database(
     entities = [Subscription::class, Payment::class, Category::class],
     version = 1,
-    exportSchema = false
+    exportSchema = true
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -36,7 +36,6 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     DATABASE_NAME
                 )
-                    .fallbackToDestructiveMigration(true)
                     .build()
                 INSTANCE = instance
                 instance

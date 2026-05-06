@@ -141,7 +141,6 @@ fun DataManagementScreen(
                                 val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
                                 val dateString = dateFormat.format(Date())
                                 val fileName = "trackify_backup_$dateString.json"
-
                                 exportLauncher.launch(fileName)
                             },
                             modifier = Modifier.fillMaxWidth(),
@@ -167,10 +166,10 @@ fun DataManagementScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Button(
-                             onClick = {
-                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                 showImportDialogState.value = true
-                             },
+                            onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                showImportDialogState.value = true
+                            },
                             modifier = Modifier.fillMaxWidth(),
                             enabled = !isLoading
                         ) {
@@ -224,7 +223,7 @@ fun DataManagementScreen(
     if (showExportSuccessDialogState.value) {
         AlertDialog(
             onDismissRequest = { showExportSuccessDialogState.value = false },
-            title = { Text(stringResource(R.string.export_success, exportFilePath)) },
+            title = { Text(stringResource(R.string.export_success_title)) },
             text = { Text(stringResource(R.string.export_success, exportFilePath)) },
             confirmButton = {
                 TextButton(

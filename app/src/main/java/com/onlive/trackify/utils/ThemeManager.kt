@@ -10,7 +10,6 @@ class ThemeManager(context: Context) {
         private const val PREFS_NAME = "theme_prefs"
         private const val KEY_THEME_MODE = "theme_mode"
 
-        const val MODE_SYSTEM = 0
         const val MODE_LIGHT = 1
         const val MODE_DARK = 2
     }
@@ -19,7 +18,7 @@ class ThemeManager(context: Context) {
     private val _themeMode = mutableIntStateOf(getThemeMode())
 
     fun getThemeMode(): Int {
-        return prefs.getInt(KEY_THEME_MODE, MODE_SYSTEM)
+        return prefs.getInt(KEY_THEME_MODE, MODE_DARK)
     }
 
     fun setThemeMode(mode: Int) {
@@ -27,11 +26,10 @@ class ThemeManager(context: Context) {
         _themeMode.intValue = mode
     }
 
-    fun isDarkTheme(systemIsDark: Boolean): Boolean {
+    fun isDarkTheme(): Boolean {
         return when (_themeMode.intValue) {
             MODE_LIGHT -> false
-            MODE_DARK -> true
-            else -> systemIsDark
+            else -> true
         }
     }
 }

@@ -117,6 +117,9 @@ fun SubscriptionDetailScreen(
     var nameError by remember { mutableStateOf(false) }
     var priceError by remember { mutableStateOf(false) }
 
+    val requiredFieldStr = stringResource(R.string.required_field)
+    val invalidPriceStr = stringResource(R.string.invalid_price)
+
     Scaffold(
         topBar = {
             TrackifyTopAppBar(
@@ -158,7 +161,7 @@ fun SubscriptionDetailScreen(
                     singleLine = true,
                     isError = nameError,
                     supportingText = if (nameError) {
-                        { Text("Required field") }
+                        { Text(requiredFieldStr) }
                     } else null,
                     shape = MaterialTheme.shapes.medium,
                     colors = OutlinedTextFieldDefaults.colors(
@@ -191,7 +194,7 @@ fun SubscriptionDetailScreen(
                         singleLine = true,
                         isError = priceError,
                         supportingText = if (priceError) {
-                            { Text("Invalid price") }
+                            { Text(invalidPriceStr) }
                         } else null,
                         keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                             keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal

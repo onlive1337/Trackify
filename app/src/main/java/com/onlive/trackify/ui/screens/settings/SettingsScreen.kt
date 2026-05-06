@@ -138,9 +138,10 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState()),
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             TrackifyOutlinedCard {
                 Column(modifier = Modifier.padding(16.dp)) {
+
                     Text(
                         text = stringResource(R.string.theme_settings),
                         style = MaterialTheme.typography.labelLargeEmphasized,
@@ -151,7 +152,7 @@ fun SettingsScreen(
                     SingleChoiceSegmentedButtonRow(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 8.dp)
+                            .padding(bottom = 16.dp)
                     ) {
                         SegmentedButton(
                             selected = selectedThemeMode == ThemeManager.MODE_LIGHT,
@@ -161,21 +162,24 @@ fun SettingsScreen(
                             },
                             shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
                                 Icon(
                                     imageVector = Icons.Rounded.LightMode,
                                     contentDescription = null,
-                                    modifier = Modifier.size(18.dp)
+                                    modifier = Modifier.size(16.dp)
                                 )
-                                Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = stringResource(R.string.light_theme),
-                                    style = MaterialTheme.typography.bodyMedium,
+                                    style = MaterialTheme.typography.bodySmall,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
                             }
                         }
+
                         SegmentedButton(
                             selected = selectedThemeMode == ThemeManager.MODE_DARK,
                             onClick = {
@@ -184,24 +188,24 @@ fun SettingsScreen(
                             },
                             shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
                                 Icon(
                                     imageVector = Icons.Rounded.DarkMode,
                                     contentDescription = null,
-                                    modifier = Modifier.size(18.dp)
+                                    modifier = Modifier.size(16.dp)
                                 )
-                                Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = stringResource(R.string.dark_theme),
-                                    style = MaterialTheme.typography.bodyMedium,
+                                    style = MaterialTheme.typography.bodySmall,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
                             }
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(16.dp))
 
                     NotificationToggleRow(
                         enabled = notificationsEnabled,
@@ -294,9 +298,7 @@ fun SettingsScreen(
 
         if (showExactAlarmDialog) {
             AlertDialog(
-                onDismissRequest = {
-                    showExactAlarmDialog = false
-                },
+                onDismissRequest = { showExactAlarmDialog = false },
                 title = { Text(stringResource(R.string.exact_alarm_permission_title)) },
                 text = { Text(stringResource(R.string.exact_alarm_permission_description)) },
                 confirmButton = {
@@ -310,11 +312,7 @@ fun SettingsScreen(
                     }
                 },
                 dismissButton = {
-                    TextButton(
-                        onClick = {
-                            showExactAlarmDialog = false
-                        }
-                    ) {
+                    TextButton(onClick = { showExactAlarmDialog = false }) {
                         Text(stringResource(R.string.cancel))
                     }
                 }

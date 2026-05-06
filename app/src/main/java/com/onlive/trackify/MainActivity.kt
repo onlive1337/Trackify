@@ -38,12 +38,15 @@ class MainActivity : ComponentActivity(), PreferenceManager.OnPreferenceChangedL
         val savedLanguage = preferenceManager.getLanguageCode()
         localeManager.setLocale(savedLanguage)
 
+        val initialSubscriptionId = intent.getLongExtra("subscription_id", -1L)
+
         setContent {
             ProvideLocaleManager(localeManager = localeManager) {
                 TrackifyTheme(themeManager = themeManager) {
                     TrackifyApp(
                         themeManager = themeManager,
-                        localeManager = localeManager
+                        localeManager = localeManager,
+                        initialSubscriptionId = initialSubscriptionId
                     )
                 }
             }

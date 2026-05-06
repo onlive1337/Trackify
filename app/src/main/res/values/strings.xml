@@ -195,5 +195,10 @@
     <string name="never_miss_payment_description">Automatic reminders help you stay on top of all payments</string>
     <string name="expense_tracking">Expense tracking</string>
     <string name="expense_tracking_description">Monitor your recurring expenses and budget</string>
+    <string name="invalid_amount">Invalid amount</string>
+    <string name="required_field">Required field</string>
+    <string name="system_theme">System default</string>
+    <string name="invalid_price">Invalid price</string>
+    <string name="export_success_title">Backup created</string>
 
 </resources>
