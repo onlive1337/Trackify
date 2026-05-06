@@ -201,7 +201,6 @@
     <string name="expense_tracking_description">Контролируйте свои регулярные расходы и бюджет</string>
     <string name="invalid_amount">Неверная сумма</string>
     <string name="required_field">Обязательное поле</string>
-    <string name="system_theme">Системная тема</string>
     <string name="invalid_price">Неверная цена</string>
     <string name="export_success_title">Резервная копия создана</string>
 
