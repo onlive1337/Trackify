@@ -2,7 +2,6 @@ package com.onlive.trackify.utils
 
 import android.content.Context
 import android.util.Log
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.onlive.trackify.R
 import java.lang.ref.WeakReference
 
@@ -33,30 +32,6 @@ class ErrorHandler private constructor(context: Context) {
             is Result.Error -> error.message
             else -> appContext.getString(R.string.unknown_error)
         }
-
-        try {
-            FirebaseCrashlytics.getInstance().apply {
-                setCustomKey("error_context", context ?: "unknown")
-                setCustomKey("show_toast", showToast)
-                setCustomKey("error_message", errorMessage)
-
-                when (error) {
-                    is Exception -> {
-                        recordException(error)
-                    }
-                    is Result.Error -> {
-                        error.exception?.let { recordException(it) }
-                            ?: log("Error without exception: $errorMessage")
-                    }
-                    else -> {
-                        log("String error: $errorMessage")
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to log error to Crashlytics", e)
-        }
-
         Log.e(TAG, "Error handled: $errorMessage", error as? Throwable)
     }
 

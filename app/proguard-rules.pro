@@ -57,9 +57,7 @@
     @androidx.compose.runtime.Composable <methods>;
 }
 
-# --- Firebase & Google Services ---
 # Rely on library-provided ProGuard rules
--dontwarn com.google.firebase.**
 -dontwarn com.google.android.gms.**
 
 # --- Coroutines ---

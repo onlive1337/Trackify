@@ -5,8 +5,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.ksp)
-    alias(libs.plugins.google.services)
-    alias(libs.plugins.firebase.crashlytics)
 }
 
 android {
@@ -25,7 +23,7 @@ android {
             useSupportLibrary = true
         }
     }
-    
+
     bundle {
         language {
             @Suppress("UnstableApiUsage")
@@ -119,9 +117,11 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+        jniLibs {
+            keepDebugSymbols += "**/libandroidx.graphics.path.so"
+        }
     }
 }
-
 
 dependencies {
     implementation(libs.androidx.core.ktx)
@@ -156,10 +156,5 @@ dependencies {
 
     implementation(libs.gson)
 
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.crashlytics)
-    implementation(libs.firebase.analytics)
-
     debugImplementation(libs.androidx.ui.tooling)
 }
-

@@ -15,7 +15,7 @@ import androidx.room.withTransaction
 @Database(
     entities = [Subscription::class, Payment::class, Category::class],
     version = 1,
-    exportSchema = true
+    exportSchema = false
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
