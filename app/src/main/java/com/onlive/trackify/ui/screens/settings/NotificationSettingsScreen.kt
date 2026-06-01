@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.onlive.trackify.R
 import com.onlive.trackify.ui.components.TrackifyOutlinedCard
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
+import com.onlive.trackify.utils.BatteryOptimizationHelper
 import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
 import java.util.Locale
@@ -157,6 +158,10 @@ fun NotificationSettingsScreen(
                 }
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            BatteryOptimizationSection()
+
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
@@ -175,6 +180,70 @@ fun NotificationSettingsScreen(
                 showTimePickerDialogState.value = false
             }
         )
+    }
+}
+
+@Composable
+private fun BatteryOptimizationSection() {
+    val context = LocalContext.current
+    val isIgnoring = remember { BatteryOptimizationHelper.isIgnoringBatteryOptimizations(context) }
+
+    TrackifyOutlinedCard(
+        title = stringResource(R.string.battery_optimization_title)
+    ) {
+        Column(modifier = Modifier.padding(vertical = 8.dp)) {
+            Text(
+                text = stringResource(R.string.battery_optimization_description),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            if (isIgnoring) {
+                Text(
+                    text = stringResource(R.string.battery_optimization_enabled),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            } else {
+                Button(
+                    onClick = { BatteryOptimizationHelper.requestIgnoreBatteryOptimizations(context) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                ) {
+                    Text(text = stringResource(R.string.battery_optimization_button))
+                }
+            }
+
+            if (BatteryOptimizationHelper.isXiaomiDevice()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = stringResource(R.string.battery_optimization_xiaomi_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+                Text(
+                    text = stringResource(R.string.battery_optimization_xiaomi_description),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                Button(
+                    onClick = { BatteryOptimizationHelper.openXiaomiAutostartSettings(context) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                ) {
+                    Text(text = stringResource(R.string.battery_optimization_xiaomi_button))
+                }
+            }
+        }
     }
 }
 

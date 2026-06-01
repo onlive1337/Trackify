@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
 import com.onlive.trackify.data.model.Category
 import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.data.model.Subscription
@@ -15,7 +16,7 @@ import androidx.room.withTransaction
 @Database(
     entities = [Subscription::class, Payment::class, Category::class],
     version = 1,
-    exportSchema = false
+    exportSchema = true
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -29,6 +30,8 @@ abstract class AppDatabase : RoomDatabase() {
         private var INSTANCE: AppDatabase? = null
         private const val DATABASE_NAME = "trackify_database"
 
+        private val MIGRATIONS: Array<Migration> = emptyArray()
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -36,6 +39,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     DATABASE_NAME
                 )
+                    .addMigrations(*MIGRATIONS)
                     .build()
                 INSTANCE = instance
                 instance

@@ -46,6 +46,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -86,15 +87,15 @@ fun SubscriptionDetailScreen(
     val subscriptionState = subscriptionViewModel.getSubscriptionById(subscriptionId).observeAsState()
     val allPayments by paymentViewModel.getPaymentsBySubscription(subscriptionId).observeAsState(emptyList())
 
-    var name by remember { mutableStateOf("") }
-    var price by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var billingFrequency by remember { mutableStateOf(BillingFrequency.MONTHLY) }
-    var startDate by remember { mutableStateOf(Date()) }
-    var endDate by remember { mutableStateOf<Date?>(null) }
-    var categoryId by remember { mutableStateOf<Long?>(null) }
+    var name by rememberSaveable { mutableStateOf("") }
+    var price by rememberSaveable { mutableStateOf("") }
+    var description by rememberSaveable { mutableStateOf("") }
+    var billingFrequency by rememberSaveable { mutableStateOf(BillingFrequency.MONTHLY) }
+    var startDate by rememberSaveable { mutableStateOf(Date()) }
+    var endDate by rememberSaveable { mutableStateOf<Date?>(null) }
+    var categoryId by rememberSaveable { mutableStateOf<Long?>(null) }
 
-    var hasLoadedExisting by remember { mutableStateOf(false) }
+    var hasLoadedExisting by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(subscriptionState.value) {
         if (subscriptionId != -1L && subscriptionState.value != null && !hasLoadedExisting) {

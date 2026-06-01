@@ -18,25 +18,6 @@ class PreferenceManager(context: Context) {
     }
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-    private val listeners = mutableListOf<OnPreferenceChangedListener>()
-
-    interface OnPreferenceChangedListener {
-        fun onPreferenceChanged(key: String, value: Any?)
-    }
-
-    fun addOnPreferenceChangedListener(listener: OnPreferenceChangedListener) {
-        if (!listeners.contains(listener)) {
-            listeners.add(listener)
-        }
-    }
-
-    fun removeOnPreferenceChangedListener(listener: OnPreferenceChangedListener) {
-        listeners.remove(listener)
-    }
-
-    private fun notifyListeners(key: String, value: Any?) {
-        listeners.forEach { it.onPreferenceChanged(key, value) }
-    }
 
     fun isOnboardingCompleted(): Boolean {
         return prefs.getBoolean(KEY_ONBOARDING_COMPLETED, false)
@@ -44,7 +25,6 @@ class PreferenceManager(context: Context) {
 
     fun setOnboardingCompleted(completed: Boolean) {
         prefs.edit { putBoolean(KEY_ONBOARDING_COMPLETED, completed) }
-        notifyListeners(KEY_ONBOARDING_COMPLETED, completed)
     }
 
     fun areNotificationsEnabled(): Boolean {
@@ -53,7 +33,6 @@ class PreferenceManager(context: Context) {
 
     fun setNotificationsEnabled(enabled: Boolean) {
         prefs.edit { putBoolean(KEY_NOTIFICATIONS_ENABLED, enabled) }
-        notifyListeners(KEY_NOTIFICATIONS_ENABLED, enabled)
     }
 
     fun getReminderDays(): Set<Int> {
@@ -64,7 +43,6 @@ class PreferenceManager(context: Context) {
 
     fun setReminderDays(days: Set<Int>) {
         prefs.edit { putStringSet(KEY_REMINDER_DAYS, days.map { it.toString() }.toSet()) }
-        notifyListeners(KEY_REMINDER_DAYS, days)
     }
 
     fun getNotificationTime(): Pair<Int, Int> {
@@ -78,7 +56,6 @@ class PreferenceManager(context: Context) {
             putInt(KEY_NOTIFICATION_TIME_HOUR, hour)
                 .putInt(KEY_NOTIFICATION_TIME_MINUTE, minute)
         }
-        notifyListeners(KEY_NOTIFICATION_TIME_HOUR, Pair(hour, minute))
     }
 
     fun getCurrencyCode(): String {
@@ -87,7 +64,6 @@ class PreferenceManager(context: Context) {
 
     fun setCurrencyCode(currencyCode: String) {
         prefs.edit { putString(KEY_CURRENCY_CODE, currencyCode) }
-        notifyListeners(KEY_CURRENCY_CODE, currencyCode)
     }
 
     fun getCurrentCurrency(): Currency {
@@ -100,35 +76,41 @@ class PreferenceManager(context: Context) {
 
     fun setLanguageCode(languageCode: String) {
         prefs.edit { putString(KEY_LANGUAGE_CODE, languageCode) }
-        notifyListeners(KEY_LANGUAGE_CODE, languageCode)
     }
 
-    fun wasNotificationSentToday(subscriptionId: Long, daysUntil: Int): Boolean {
-        val key = getNotificationKey(subscriptionId, daysUntil)
-        val lastSentDate = prefs.getString(key, null) ?: return false
-        val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
-        return lastSentDate == today
+    fun wasNotificationSentForDate(subscriptionId: Long, type: String, dateKey: String): Boolean {
+        val key = getNotificationKey(subscriptionId, type, dateKey)
+        return prefs.contains(key)
     }
 
-    fun markNotificationSent(subscriptionId: Long, daysUntil: Int) {
-        val key = getNotificationKey(subscriptionId, daysUntil)
-        val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
-        prefs.edit { putString(key, today) }
+    fun markNotificationSentForDate(subscriptionId: Long, type: String, dateKey: String) {
+        val key = getNotificationKey(subscriptionId, type, dateKey)
+        prefs.edit { putString(key, dateKey) }
     }
 
-    private fun getNotificationKey(subscriptionId: Long, daysUntil: Int): String {
-        return "notification_sent_${subscriptionId}_$daysUntil"
+    private fun getNotificationKey(subscriptionId: Long, type: String, dateKey: String): String {
+        return "notified_${type}_${subscriptionId}_$dateKey"
+    }
+
+    fun formatDateKey(date: java.util.Date): String {
+        return java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(date)
     }
 
     fun cleanupOldNotificationRecords() {
-        val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
-        prefs.all.keys
-            .filter { it.startsWith("notification_sent_") }
-            .forEach { key ->
-                val savedDate = prefs.getString(key, null)
-                if (savedDate != null && savedDate != today) {
+        val today = formatDateKey(java.util.Date())
+        prefs.all.keys.toList().forEach { key ->
+            when {
+                key.startsWith("notified_") -> {
+                    val savedDate = prefs.getString(key, null)
+                    if (savedDate != null && savedDate < today) {
+                        prefs.edit { remove(key) }
+                    }
+                }
+                // Legacy keys from the old daysUntil-based dedup: drop them all.
+                key.startsWith("notification_sent_") -> {
                     prefs.edit { remove(key) }
                 }
             }
+        }
     }
 }

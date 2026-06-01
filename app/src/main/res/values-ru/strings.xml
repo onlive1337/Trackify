@@ -86,8 +86,8 @@
 
     <string name="notification_settings">Настройки уведомлений</string>
     <string name="notification_permission_denied">Для работы уведомлений необходимо разрешение. Включите уведомления в настройках приложения.</string>
-    <string name="exact_alarm_permission_title">Требуются точные уведомления</string>
-    <string name="exact_alarm_permission_description">Чтобы доставлять уведомления точно вовремя, Trackify нужно разрешение на использование будильников. Пожалуйста, включите его в настройках системы.</string>
+    <string name="exact_alarm_permission_title">Точные напоминания (по желанию)</string>
+    <string name="exact_alarm_permission_description">Напоминания включены. Чтобы они приходили минута в минуту, можно дополнительно выдать разрешение на использование будильников. Без него напоминания всё равно приходят, но с небольшим окном.</string>
     <string name="open_settings">Открыть настройки</string>
     <string name="notification_time">Время уведомлений</string>
     <string name="notification_time_description">Выберите время, когда вы хотите получать уведомления о подписках</string>
@@ -203,5 +203,21 @@
     <string name="required_field">Обязательное поле</string>
     <string name="invalid_price">Неверная цена</string>
     <string name="export_success_title">Резервная копия создана</string>
+
+    <!-- Battery optimization / reliable delivery -->
+    <string name="battery_optimization_title">Надёжная доставка</string>
+    <string name="battery_optimization_description">Чтобы напоминания приходили вовремя, разрешите Trackify работать в фоне без ограничений батареи.</string>
+    <string name="battery_optimization_button">Разрешить работу в фоне</string>
+    <string name="battery_optimization_enabled">Работа в фоне разрешена</string>
+    <string name="battery_optimization_xiaomi_title">Устройства Xiaomi / MIUI</string>
+    <string name="battery_optimization_xiaomi_description">MIUI может всё равно останавливать напоминания. Откройте Автозапуск и включите Trackify, а в настройках батареи выберите «Без ограничений» для приложения.</string>
+    <string name="battery_optimization_xiaomi_button">Открыть настройки автозапуска</string>
+
+    <!-- Send log to developer -->
+    <string name="send_log">Отправить лог разработчику</string>
+    <string name="send_log_subject">Лог Trackify</string>
+    <string name="send_log_chooser">Отправить лог через</string>
+    <string name="send_log_no_logs">Пока нет логов для отправки</string>
+    <string name="send_log_error">Не удалось открыть лог</string>
 
 </resources>

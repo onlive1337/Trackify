@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
+import com.onlive.trackify.TrackifyApplication
 import com.onlive.trackify.data.database.AppDatabase
 import com.onlive.trackify.data.model.Category
 import com.onlive.trackify.data.repository.CategoryRepository
@@ -12,14 +13,9 @@ import kotlinx.coroutines.launch
 
 class CategoryViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository: CategoryRepository
-    val allCategories: LiveData<List<Category>>
-
-    init {
-        val categoryDao = AppDatabase.getDatabase(application).categoryDao()
-        repository = CategoryRepository(categoryDao)
-        allCategories = repository.allCategories
-    }
+    private val repository: CategoryRepository = (application as? TrackifyApplication)?.categoryRepository
+        ?: CategoryRepository(AppDatabase.getDatabase(application).categoryDao())
+    val allCategories: LiveData<List<Category>> = repository.allCategories
 
     fun insert(category: Category) = viewModelScope.launch(Dispatchers.IO) {
         repository.insert(category)

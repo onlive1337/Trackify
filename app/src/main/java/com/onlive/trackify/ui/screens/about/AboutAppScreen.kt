@@ -16,6 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -32,10 +33,16 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import android.content.Context
+import android.content.Intent
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.FileProvider
 import com.onlive.trackify.BuildConfig
 import com.onlive.trackify.R
 import com.onlive.trackify.ui.components.TrackifyOutlinedCard
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
+import com.onlive.trackify.utils.CrashLogger
 import com.onlive.trackify.utils.stringResource
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -44,6 +51,7 @@ fun AboutAppScreen(
     onNavigateBack: () -> Unit
 ) {
     val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -127,6 +135,14 @@ fun AboutAppScreen(
                 onClick = { uriHandler.openUri("https://github.com/onlive1337/Trackify") }
             )
 
+            Spacer(modifier = Modifier.height(8.dp))
+
+            AboutLinkItem(
+                icon = Icons.Default.BugReport,
+                label = stringResource(R.string.send_log),
+                onClick = { shareLatestLog(context) }
+            )
+
 
             Spacer(modifier = Modifier.height(48.dp))
 
@@ -150,6 +166,28 @@ fun AboutAppScreen(
                 )
             }
         }
+    }
+}
+
+private fun shareLatestLog(context: Context) {
+    val log = CrashLogger.getLatestLog(context)
+    if (log == null || !log.exists()) {
+        Toast.makeText(context, R.string.send_log_no_logs, Toast.LENGTH_SHORT).show()
+        return
+    }
+    try {
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", log)
+        val sendIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.send_log_subject))
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(
+            Intent.createChooser(sendIntent, context.getString(R.string.send_log_chooser))
+        )
+    } catch (_: Exception) {
+        Toast.makeText(context, R.string.send_log_error, Toast.LENGTH_SHORT).show()
     }
 }
 

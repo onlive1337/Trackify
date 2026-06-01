@@ -15,31 +15,25 @@ import kotlinx.coroutines.launch
 
 class SubscriptionViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository: SubscriptionRepository
-    private val errorHandler: ErrorHandler = (application as TrackifyApplication).errorHandler
+    private val app = application as? TrackifyApplication
+    private val repository: SubscriptionRepository = app?.subscriptionRepository
+        ?: run {
+            val database = AppDatabase.getDatabase(application)
+            SubscriptionRepository(database.subscriptionDao(), database.categoryDao(), application.applicationContext)
+        }
+    private val errorHandler: ErrorHandler? = app?.errorHandler
 
-
-    val allSubscriptions: LiveData<List<Subscription>>
-
-    init {
-        val database = AppDatabase.getDatabase(application)
-        val subscriptionDao = database.subscriptionDao()
-        val categoryDao = database.categoryDao()
-
-        repository = SubscriptionRepository(subscriptionDao, categoryDao, application.applicationContext)
-
-        allSubscriptions = repository.allSubscriptions
-    }
+    val allSubscriptions: LiveData<List<Subscription>> = repository.allSubscriptions
 
     fun insert(subscription: Subscription) = viewModelScope.launch {
         try {
             val result = repository.insert(subscription)
 
             if (result is Result.Error) {
-                errorHandler.handleError(result.message, true)
+                errorHandler?.handleError(result.message, true)
             }
         } catch (e: Exception) {
-            errorHandler.handleError(e, true)
+            errorHandler?.handleError(e, true)
         }
     }
 
@@ -48,10 +42,10 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
             val result = repository.update(subscription)
 
             if (result is Result.Error) {
-                errorHandler.handleError(result.message, true)
+                errorHandler?.handleError(result.message, true)
             }
         } catch (e: Exception) {
-            errorHandler.handleError(e, true)
+            errorHandler?.handleError(e, true)
         }
     }
 
@@ -60,10 +54,10 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
             val result = repository.delete(subscription)
 
             if (result is Result.Error) {
-                errorHandler.handleError(result.message, true)
+                errorHandler?.handleError(result.message, true)
             }
         } catch (e: Exception) {
-            errorHandler.handleError(e, true)
+            errorHandler?.handleError(e, true)
         }
     }
 

@@ -36,15 +36,19 @@ class SubscriptionRepository(
 
     private fun combineSubscriptionsWithCategories(subscriptions: List<Subscription>, categories: List<Category>) {
         val result = subscriptions.map { subscription ->
-            subscription.apply {
-                val category = subscription.categoryId?.let { id ->
-                    categories.find { it.categoryId == id }
-                }
-                categoryName = category?.name ?: context.getString(R.string.without_category)
-                categoryColor = category?.colorCode
-            }
+            decorateWithCategory(subscription, categories)
         }
         _allSubscriptions.value = result
+    }
+
+    private fun decorateWithCategory(subscription: Subscription, categories: List<Category>): Subscription {
+        val category = subscription.categoryId?.let { id ->
+            categories.find { it.categoryId == id }
+        }
+        return subscription.copy().apply {
+            categoryName = category?.name ?: context.getString(R.string.without_category)
+            categoryColor = category?.colorCode
+        }
     }
 
     suspend fun insert(subscription: Subscription): Result<Long> = withContext(Dispatchers.IO) {
@@ -81,25 +85,14 @@ class SubscriptionRepository(
 
         result.addSource(subscription) { sub ->
             if (sub != null) {
-                val cats = categories.value ?: emptyList()
-                val category = sub.categoryId?.let { catId ->
-                    cats.find { it.categoryId == catId }
-                }
-                sub.categoryName = category?.name ?: context.getString(R.string.without_category)
-                sub.categoryColor = category?.colorCode
-                result.value = sub
+                result.value = decorateWithCategory(sub, categories.value ?: emptyList())
             }
         }
 
         result.addSource(categories) { cats ->
             val sub = subscription.value
             if (sub != null) {
-                val category = sub.categoryId?.let { catId ->
-                    cats.find { it.categoryId == catId }
-                }
-                sub.categoryName = category?.name ?: context.getString(R.string.without_category)
-                sub.categoryColor = category?.colorCode
-                result.value = sub
+                result.value = decorateWithCategory(sub, cats)
             }
         }
 

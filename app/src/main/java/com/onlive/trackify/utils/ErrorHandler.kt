@@ -1,7 +1,10 @@
 package com.onlive.trackify.utils
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import android.widget.Toast
 import com.onlive.trackify.R
 import java.lang.ref.WeakReference
 
@@ -23,7 +26,7 @@ class ErrorHandler private constructor(context: Context) {
 
     private val contextRef = WeakReference(context.applicationContext)
 
-    fun handleError(error: Any?, showToast: Boolean = true, context: String? = null) {
+    fun handleError(error: Any?, showToast: Boolean = true) {
         val appContext = contextRef.get() ?: return
 
         val errorMessage = when (error) {
@@ -33,6 +36,24 @@ class ErrorHandler private constructor(context: Context) {
             else -> appContext.getString(R.string.unknown_error)
         }
         Log.e(TAG, "Error handled: $errorMessage", error as? Throwable)
+
+        if (showToast) {
+            Handler(Looper.getMainLooper()).post {
+                Toast.makeText(appContext, errorMessage, Toast.LENGTH_LONG).show()
+            }
+        }
+
+        val throwable = (error as? Throwable) ?: (error as? Result.Error)?.exception
+        if (throwable != null) {
+            CrashLogger.writeLogAsync(appContext, throwable, errorMessage)
+        } else {
+            logToFile(errorMessage)
+        }
+    }
+
+    fun logToFile(message: String, details: String? = null) {
+        val appContext = contextRef.get() ?: return
+        CrashLogger.writeLogAsync(appContext, message, details)
     }
 
     private fun getReadableErrorMessage(e: Exception, context: Context): String {

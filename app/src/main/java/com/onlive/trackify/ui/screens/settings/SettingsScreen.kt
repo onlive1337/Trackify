@@ -77,14 +77,13 @@ fun SettingsScreen(
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                val hasPermission = alarmScheduler.canScheduleExactAlarms()
                 val hasNotificationPermission = checkNotificationPermission()
 
-                if (preferenceManager.areNotificationsEnabled() && (!hasPermission || !hasNotificationPermission)) {
+                if (preferenceManager.areNotificationsEnabled() && !hasNotificationPermission) {
                     notificationsEnabled = false
                     preferenceManager.setNotificationsEnabled(false)
                     notificationScheduler.cancelNotifications()
-                } else if (preferenceManager.areNotificationsEnabled() && hasPermission && hasNotificationPermission) {
+                } else if (preferenceManager.areNotificationsEnabled() && hasNotificationPermission) {
                     notificationsEnabled = true
                 }
             }
@@ -211,32 +210,19 @@ fun SettingsScreen(
                         enabled = notificationsEnabled,
                         onToggle = { enabled ->
                             if (enabled) {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                    val permissionGranted = checkNotificationPermission()
-
-                                    if (permissionGranted) {
-                                        if (alarmScheduler.canScheduleExactAlarms()) {
-                                            notificationsEnabled = true
-                                            preferenceManager.setNotificationsEnabled(true)
-                                            notificationScheduler.scheduleNotifications()
-                                        } else {
-                                            showExactAlarmDialog = true
-                                        }
-                                    } else {
-                                        waitingForPermissionState.value = true
-                                        val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
-                                            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-                                        }
-                                        settingsLauncher.launch(intent)
-                                    }
-                                } else {
-                                    if (alarmScheduler.canScheduleExactAlarms()) {
-                                        notificationsEnabled = true
-                                        preferenceManager.setNotificationsEnabled(true)
-                                        notificationScheduler.scheduleNotifications()
-                                    } else {
+                                if (checkNotificationPermission()) {
+                                    notificationsEnabled = true
+                                    preferenceManager.setNotificationsEnabled(true)
+                                    notificationScheduler.scheduleNotifications()
+                                    if (!alarmScheduler.canScheduleExactAlarms()) {
                                         showExactAlarmDialog = true
                                     }
+                                } else {
+                                    waitingForPermissionState.value = true
+                                    val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                                        putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                                    }
+                                    settingsLauncher.launch(intent)
                                 }
                             } else {
                                 notificationsEnabled = false

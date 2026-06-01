@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
+import com.onlive.trackify.TrackifyApplication
 import com.onlive.trackify.data.database.AppDatabase
 import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.data.repository.PaymentRepository
@@ -12,14 +13,9 @@ import kotlinx.coroutines.launch
 
 class PaymentViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository: PaymentRepository
-    val allPayments: LiveData<List<Payment>>
-
-    init {
-        val paymentDao = AppDatabase.getDatabase(application).paymentDao()
-        repository = PaymentRepository(paymentDao, application.applicationContext)
-        allPayments = repository.allPayments
-    }
+    private val repository: PaymentRepository = (application as? TrackifyApplication)?.paymentRepository
+        ?: PaymentRepository(AppDatabase.getDatabase(application).paymentDao(), application.applicationContext)
+    val allPayments: LiveData<List<Payment>> = repository.allPayments
 
     fun insert(payment: Payment) = viewModelScope.launch(Dispatchers.IO) {
         repository.insert(payment)

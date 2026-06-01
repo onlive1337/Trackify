@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Pre-Android 12 backup config (paired with data_extraction_rules.xml for 12+).
+  allowBackup="false" already disables backups entirely; these explicit excludes
+  document intent and keep the local database/preferences out of any backup.
+-->
+<full-backup-content>
+    <exclude domain="database" path="trackify_database" />
+    <exclude domain="sharedpref" path="trackify_preferences.xml" />
+    <exclude domain="sharedpref" path="theme_prefs.xml" />
+</full-backup-content>

@@ -13,7 +13,7 @@ import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.ProvideLocaleManager
 import com.onlive.trackify.utils.ThemeManager
 
-class MainActivity : ComponentActivity(), PreferenceManager.OnPreferenceChangedListener {
+class MainActivity : ComponentActivity() {
 
     private lateinit var preferenceManager: PreferenceManager
     private lateinit var themeManager: ThemeManager
@@ -33,7 +33,6 @@ class MainActivity : ComponentActivity(), PreferenceManager.OnPreferenceChangedL
 
         themeManager = ThemeManager(this)
         localeManager = LocaleManager(this)
-        preferenceManager.addOnPreferenceChangedListener(this)
 
         val savedLanguage = preferenceManager.getLanguageCode()
         localeManager.setLocale(savedLanguage)
@@ -51,17 +50,5 @@ class MainActivity : ComponentActivity(), PreferenceManager.OnPreferenceChangedL
                 }
             }
         }
-    }
-
-    override fun onPreferenceChanged(key: String, value: Any?) {
-        if (key == PreferenceManager.KEY_LANGUAGE_CODE) {
-            val newLanguage = value as? String ?: ""
-            localeManager.setLocale(newLanguage)
-        }
-    }
-
-    override fun onDestroy() {
-        preferenceManager.removeOnPreferenceChangedListener(this)
-        super.onDestroy()
     }
 }

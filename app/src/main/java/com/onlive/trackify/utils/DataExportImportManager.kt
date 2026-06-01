@@ -41,10 +41,10 @@ class DataExportImportManager(private val context: Context) {
     )
 
     data class ExportData(
-        val subscriptions: List<Subscription> = emptyList(),
-        val payments: List<Payment> = emptyList(),
-        val categories: List<Category> = emptyList(),
-        val userPreferences: UserPreferences = UserPreferences(),
+        val subscriptions: List<Subscription>? = null,
+        val payments: List<Payment>? = null,
+        val categories: List<Category>? = null,
+        val userPreferences: UserPreferences? = null,
         val exportDate: String = "",
     )
 
@@ -116,10 +116,29 @@ class DataExportImportManager(private val context: Context) {
                 return@withContext false
             }
 
-            val subscriptions = importedData.subscriptions
-            val payments = importedData.payments
-            val categories = importedData.categories
-            val userPreferences = importedData.userPreferences
+            val subscriptions = importedData?.subscriptions
+            val payments = importedData?.payments
+            val categories = importedData?.categories
+            if (importedData == null || subscriptions == null || payments == null || categories == null) {
+                Log.e(tag, "Invalid backup: missing subscriptions/payments/categories section")
+                return@withContext false
+            }
+            val userPreferences = importedData.userPreferences ?: UserPreferences()
+
+            val subscriptionIds = subscriptions.map { it.subscriptionId }.toSet()
+            val categoryIds = categories.map { it.categoryId }.toSet()
+            val orphanPayment = payments.firstOrNull { it.subscriptionId !in subscriptionIds }
+            if (orphanPayment != null) {
+                Log.e(tag, "Invalid backup: payment references missing subscription ${orphanPayment.subscriptionId}")
+                return@withContext false
+            }
+            val orphanSubscription = subscriptions.firstOrNull {
+                it.categoryId != null && it.categoryId !in categoryIds
+            }
+            if (orphanSubscription != null) {
+                Log.e(tag, "Invalid backup: subscription references missing category ${orphanSubscription.categoryId}")
+                return@withContext false
+            }
 
             Log.d(tag, "Parsed data: ${subscriptions.size} subscriptions, ${payments.size} payments, ${categories.size} categories")
 

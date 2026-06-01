@@ -81,6 +81,7 @@ import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Currency
 import com.onlive.trackify.utils.LocaleHelper
 import com.onlive.trackify.utils.LocaleManager
+import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.stringResource
 import kotlinx.coroutines.delay
@@ -94,6 +95,12 @@ fun OnboardingScreen(
 ) {
     val context = LocalContext.current
     val preferenceManager = remember { PreferenceManager(context) }
+    val notificationScheduler = remember { NotificationScheduler(context) }
+
+    val enableNotifications = {
+        preferenceManager.setNotificationsEnabled(true)
+        notificationScheduler.scheduleNotifications()
+    }
 
     var currentStep by remember { mutableIntStateOf(0) }
     var selectedLanguage by remember { mutableStateOf("") }
@@ -110,7 +117,10 @@ fun OnboardingScreen(
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
-    ) { _ ->
+    ) { granted ->
+        if (granted) {
+            enableNotifications()
+        }
         finishOnboarding(preferenceManager, selectedLanguage, selectedCurrency, onComplete)
     }
 
@@ -187,11 +197,15 @@ fun OnboardingScreen(
                                     ) == PackageManager.PERMISSION_GRANTED
 
                                     if (hasPermission) {
+                                        enableNotifications()
                                         finishOnboarding(preferenceManager, selectedLanguage, selectedCurrency, onComplete)
                                     } else {
                                         notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                                     }
                                 } else {
+                                    // Pre-Android 13: no runtime permission needed,
+                                    // the user agreed, so enable reminders directly.
+                                    enableNotifications()
                                     finishOnboarding(preferenceManager, selectedLanguage, selectedCurrency, onComplete)
                                 }
                             },

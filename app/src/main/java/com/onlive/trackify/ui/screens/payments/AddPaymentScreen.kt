@@ -6,6 +6,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -33,13 +34,13 @@ fun AddPaymentScreen(
 ) {
     val allSubscriptions by subscriptionViewModel.allSubscriptions.observeAsState(emptyList())
 
-    var selectedSubscriptionId by remember { mutableLongStateOf(subscriptionId) }
-    var amount by remember { mutableStateOf("") }
-    var date by remember { mutableStateOf(Date()) }
-    var notes by remember { mutableStateOf("") }
+    var selectedSubscriptionId by rememberSaveable { mutableLongStateOf(subscriptionId) }
+    var amount by rememberSaveable { mutableStateOf("") }
+    var date by rememberSaveable { mutableStateOf(Date()) }
+    var notes by rememberSaveable { mutableStateOf("") }
 
     val existingPayment by paymentViewModel.allPayments.observeAsState(emptyList())
-    var hasLoadedExisting by remember { mutableStateOf(false) }
+    var hasLoadedExisting by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(existingPayment) {
         if (paymentId != -1L && existingPayment.isNotEmpty() && !hasLoadedExisting) {

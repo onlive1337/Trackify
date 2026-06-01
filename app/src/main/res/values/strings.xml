@@ -83,8 +83,8 @@
     <string name="notification_settings">Notification settings</string>
     <string name="notification_time">Notification time</string>
     <string name="notification_permission_denied">Notification permission is required for reminders to work. Please enable notifications in app settings.</string>
-    <string name="exact_alarm_permission_title">Exact Alarms Required</string>
-    <string name="exact_alarm_permission_description">To deliver notifications exactly on time, Trackify needs the "Alarms &amp; Reminders" permission. Please enable it in system settings.</string>
+    <string name="exact_alarm_permission_title">Precise reminders (optional)</string>
+    <string name="exact_alarm_permission_description">Reminders are now on. To have them arrive at the exact minute, you can also grant the "Alarms &amp; reminders" permission. Without it, reminders still arrive within a short window.</string>
     <string name="open_settings">Open Settings</string>
     <string name="notification_time_description">Choose when you want to receive subscription notifications</string>
     <string name="reminder_days">Reminder days</string>
@@ -199,5 +199,21 @@
     <string name="required_field">Required field</string>
     <string name="invalid_price">Invalid price</string>
     <string name="export_success_title">Backup created</string>
+
+    <!-- Battery optimization / reliable delivery -->
+    <string name="battery_optimization_title">Reliable delivery</string>
+    <string name="battery_optimization_description">To make sure reminders arrive on time, allow Trackify to run in the background without battery restrictions.</string>
+    <string name="battery_optimization_button">Allow background activity</string>
+    <string name="battery_optimization_enabled">Background activity is allowed</string>
+    <string name="battery_optimization_xiaomi_title">Xiaomi / MIUI devices</string>
+    <string name="battery_optimization_xiaomi_description">MIUI may still stop reminders. Open Autostart and enable Trackify, and set Battery saver to \"No restrictions\" for the app.</string>
+    <string name="battery_optimization_xiaomi_button">Open Autostart settings</string>
+
+    <!-- Send log to developer -->
+    <string name="send_log">Send log to developer</string>
+    <string name="send_log_subject">Trackify log</string>
+    <string name="send_log_chooser">Send log via</string>
+    <string name="send_log_no_logs">No logs to send yet</string>
+    <string name="send_log_error">Could not open the log</string>
 
 </resources>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Exposes filesDir/crash_logs/ so logs can be shared via ACTION_SEND. -->
+    <files-path
+        name="crash_logs"
+        path="crash_logs/" />
+</paths>

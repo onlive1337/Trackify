@@ -7,6 +7,13 @@ plugins {
     alias(libs.plugins.kotlin.ksp)
 }
 
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
+val hasReleaseKeystore: Boolean = System.getenv("KEYSTORE_FILE") != null ||
+    rootProject.file("keystore.properties").exists()
+
 android {
     namespace = "com.onlive.trackify"
     compileSdk = 37
@@ -90,10 +97,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = if (signingConfigs.getByName("release").storeFile != null) {
+            signingConfig = if (hasReleaseKeystore) {
                 signingConfigs.getByName("release")
             } else {
-                signingConfigs.getByName("debug")
+                null
             }
         }
 
@@ -120,6 +127,24 @@ android {
         jniLibs {
             keepDebugSymbols += "**/libandroidx.graphics.path.so"
         }
+    }
+}
+
+gradle.taskGraph.whenReady {
+    val releaseArtifactTasks = setOf(
+        "assembleRelease",
+        "bundleRelease",
+        "packageRelease",
+        "packageReleaseBundle"
+    )
+    val buildingRelease = allTasks.any { it.name in releaseArtifactTasks }
+    if (buildingRelease && !hasReleaseKeystore) {
+        throw GradleException(
+            "Release build requested but no signing keystore was found. " +
+                "Set the KEYSTORE_FILE, KEYSTORE_PASSWORD, KEY_ALIAS and KEY_PASSWORD " +
+                "environment variables, or add a keystore.properties file to the project root. " +
+                "The release build will NOT fall back to the debug signing key."
+        )
     }
 }
 
@@ -157,4 +182,6 @@ dependencies {
     implementation(libs.gson)
 
     debugImplementation(libs.androidx.ui.tooling)
+
+    testImplementation(libs.junit)
 }

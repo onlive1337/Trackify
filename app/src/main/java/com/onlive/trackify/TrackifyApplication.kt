@@ -6,73 +6,100 @@ import androidx.work.Configuration
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.onlive.trackify.data.database.AppDatabase
+import com.onlive.trackify.data.repository.CategoryRepository
+import com.onlive.trackify.data.repository.PaymentRepository
+import com.onlive.trackify.data.repository.SubscriptionRepository
+import com.onlive.trackify.utils.CrashLogger
 import com.onlive.trackify.utils.ErrorHandler
 import com.onlive.trackify.utils.NotificationHelper
 import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.workers.DatabaseCleanupWorker
+import com.onlive.trackify.workers.NotificationRefreshWorker
 import java.util.concurrent.TimeUnit
-import kotlin.system.exitProcess
 
 class TrackifyApplication : Application(), Configuration.Provider {
 
-    lateinit var errorHandler: ErrorHandler
-        private set
+    val errorHandler: ErrorHandler by lazy { ErrorHandler.getInstance(this) }
 
-    private lateinit var notificationHelper: NotificationHelper
-    private lateinit var preferenceManager: PreferenceManager
-    private lateinit var notificationScheduler: NotificationScheduler
+    val subscriptionRepository: SubscriptionRepository by lazy {
+        val database = AppDatabase.getDatabase(this)
+        SubscriptionRepository(database.subscriptionDao(), database.categoryDao(), applicationContext)
+    }
+    val paymentRepository: PaymentRepository by lazy {
+        PaymentRepository(AppDatabase.getDatabase(this).paymentDao(), applicationContext)
+    }
+    val categoryRepository: CategoryRepository by lazy {
+        CategoryRepository(AppDatabase.getDatabase(this).categoryDao())
+    }
 
     override fun onCreate() {
         super.onCreate()
 
+        CrashLogger.install(this)
+        errorHandler
+
         try {
-            errorHandler = ErrorHandler.getInstance(this)
             initializeComponents()
         } catch (e: Exception) {
-            handleFatalError(e)
+            handleInitError(e)
         }
     }
 
     private fun initializeComponents() {
-        preferenceManager = PreferenceManager(this)
+        val preferenceManager = PreferenceManager(this)
 
-        notificationHelper = NotificationHelper(this)
-        notificationHelper.createNotificationChannel()
+        NotificationHelper(this).createNotificationChannel()
 
-        notificationScheduler = NotificationScheduler(this)
+        val notificationScheduler = NotificationScheduler(this)
         if (preferenceManager.areNotificationsEnabled()) {
             notificationScheduler.scheduleNotifications()
             notificationScheduler.triggerImmediateCheck()
         }
 
-        setupDatabaseCleanup()
+        setupPeriodicWork()
     }
 
-    private fun setupDatabaseCleanup() {
+    private fun setupPeriodicWork() {
         try {
+            val workManager = WorkManager.getInstance(this)
+
             val cleanupWorkRequest = PeriodicWorkRequestBuilder<DatabaseCleanupWorker>(
                 7, TimeUnit.DAYS
             ).build()
-
-            WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            workManager.enqueueUniquePeriodicWork(
                 "database_cleanup",
                 ExistingPeriodicWorkPolicy.UPDATE,
                 cleanupWorkRequest
             )
+
+            val refreshWorkRequest = PeriodicWorkRequestBuilder<NotificationRefreshWorker>(
+                12, TimeUnit.HOURS
+            ).build()
+            workManager.enqueueUniquePeriodicWork(
+                "notification_refresh",
+                ExistingPeriodicWorkPolicy.UPDATE,
+                refreshWorkRequest
+            )
         } catch (e: Exception) {
-            Log.e("TrackifyApp", "Failed to setup database cleanup", e)
+            Log.e(TAG, "Failed to set up periodic work", e)
+            CrashLogger.writeLog(this, e, "Failed to set up periodic work")
         }
     }
 
-    private fun handleFatalError(e: Exception) {
-        Log.e("TrackifyApp", "Fatal error during initialization", e)
-        e.printStackTrace()
-        exitProcess(1)
+    private fun handleInitError(e: Exception) {
+        Log.e(TAG, "Error during initialization, continuing with degraded startup", e)
+        CrashLogger.writeLog(this, e, "Error during Application initialization")
+        runCatching { errorHandler.handleError(e, showToast = false) }
     }
 
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setMinimumLoggingLevel(Log.INFO)
             .build()
+
+    companion object {
+        private const val TAG = "TrackifyApp"
+    }
 }

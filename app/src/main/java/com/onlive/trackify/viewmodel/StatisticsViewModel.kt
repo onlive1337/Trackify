@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
+import com.onlive.trackify.TrackifyApplication
 import com.onlive.trackify.data.LiveStatisticsUpdater
 import com.onlive.trackify.data.database.AppDatabase
 import com.onlive.trackify.data.model.Category
@@ -12,9 +13,14 @@ import com.onlive.trackify.data.repository.SubscriptionRepository
 
 class StatisticsViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val database = AppDatabase.getDatabase(application)
-    private val subscriptionRepository: SubscriptionRepository
-    private val categoryRepository: CategoryRepository
+    private val app = application as? TrackifyApplication
+    private val subscriptionRepository: SubscriptionRepository = app?.subscriptionRepository
+        ?: run {
+            val database = AppDatabase.getDatabase(application)
+            SubscriptionRepository(database.subscriptionDao(), database.categoryDao(), application.applicationContext)
+        }
+    private val categoryRepository: CategoryRepository = app?.categoryRepository
+        ?: CategoryRepository(AppDatabase.getDatabase(application).categoryDao())
     private val liveStatisticsUpdater: LiveStatisticsUpdater
 
     val isLoading: LiveData<Boolean>
@@ -27,12 +33,6 @@ class StatisticsViewModel(application: Application) : AndroidViewModel(applicati
     val categories: LiveData<List<Category>>
 
     init {
-        val subscriptionDao = database.subscriptionDao()
-        val categoryDao = database.categoryDao()
-
-        subscriptionRepository = SubscriptionRepository(subscriptionDao, categoryDao, application.applicationContext)
-        categoryRepository = CategoryRepository(categoryDao)
-
         categories = categoryRepository.allCategories
 
         liveStatisticsUpdater = LiveStatisticsUpdater(

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 12+ backup/transfer config. We keep all app data OUT of cloud backups
+  and device-to-device transfers: it's a local-only app and restoring an old
+  database/preferences into a newer schema could crash. allowBackup="false" in the
+  manifest covers Android 11 and below.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" />
+        <exclude domain="database" />
+        <exclude domain="file" />
+        <exclude domain="external" />
+        <exclude domain="root" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" />
+        <exclude domain="database" />
+        <exclude domain="file" />
+        <exclude domain="external" />
+        <exclude domain="root" />
+    </device-transfer>
+</data-extraction-rules>
