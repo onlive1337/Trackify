@@ -19,28 +19,21 @@ object BatteryOptimizationHelper {
         return powerManager.isIgnoringBatteryOptimizations(context.packageName)
     }
 
-    @Suppress("BatteryLife")
     fun requestIgnoreBatteryOptimizations(context: Context) {
-        try {
-            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+        val candidates = listOf(
+            Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS),
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                 data = Uri.fromParts("package", context.packageName, null)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
-            context.startActivity(intent)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to open battery optimization request, falling back to settings", e)
-            openBatteryOptimizationSettings(context)
-        }
-    }
-
-    private fun openBatteryOptimizationSettings(context: Context) {
-        try {
-            context.startActivity(
-                Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-                    .apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }
-            )
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to open battery optimization settings", e)
+        )
+        for (intent in candidates) {
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            try {
+                context.startActivity(intent)
+                return
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to open ${intent.action}", e)
+            }
         }
     }
 

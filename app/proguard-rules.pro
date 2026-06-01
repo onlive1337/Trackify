@@ -52,8 +52,7 @@
 -keep class com.onlive.trackify.utils.DataExportImportManager$** { *; }
 
 # --- Jetpack Compose ---
--keep @androidx.compose.runtime.Composable class * { *; }
--keep class * {
+-keepclassmembers class * {
     @androidx.compose.runtime.Composable <methods>;
 }
 
