@@ -1,9 +1,7 @@
 package com.onlive.trackify.ui.screens.category
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -19,6 +17,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -40,6 +39,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -48,15 +48,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Category
+import com.onlive.trackify.ui.components.CategoryAvatar
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.CategoryViewModel
@@ -114,12 +115,16 @@ fun CategoryDetailContent(
     var categoryColor by remember(initialColor) { mutableStateOf(initialColor) }
     val showDeleteDialogState = remember { mutableStateOf(false) }
 
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TrackifyTopAppBar(
                 title = title,
                 showBackButton = true,
-                onBackClick = onNavigateBack
+                onBackClick = onNavigateBack,
+                scrollBehavior = scrollBehavior
             )
         }
     ) { paddingValues ->
@@ -142,7 +147,7 @@ fun CategoryDetailContent(
                         color = MaterialTheme.colorScheme.primary
                     )
 
-                    val previewColor = try { Color(categoryColor.toColorInt()) } catch (e: Exception) { MaterialTheme.colorScheme.primary }
+                    val previewColor = try { Color(categoryColor.toColorInt()) } catch (_: Exception) { MaterialTheme.colorScheme.primary }
                     
                     SubscriptionItemPreview(
                         name = stringResource(R.string.mock_subscription_name),
@@ -222,7 +227,7 @@ fun CategoryDetailContent(
                             ),
                             border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f)),
                             shape = MaterialTheme.shapes.extraLarge,
-                            modifier = Modifier.weight(1f).height(56.dp)
+                            modifier = Modifier.weight(1f).height(64.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
@@ -241,14 +246,14 @@ fun CategoryDetailContent(
                             }
                         },
                         shape = MaterialTheme.shapes.extraLarge,
-                        modifier = Modifier.weight(1.5f).height(56.dp),
+                        modifier = Modifier.weight(1.5f).height(64.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary
                         )
                     ) {
                         Text(
                             text = stringResource(R.string.save),
-                            style = MaterialTheme.typography.titleMediumEmphasized
+                            style = MaterialTheme.typography.titleLargeEmphasized
                         )
                     }
                 }
@@ -295,26 +300,19 @@ private fun SubscriptionItemPreview(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = MaterialTheme.shapes.medium,
+        shape = RoundedCornerShape(28.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(color.copy(alpha = 0.1f))
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .width(6.dp)
-                    .height(40.dp)
-                    .clip(MaterialTheme.shapes.extraSmall)
-                    .background(color)
-            )
+            CategoryAvatar(color = color)
 
             Spacer(modifier = Modifier.width(16.dp))
 
@@ -328,17 +326,23 @@ private fun SubscriptionItemPreview(
                     overflow = TextOverflow.Ellipsis
                 )
 
+                Spacer(modifier = Modifier.height(2.dp))
+
                 Text(
                     text = categoryName,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
+
+            Spacer(modifier = Modifier.width(12.dp))
 
             Text(
                 text = price,
                 style = MaterialTheme.typography.titleMediumEmphasized,
-                color = color
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
@@ -353,7 +357,7 @@ fun ColorChip(
 ) {
     val color = try {
         Color(colorCode.toColorInt())
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         Color.Gray
     }
 

@@ -10,11 +10,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.rounded.SearchOff
+import androidx.compose.material.icons.rounded.Subscriptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
@@ -33,7 +33,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Subscription
+import com.onlive.trackify.ui.components.EmptyState
 import com.onlive.trackify.ui.components.SubscriptionListItem
+import com.onlive.trackify.ui.components.TrackifyFab
 import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
 
@@ -95,16 +97,10 @@ fun HomeScreen(
                 allSubscriptions!!.isEmpty() -> EmptySubscriptionsView()
 
                 filteredSubscriptions.isNullOrEmpty() -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = stringResource(R.string.subscriptions_not_found),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                        )
-                    }
+                    EmptyState(
+                        icon = Icons.Rounded.SearchOff,
+                        title = stringResource(R.string.subscriptions_not_found)
+                    )
                 }
 
                 else -> {
@@ -116,38 +112,22 @@ fun HomeScreen(
             }
         }
 
-        FloatingActionButton(
+        TrackifyFab(
             onClick = onAddSubscription,
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
+            contentDescription = stringResource(R.string.add_subscription),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 24.dp, bottom = 24.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Add,
-                contentDescription = stringResource(R.string.add_subscription)
-            )
-        }
+        )
     }
 }
 
 @Composable
 fun EmptySubscriptionsView() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = stringResource(R.string.no_subscriptions),
-            style = MaterialTheme.typography.headlineMediumEmphasized,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
-        )
-    }
+    EmptyState(
+        icon = Icons.Rounded.Subscriptions,
+        title = stringResource(R.string.no_subscriptions)
+    )
 }
 
 @Composable

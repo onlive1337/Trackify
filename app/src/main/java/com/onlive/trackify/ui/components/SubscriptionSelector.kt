@@ -45,6 +45,7 @@ fun SubscriptionSelector(
                     ?: "",
                 onValueChange = {},
                 readOnly = true,
+                label = { Text(stringResource(R.string.payment_subscription)) },
                 trailingIcon = {
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                 },

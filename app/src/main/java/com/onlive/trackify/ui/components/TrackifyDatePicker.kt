@@ -31,10 +31,10 @@ import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Today
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilterChip
@@ -369,26 +369,23 @@ private fun QuickPickCard(
     val iconSize = if (isLargeScreen) 24.dp else 22.dp
 
     val cardColors = if (option.isSpecial) {
-        CardDefaults.elevatedCardColors(
+        CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.tertiaryContainer,
             contentColor = MaterialTheme.colorScheme.onTertiaryContainer
         )
     } else {
-        CardDefaults.elevatedCardColors(
+        CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
         )
     }
 
-    ElevatedCard(
+    Card(
         onClick = onClick,
         modifier = modifier.height(cardHeight),
         shape = MaterialTheme.shapes.medium,
         colors = cardColors,
-        elevation = CardDefaults.elevatedCardElevation(
-            defaultElevation = 2.dp,
-            pressedElevation = 8.dp
-        )
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier

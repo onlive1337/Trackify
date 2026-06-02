@@ -19,17 +19,20 @@ import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -40,12 +43,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.FileProvider
 import com.onlive.trackify.BuildConfig
 import com.onlive.trackify.R
-import com.onlive.trackify.ui.components.TrackifyOutlinedCard
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.CrashLogger
 import com.onlive.trackify.utils.stringResource
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun AboutAppScreen(
     onNavigateBack: () -> Unit
@@ -53,12 +55,16 @@ fun AboutAppScreen(
     val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
     val context = LocalContext.current
 
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TrackifyTopAppBar(
                 title = stringResource(R.string.about_app),
                 showBackButton = true,
-                onBackClick = onNavigateBack
+                onBackClick = onNavigateBack,
+                scrollBehavior = scrollBehavior
             )
         },
         containerColor = MaterialTheme.colorScheme.background
@@ -103,13 +109,18 @@ fun AboutAppScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            TrackifyOutlinedCard {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.large,
+                color = MaterialTheme.colorScheme.surfaceContainerLow
+            ) {
                 Text(
                     text = stringResource(R.string.app_description),
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurface,
-                    lineHeight = MaterialTheme.typography.bodyLarge.lineHeight
+                    lineHeight = MaterialTheme.typography.bodyLarge.lineHeight,
+                    modifier = Modifier.padding(20.dp)
                 )
             }
 

@@ -7,18 +7,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import com.onlive.trackify.utils.stringResource
 import androidx.compose.ui.unit.dp
 import com.onlive.trackify.R
-import com.onlive.trackify.ui.components.TrackifyOutlinedCard
+import com.onlive.trackify.ui.components.SettingsSection
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.BatteryOptimizationHelper
 import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationSettingsScreen(
     onNavigateBack: () -> Unit
@@ -46,12 +48,16 @@ fun NotificationSettingsScreen(
         notificationScheduler.scheduleNotifications()
     }
 
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TrackifyTopAppBar(
                 title = stringResource(R.string.notification_settings),
                 showBackButton = true,
-                onBackClick = onNavigateBack
+                onBackClick = onNavigateBack,
+                scrollBehavior = scrollBehavior
             )
         }
     ) { paddingValues ->
@@ -63,10 +69,12 @@ fun NotificationSettingsScreen(
                 .verticalScroll(rememberScrollState())
         ) {
 
-            TrackifyOutlinedCard(
+            Spacer(modifier = Modifier.height(16.dp))
+
+            SettingsSection(
                 title = stringResource(R.string.notification_time)
             ) {
-                Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                     Text(
                         text = stringResource(R.string.notification_time_description),
                         style = MaterialTheme.typography.bodyMedium,
@@ -89,10 +97,10 @@ fun NotificationSettingsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TrackifyOutlinedCard(
+            SettingsSection(
                 title = stringResource(R.string.reminder_days)
             ) {
-                Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                     Text(
                         text = stringResource(R.string.reminder_days_description),
                         style = MaterialTheme.typography.bodyMedium,
@@ -188,10 +196,10 @@ private fun BatteryOptimizationSection() {
     val context = LocalContext.current
     val isIgnoring = remember { BatteryOptimizationHelper.isIgnoringBatteryOptimizations(context) }
 
-    TrackifyOutlinedCard(
+    SettingsSection(
         title = stringResource(R.string.battery_optimization_title)
     ) {
-        Column(modifier = Modifier.padding(vertical = 8.dp)) {
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
             Text(
                 text = stringResource(R.string.battery_optimization_description),
                 style = MaterialTheme.typography.bodyMedium,
@@ -247,6 +255,7 @@ private fun BatteryOptimizationSection() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimePickerDialog(
     initialHour: Int,
@@ -254,50 +263,25 @@ fun TimePickerDialog(
     onDismiss: () -> Unit,
     onConfirm: (Int, Int) -> Unit
 ) {
-    val configuration = LocalConfiguration.current
-    val locale = configuration.locales[0]
-    var hour by remember { mutableIntStateOf(initialHour) }
-    var minute by remember { mutableIntStateOf(initialMinute) }
+    val state = rememberTimePickerState(
+        initialHour = initialHour,
+        initialMinute = initialMinute,
+        is24Hour = true
+    )
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = stringResource(R.string.select_time),
-                style = MaterialTheme.typography.headlineSmall
-            )
-        },
+        title = { Text(stringResource(R.string.select_time)) },
         text = {
-            Row(
+            Box(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+                contentAlignment = Alignment.Center
             ) {
-                NumberPicker(
-                    value = hour,
-                    range = 0..23,
-                    locale = locale,
-                    onValueChange = { hour = it }
-                )
-
-                Text(
-                    text = ":",
-                    style = MaterialTheme.typography.headlineMedium,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-
-                NumberPicker(
-                    value = minute,
-                    range = 0..59,
-                    locale = locale,
-                    onValueChange = { minute = it }
-                )
+                TimePicker(state = state)
             }
         },
         confirmButton = {
-            Button(
-                onClick = { onConfirm(hour, minute) }
-            ) {
+            Button(onClick = { onConfirm(state.hour, state.minute) }) {
                 Text(stringResource(R.string.save))
             }
         },
@@ -307,65 +291,6 @@ fun TimePickerDialog(
             }
         }
     )
-}
-
-@Composable
-fun NumberPicker(
-    value: Int,
-    range: IntRange,
-    locale: Locale,
-    onValueChange: (Int) -> Unit
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Button(
-            onClick = {
-                val newValue = if (value + 1 > range.last) range.first else value + 1
-                onValueChange(newValue)
-            },
-            modifier = Modifier.size(40.dp),
-            contentPadding = PaddingValues(0.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-        ) {
-            Text("▲", style = MaterialTheme.typography.titleMedium)
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            ),
-            modifier = Modifier.padding(horizontal = 4.dp)
-        ) {
-            Text(
-                text = String.format(locale, "%02d", value),
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Button(
-            onClick = {
-                val newValue = if (value - 1 < range.first) range.last else value - 1
-                onValueChange(newValue)
-            },
-            modifier = Modifier.size(40.dp),
-            contentPadding = PaddingValues(0.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-        ) {
-            Text("▼", style = MaterialTheme.typography.titleMedium)
-        }
-    }
 }
 
 @Composable

@@ -1,25 +1,26 @@
 package com.onlive.trackify.ui.screens.settings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.onlive.trackify.R
-import com.onlive.trackify.ui.components.TrackifyCard
-import com.onlive.trackify.ui.components.TrackifyOutlinedCard
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.LocaleHelper
 import com.onlive.trackify.utils.LocalLocaleManager
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.stringResource
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LanguageSettingsScreen(
     onNavigateBack: () -> Unit
@@ -37,12 +38,16 @@ fun LanguageSettingsScreen(
         LocaleHelper.getAvailableLanguages()
     }
 
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TrackifyTopAppBar(
                 title = stringResource(R.string.language_settings),
                 showBackButton = true,
-                onBackClick = onNavigateBack
+                onBackClick = onNavigateBack,
+                scrollBehavior = scrollBehavior
             )
         }
     ) { paddingValues ->
@@ -53,16 +58,14 @@ fun LanguageSettingsScreen(
                 .padding(horizontal = 16.dp)
         ) {
 
-            TrackifyOutlinedCard {
-                Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                    Text(
-                        text = stringResource(R.string.language_description),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
-                }
-            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = stringResource(R.string.language_description),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -74,7 +77,7 @@ fun LanguageSettingsScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            LazyColumn {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 items(availableLanguages) { language ->
                     LanguageItem(
                         languageName = language.name,
@@ -100,32 +103,24 @@ private fun LanguageItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    TrackifyCard(
-        modifier = modifier.padding(vertical = 4.dp),
-        onClick = onClick,
-        useOutline = false,
-        backgroundColor = if (selected)
-            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-        else
-            MaterialTheme.colorScheme.surface
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+    ListItem(
+        headlineContent = {
             Text(
                 text = languageName,
-                style = MaterialTheme.typography.titleMedium,
-                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f)
+                style = MaterialTheme.typography.titleMedium
             )
-
-            RadioButton(
-                selected = selected,
-                onClick = null
-            )
-        }
-    }
+        },
+        trailingContent = {
+            RadioButton(selected = selected, onClick = null)
+        },
+        colors = ListItemDefaults.colors(
+            containerColor = if (selected)
+                MaterialTheme.colorScheme.primaryContainer
+            else
+                MaterialTheme.colorScheme.surfaceContainerLow
+        ),
+        modifier = modifier
+            .clip(MaterialTheme.shapes.large)
+            .clickable(onClick = onClick)
+    )
 }

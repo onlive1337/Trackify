@@ -55,6 +55,8 @@
     <string name="theme_settings">Theme settings</string>
     <string name="light_theme">Light theme</string>
     <string name="dark_theme">Dark theme</string>
+    <string name="dynamic_colors">Dynamic colors</string>
+    <string name="dynamic_colors_description">Use colors from your wallpaper</string>
 
     <!-- Notifications -->
     <string name="notification_channel_name">Subscription reminders</string>

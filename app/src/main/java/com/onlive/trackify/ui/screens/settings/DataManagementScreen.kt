@@ -11,10 +11,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.onlive.trackify.R
-import com.onlive.trackify.ui.components.TrackifyOutlinedCard
+import com.onlive.trackify.ui.components.SettingsSection
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.DataExportImportManager
 import com.onlive.trackify.utils.LocalLocalizedContext
@@ -26,6 +27,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun DataManagementScreen(
     onNavigateBack: () -> Unit
@@ -99,12 +101,16 @@ fun DataManagementScreen(
         }
     }
 
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TrackifyTopAppBar(
                 title = stringResource(R.string.data_management),
                 showBackButton = true,
-                onBackClick = onNavigateBack
+                onBackClick = onNavigateBack,
+                scrollBehavior = scrollBehavior
             )
         },
         snackbarHost = {
@@ -123,10 +129,12 @@ fun DataManagementScreen(
                     .verticalScroll(rememberScrollState())
             ) {
 
-                TrackifyOutlinedCard(
+                Spacer(modifier = Modifier.height(16.dp))
+
+                SettingsSection(
                     title = stringResource(R.string.export_title)
                 ) {
-                    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                         Text(
                             text = stringResource(R.string.export_description),
                             style = MaterialTheme.typography.bodyMedium,
@@ -153,10 +161,10 @@ fun DataManagementScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                TrackifyOutlinedCard(
+                SettingsSection(
                     title = stringResource(R.string.import_title)
                 ) {
-                    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                         Text(
                             text = stringResource(R.string.import_description),
                             style = MaterialTheme.typography.bodyMedium,
@@ -188,7 +196,7 @@ fun DataManagementScreen(
                         .align(Alignment.Center),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    LoadingIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             }
         }

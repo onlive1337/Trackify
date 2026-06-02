@@ -8,22 +8,23 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Payment
+import com.onlive.trackify.ui.components.FormPickerField
 import com.onlive.trackify.ui.components.SubscriptionSelector
 import com.onlive.trackify.ui.components.TrackifyDatePicker
-import com.onlive.trackify.ui.components.TrackifyOutlinedCard
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
+import com.onlive.trackify.ui.components.formFieldColors
 import com.onlive.trackify.utils.DateUtils
 import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.PaymentViewModel
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
 import java.util.*
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun AddPaymentScreen(
     subscriptionId: Long,
@@ -63,12 +64,16 @@ fun AddPaymentScreen(
     val requiredFieldStr = stringResource(R.string.required_field)
     val invalidAmountStr = stringResource(R.string.invalid_amount)
 
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TrackifyTopAppBar(
                 title = if (paymentId == -1L) stringResource(R.string.add_payment) else stringResource(R.string.edit_payment),
                 showBackButton = true,
-                onBackClick = onNavigateBack
+                onBackClick = onNavigateBack,
+                scrollBehavior = scrollBehavior
             )
         }
     ) { paddingValues ->
@@ -79,85 +84,63 @@ fun AddPaymentScreen(
                 .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState())
         ) {
+            Spacer(modifier = Modifier.height(8.dp))
+
+            SubscriptionSelector(
+                subscriptions = allSubscriptions,
+                selectedSubscriptionId = selectedSubscriptionId,
+                onSubscriptionSelected = {
+                    selectedSubscriptionId = it
+                    if (subError && selectedSubscriptionId != -1L) subError = false
+                },
+                isError = subError,
+                errorMessage = requiredFieldStr
+            )
+
             Spacer(modifier = Modifier.height(16.dp))
 
-            TrackifyOutlinedCard(title = stringResource(R.string.payment_subscription)) {
-                Column {
-                    SubscriptionSelector(
-                        subscriptions = allSubscriptions,
-                        selectedSubscriptionId = selectedSubscriptionId,
-                        onSubscriptionSelected = {
-                            selectedSubscriptionId = it
-                            if (subError && selectedSubscriptionId != -1L) subError = false
-                        }
-                    )
-                    if (subError) {
-                        Text(
-                            text = requiredFieldStr,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(start = 16.dp, top = 4.dp)
-                        )
+            OutlinedTextField(
+                value = amount,
+                onValueChange = {
+                    if (it.isEmpty() || it.toDoubleOrNull() != null) {
+                        amount = it
+                        if (amountError && it.toDoubleOrNull()?.let { v -> v > 0 } == true) amountError = false
                     }
-                }
-            }
+                },
+                label = { Text(stringResource(R.string.payment_amount)) },
+                placeholder = { Text("0.00") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                isError = amountError,
+                supportingText = if (amountError) {
+                    { Text(invalidAmountStr) }
+                } else null,
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                    keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal
+                ),
+                shape = MaterialTheme.shapes.medium,
+                colors = formFieldColors()
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TrackifyOutlinedCard(title = stringResource(R.string.payment_amount)) {
-                OutlinedTextField(
-                    value = amount,
-                    onValueChange = {
-                        if (it.isEmpty() || it.toDoubleOrNull() != null) {
-                            amount = it
-                            if (amountError && it.toDoubleOrNull()?.let { v -> v > 0 } == true) amountError = false
-                        }
-                    },
-                    placeholder = { Text("0.00") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    isError = amountError,
-                    supportingText = if (amountError) {
-                        { Text(invalidAmountStr) }
-                    } else null,
-                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                        keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal
-                    ),
-                    shape = MaterialTheme.shapes.medium,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                    )
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            TrackifyOutlinedCard(
-                title = stringResource(R.string.payment_date),
+            FormPickerField(
+                label = stringResource(R.string.payment_date),
+                value = DateUtils.formatDate(date),
                 onClick = { showDatePicker.value = true }
-            ) {
-                Text(
-                    text = DateUtils.formatDate(date),
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TrackifyOutlinedCard(title = stringResource(R.string.payment_notes)) {
-                OutlinedTextField(
-                    value = notes,
-                    onValueChange = { notes = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 3,
-                    shape = MaterialTheme.shapes.medium,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                    )
-                )
-            }
+            OutlinedTextField(
+                value = notes,
+                onValueChange = { notes = it },
+                label = { Text(stringResource(R.string.payment_notes)) },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 3,
+                shape = MaterialTheme.shapes.medium,
+                colors = formFieldColors()
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -188,12 +171,12 @@ fun AddPaymentScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
-                shape = MaterialTheme.shapes.large
+                    .height(64.dp),
+                shape = MaterialTheme.shapes.extraLarge
             ) {
                 Text(
                     text = stringResource(R.string.save),
-                    style = MaterialTheme.typography.titleMediumEmphasized
+                    style = MaterialTheme.typography.titleLargeEmphasized
                 )
             }
 

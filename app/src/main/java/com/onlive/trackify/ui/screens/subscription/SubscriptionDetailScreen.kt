@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,28 +17,28 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -51,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -62,10 +62,11 @@ import com.onlive.trackify.data.model.BillingFrequency
 import com.onlive.trackify.data.model.Category
 import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.data.model.Subscription
-import com.onlive.trackify.ui.components.AutoSizeText
+import com.onlive.trackify.ui.components.FormFieldLabel
+import com.onlive.trackify.ui.components.FormPickerField
 import com.onlive.trackify.ui.components.TrackifyDatePicker
-import com.onlive.trackify.ui.components.TrackifyOutlinedCard
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
+import com.onlive.trackify.ui.components.formFieldColors
 import com.onlive.trackify.utils.CurrencyFormatter
 import com.onlive.trackify.utils.DateUtils
 import com.onlive.trackify.utils.stringResource
@@ -121,12 +122,16 @@ fun SubscriptionDetailScreen(
     val requiredFieldStr = stringResource(R.string.required_field)
     val invalidPriceStr = stringResource(R.string.invalid_price)
 
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TrackifyTopAppBar(
                 title = if (subscriptionId == -1L) stringResource(R.string.add_subscription) else name,
                 showBackButton = true,
                 onBackClick = onNavigateBack,
+                scrollBehavior = scrollBehavior,
                 actions = {
                     if (subscriptionId != -1L) {
                         IconButton(onClick = { showDeleteDialog.value = true }) {
@@ -148,156 +153,122 @@ fun SubscriptionDetailScreen(
                 .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            TrackifyOutlinedCard(title = stringResource(R.string.subscription_name)) {
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = {
-                        name = it
-                        if (nameError && it.isNotBlank()) nameError = false
-                    },
-                    placeholder = { Text(stringResource(R.string.enter_name)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    isError = nameError,
-                    supportingText = if (nameError) {
-                        { Text(requiredFieldStr) }
-                    } else null,
-                    shape = MaterialTheme.shapes.medium,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                    )
-                )
-            }
+            OutlinedTextField(
+                value = name,
+                onValueChange = {
+                    name = it
+                    if (nameError && it.isNotBlank()) nameError = false
+                },
+                label = { Text(stringResource(R.string.subscription_name)) },
+                placeholder = { Text(stringResource(R.string.enter_name)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                isError = nameError,
+                supportingText = if (nameError) {
+                    { Text(requiredFieldStr) }
+                } else null,
+                shape = MaterialTheme.shapes.medium,
+                colors = formFieldColors()
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(androidx.compose.foundation.layout.IntrinsicSize.Min)
-            ) {
-                TrackifyOutlinedCard(
-                    title = stringResource(R.string.subscription_price),
-                    modifier = Modifier.weight(1f).fillMaxHeight()
-                ) {
-                    OutlinedTextField(
-                        value = price,
-                        onValueChange = {
-                            if (it.isEmpty() || it.toDoubleOrNull() != null) {
-                                price = it
-                                if (priceError && it.toDoubleOrNull()?.let { v -> v > 0 } == true) priceError = false
-                            }
-                        },
-                        placeholder = { Text("0.00") },
-                        modifier = Modifier.fillMaxWidth().fillMaxHeight(),
-                        singleLine = true,
-                        isError = priceError,
-                        supportingText = if (priceError) {
-                            { Text(invalidPriceStr) }
-                        } else null,
-                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal
-                        ),
-                        shape = MaterialTheme.shapes.medium,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                        )
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                TrackifyOutlinedCard(
-                    title = stringResource(R.string.subscription_billing_frequency),
-                    modifier = Modifier.weight(1f).fillMaxHeight()
-                ) {
-                    SingleChoiceSegmentedButtonRow(
-                        modifier = Modifier.fillMaxWidth().fillMaxHeight()
-                    ) {
-                        SegmentedButton(
-                            selected = billingFrequency == BillingFrequency.MONTHLY,
-                            onClick = { billingFrequency = BillingFrequency.MONTHLY },
-                            shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-                            icon = {}
-                        ) {
-                            AutoSizeText(
-                                text = stringResource(R.string.subscription_monthly),
-                                style = MaterialTheme.typography.labelMedium
-                            )
-                        }
-                        SegmentedButton(
-                            selected = billingFrequency == BillingFrequency.YEARLY,
-                            onClick = { billingFrequency = BillingFrequency.YEARLY },
-                            shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-                            icon = {}
-                        ) {
-                            AutoSizeText(
-                                text = stringResource(R.string.subscription_yearly),
-                                style = MaterialTheme.typography.labelMedium
-                            )
-                        }
+            OutlinedTextField(
+                value = price,
+                onValueChange = {
+                    if (it.isEmpty() || it.toDoubleOrNull() != null) {
+                        price = it
+                        if (priceError && it.toDoubleOrNull()?.let { v -> v > 0 } == true) priceError = false
                     }
+                },
+                label = { Text(stringResource(R.string.subscription_price)) },
+                placeholder = { Text("0.00") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                isError = priceError,
+                supportingText = if (priceError) {
+                    { Text(invalidPriceStr) }
+                } else null,
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                    keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal
+                ),
+                shape = MaterialTheme.shapes.medium,
+                colors = formFieldColors()
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            FormFieldLabel(stringResource(R.string.subscription_billing_frequency))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
+            ) {
+                ToggleButton(
+                    checked = billingFrequency == BillingFrequency.MONTHLY,
+                    onCheckedChange = { billingFrequency = BillingFrequency.MONTHLY },
+                    shapes = ButtonGroupDefaults.connectedLeadingButtonShapes(),
+                    modifier = Modifier.weight(1f).height(56.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.subscription_monthly),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+                ToggleButton(
+                    checked = billingFrequency == BillingFrequency.YEARLY,
+                    onCheckedChange = { billingFrequency = BillingFrequency.YEARLY },
+                    shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
+                    modifier = Modifier.weight(1f).height(56.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.subscription_yearly),
+                        style = MaterialTheme.typography.labelLarge
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            TrackifyOutlinedCard(title = stringResource(R.string.subscription_category)) {
-                CategorySelector(
-                    categories = allCategories,
-                    selectedCategoryId = categoryId,
-                    onCategorySelected = { categoryId = it }
-                )
-            }
+            CategorySelector(
+                categories = allCategories,
+                selectedCategoryId = categoryId,
+                onCategorySelected = { categoryId = it }
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(modifier = Modifier.fillMaxWidth()) {
-                TrackifyOutlinedCard(
-                    title = stringResource(R.string.subscription_start_date),
-                    modifier = Modifier.weight(1f),
-                    onClick = { showStartDatePicker.value = true }
-                ) {
-                    Text(
-                        text = DateUtils.formatDate(startDate),
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+                FormPickerField(
+                    label = stringResource(R.string.subscription_start_date),
+                    value = DateUtils.formatDate(startDate),
+                    onClick = { showStartDatePicker.value = true },
+                    modifier = Modifier.weight(1f)
+                )
 
                 Spacer(modifier = Modifier.width(16.dp))
 
-                TrackifyOutlinedCard(
-                    title = stringResource(R.string.subscription_end_date),
-                    modifier = Modifier.weight(1f),
-                    onClick = { showEndDatePicker.value = true }
-                ) {
-                    Text(
-                        text = endDate?.let { DateUtils.formatDate(it) } ?: stringResource(R.string.indefinitely),
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = if (endDate == null) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary
-                    )
-                }
+                FormPickerField(
+                    label = stringResource(R.string.subscription_end_date),
+                    value = endDate?.let { DateUtils.formatDate(it) }
+                        ?: stringResource(R.string.indefinitely),
+                    onClick = { showEndDatePicker.value = true },
+                    modifier = Modifier.weight(1f)
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TrackifyOutlinedCard(title = stringResource(R.string.subscription_description)) {
-                OutlinedTextField(
-                    value = description,
-                    onValueChange = { description = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 3,
-                    shape = MaterialTheme.shapes.medium,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                    )
-                )
-            }
+            OutlinedTextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text(stringResource(R.string.subscription_description)) },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 3,
+                shape = MaterialTheme.shapes.medium,
+                colors = formFieldColors()
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -331,12 +302,12 @@ fun SubscriptionDetailScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
-                shape = MaterialTheme.shapes.large
+                    .height(64.dp),
+                shape = MaterialTheme.shapes.extraLarge
             ) {
                 Text(
                     text = stringResource(R.string.save),
-                    style = MaterialTheme.typography.titleMediumEmphasized
+                    style = MaterialTheme.typography.titleLargeEmphasized
                 )
             }
 
@@ -397,6 +368,7 @@ fun SubscriptionDetailScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategorySelector(
     categories: List<Category>,
@@ -406,21 +378,20 @@ fun CategorySelector(
     var expanded by remember { mutableStateOf(false) }
     val selectedCategory = categories.find { it.categoryId == selectedCategoryId }
 
-    Box(modifier = Modifier.fillMaxWidth()) {
-        Surface(
-            onClick = { expanded = true },
-            modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.medium,
-            color = MaterialTheme.colorScheme.surfaceContainerLow,
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-        ) {
-            Row(
-                modifier = Modifier.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it }
+    ) {
+        OutlinedTextField(
+            value = selectedCategory?.name ?: stringResource(R.string.without_category),
+            onValueChange = {},
+            readOnly = true,
+            singleLine = true,
+            label = { Text(stringResource(R.string.subscription_category)) },
+            leadingIcon = {
                 Box(
                     modifier = Modifier
-                        .size(24.dp)
+                        .size(20.dp)
                         .clip(CircleShape)
                         .background(
                             selectedCategory?.colorCode?.let {
@@ -428,20 +399,19 @@ fun CategorySelector(
                             } ?: MaterialTheme.colorScheme.outline
                         )
                 )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = selectedCategory?.name ?: stringResource(R.string.without_category),
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.weight(1f)
-                )
-                Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-            }
-        }
+            },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+            shape = MaterialTheme.shapes.medium,
+            colors = formFieldColors()
+        )
 
-        DropdownMenu(
+        ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.fillMaxWidth(0.9f).background(MaterialTheme.colorScheme.surfaceContainer)
+            modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer)
         ) {
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.without_category)) },
@@ -504,7 +474,7 @@ fun PaymentHistorySection(payments: List<Payment>) {
                         text = CurrencyFormatter.formatAmount(LocalContext.current, payment.amount),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }

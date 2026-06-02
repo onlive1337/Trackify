@@ -76,9 +76,10 @@ fun TrackifyTheme(
     content: @Composable () -> Unit
 ) {
     val useDarkTheme = themeManager?.isDarkTheme() ?: darkTheme
+    val useDynamicColor = themeManager?.isDynamicColorEnabled() ?: dynamicColor
 
     val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+        useDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (useDarkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }

@@ -55,6 +55,8 @@
     <string name="theme_settings">Настройки темы</string>
     <string name="light_theme">Светлая тема</string>
     <string name="dark_theme">Темная тема</string>
+    <string name="dynamic_colors">Динамические цвета</string>
+    <string name="dynamic_colors_description">Цвета из ваших обоев</string>
 
     <!-- Notifications -->
     <string name="notification_channel_name">Напоминания о подписках</string>

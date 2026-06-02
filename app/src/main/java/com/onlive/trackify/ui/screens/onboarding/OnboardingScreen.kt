@@ -86,6 +86,7 @@ import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.stringResource
 import kotlinx.coroutines.delay
 import java.util.Locale
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -284,7 +285,7 @@ private fun WelcomeStep(
     var isVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        delay(300)
+        delay(300.milliseconds)
         isVisible = true
     }
 
@@ -572,9 +573,7 @@ private fun LanguageOption(
             else
                 MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (selected) 8.dp else 1.dp
-        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         border = if (selected) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Row(
@@ -629,9 +628,7 @@ private fun CurrencyOption(
             else
                 MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (selected) 8.dp else 1.dp
-        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         border = if (selected) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Row(
@@ -755,11 +752,7 @@ private fun OnboardingButton(
         colors = ButtonDefaults.buttonColors(
             containerColor = containerColor
         ),
-        shape = MaterialTheme.shapes.large,
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 4.dp,
-            pressedElevation = 12.dp
-        )
+        shape = MaterialTheme.shapes.large
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
