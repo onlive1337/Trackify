@@ -9,6 +9,7 @@ import androidx.core.view.WindowCompat
 import com.onlive.trackify.ui.theme.TrackifyTheme
 import com.onlive.trackify.utils.LocaleHelper
 import com.onlive.trackify.utils.LocaleManager
+import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.ProvideLocaleManager
 import com.onlive.trackify.utils.ThemeManager
@@ -49,6 +50,13 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (preferenceManager.areNotificationsEnabled()) {
+            NotificationScheduler(this).scheduleNotifications()
         }
     }
 }

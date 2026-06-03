@@ -88,9 +88,6 @@
 
     <string name="notification_settings">Настройки уведомлений</string>
     <string name="notification_permission_denied">Для работы уведомлений необходимо разрешение. Включите уведомления в настройках приложения.</string>
-    <string name="exact_alarm_permission_title">Точные напоминания (по желанию)</string>
-    <string name="exact_alarm_permission_description">Напоминания включены. Чтобы они приходили минута в минуту, можно дополнительно выдать разрешение на использование будильников. Без него напоминания всё равно приходят, но с небольшим окном.</string>
-    <string name="open_settings">Открыть настройки</string>
     <string name="notification_time">Время уведомлений</string>
     <string name="notification_time_description">Выберите время, когда вы хотите получать уведомления о подписках</string>
     <string name="reminder_days">Дни напоминаний</string>
@@ -208,9 +205,9 @@
 
     <!-- Battery optimization / reliable delivery -->
     <string name="battery_optimization_title">Надёжная доставка</string>
-    <string name="battery_optimization_description">Чтобы напоминания приходили вовремя, разрешите Trackify работать в фоне без ограничений батареи.</string>
-    <string name="battery_optimization_button">Разрешить работу в фоне</string>
-    <string name="battery_optimization_enabled">Работа в фоне разрешена</string>
+    <string name="battery_optimization_description">Чтобы напоминания приходили вовремя, Trackify должен работать без ограничений батареи. Нажмите кнопку ниже, откройте «Использование батареи» и выберите «Без ограничений» (Unrestricted).</string>
+    <string name="battery_optimization_button">Открыть настройки батареи</string>
+    <string name="battery_optimization_enabled">Батарея: без ограничений — напоминания придут вовремя</string>
     <string name="battery_optimization_xiaomi_title">Устройства Xiaomi / MIUI</string>
     <string name="battery_optimization_xiaomi_description">MIUI может всё равно останавливать напоминания. Откройте Автозапуск и включите Trackify, а в настройках батареи выберите «Без ограничений» для приложения.</string>
     <string name="battery_optimization_xiaomi_button">Открыть настройки автозапуска</string>

@@ -29,7 +29,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.onlive.trackify.R
 import com.onlive.trackify.ui.components.SettingsSection
-import com.onlive.trackify.utils.AlarmScheduler
 import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.ThemeManager
@@ -51,11 +50,8 @@ fun SettingsScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     val preferenceManager = remember { PreferenceManager(context) }
     val notificationScheduler = remember { NotificationScheduler(context) }
-    val alarmScheduler = remember { AlarmScheduler(context) }
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
-
-    var showExactAlarmDialog by remember { mutableStateOf(value = false) }
 
     val checkNotificationPermission = {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -218,9 +214,6 @@ fun SettingsScreen(
                                 notificationsEnabled = true
                                 preferenceManager.setNotificationsEnabled(true)
                                 notificationScheduler.scheduleNotifications()
-                                if (!alarmScheduler.canScheduleExactAlarms()) {
-                                    showExactAlarmDialog = true
-                                }
                             } else {
                                 waitingForPermissionState.value = true
                                 val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
@@ -274,29 +267,6 @@ fun SettingsScreen(
             }
 
             Spacer(modifier = Modifier.height(8.dp))
-        }
-
-        if (showExactAlarmDialog) {
-            AlertDialog(
-                onDismissRequest = { showExactAlarmDialog = false },
-                title = { Text(stringResource(R.string.exact_alarm_permission_title)) },
-                text = { Text(stringResource(R.string.exact_alarm_permission_description)) },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            alarmScheduler.openAlarmSettings()
-                            showExactAlarmDialog = false
-                        }
-                    ) {
-                        Text(stringResource(R.string.open_settings))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showExactAlarmDialog = false }) {
-                        Text(stringResource(R.string.cancel))
-                    }
-                }
-            )
         }
     }
 }

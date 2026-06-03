@@ -10,6 +10,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.onlive.trackify.utils.stringResource
 import androidx.compose.ui.unit.dp
 import com.onlive.trackify.R
@@ -194,7 +197,20 @@ fun NotificationSettingsScreen(
 @Composable
 private fun BatteryOptimizationSection() {
     val context = LocalContext.current
-    val isIgnoring = remember { BatteryOptimizationHelper.isIgnoringBatteryOptimizations(context) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    var isIgnoring by remember {
+        mutableStateOf(BatteryOptimizationHelper.isIgnoringBatteryOptimizations(context))
+    }
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                isIgnoring = BatteryOptimizationHelper.isIgnoringBatteryOptimizations(context)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     SettingsSection(
         title = stringResource(R.string.battery_optimization_title)

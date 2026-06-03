@@ -21,10 +21,10 @@ object BatteryOptimizationHelper {
 
     fun requestIgnoreBatteryOptimizations(context: Context) {
         val candidates = listOf(
-            Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS),
             Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                 data = Uri.fromParts("package", context.packageName, null)
-            }
+            },
+            Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
         )
         for (intent in candidates) {
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
