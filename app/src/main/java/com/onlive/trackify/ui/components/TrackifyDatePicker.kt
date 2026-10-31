@@ -5,16 +5,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
@@ -49,11 +45,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -78,16 +77,16 @@ fun TrackifyDatePicker(
     onDismiss: () -> Unit,
     allowNull: Boolean = false,
 ) {
-    val screenHeight = WindowInsets.displayCutout.asPaddingValues().calculateTopPadding() +
-            WindowInsets.systemBars.asPaddingValues().calculateTopPadding() +
-            600.dp
-    val isLargeScreen = screenHeight > 600.dp
+    val windowHeight = with(LocalDensity.current) {
+        LocalWindowInfo.current.containerSize.height.toDp()
+    }
+    val isLargeScreen = windowHeight >= 650.dp
 
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = selectedDate.time
     )
 
-    var showCalendar by remember { mutableStateOf(true) }
+    var showCalendar by rememberSaveable { mutableStateOf(true) }
 
     val todayLabel = stringResource(R.string.today)
     val tomorrowLabel = stringResource(R.string.tomorrow)
@@ -156,7 +155,9 @@ fun TrackifyDatePicker(
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
         ) {
             Column(
-                modifier = Modifier.padding(vertical = 24.dp)
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(vertical = 24.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(horizontal = 16.dp)
@@ -180,7 +181,7 @@ fun TrackifyDatePicker(
                             label = {
                                 Icon(
                                     imageVector = Icons.Default.CalendarToday,
-                                    contentDescription = null,
+                                    contentDescription = stringResource(R.string.calendar_view),
                                     modifier = Modifier.size(18.dp)
                                 )
                             },
@@ -197,7 +198,7 @@ fun TrackifyDatePicker(
                             label = {
                                 Icon(
                                     imageVector = Icons.Default.Apps,
-                                    contentDescription = null,
+                                    contentDescription = stringResource(R.string.quick_pick_view),
                                     modifier = Modifier.size(18.dp)
                                 )
                             },
@@ -218,7 +219,9 @@ fun TrackifyDatePicker(
                 if (showCalendar) {
                     DatePicker(
                         state = datePickerState,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 440.dp),
                         title = null,
                         headline = null,
                         showModeToggle = false,
@@ -254,7 +257,6 @@ fun TrackifyDatePicker(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
-                            .heightIn(max = if (isLargeScreen) 400.dp else 350.dp)
                     )
                 }
 
@@ -313,13 +315,6 @@ private fun QuickPickSection(
 ) {
     Column(
         modifier = modifier
-            .then(
-                if (!isLargeScreen) {
-                    Modifier.verticalScroll(rememberScrollState())
-                } else {
-                    Modifier
-                }
-            )
     ) {
         Text(
             text = stringResource(R.string.quick_pick),

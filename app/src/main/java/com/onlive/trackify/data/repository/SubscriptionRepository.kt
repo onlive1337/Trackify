@@ -46,7 +46,7 @@ class SubscriptionRepository(
             categories.find { it.categoryId == id }
         }
         return subscription.copy().apply {
-            categoryName = category?.name ?: context.getString(R.string.without_category)
+            categoryName = category?.name
             categoryColor = category?.colorCode
         }
     }

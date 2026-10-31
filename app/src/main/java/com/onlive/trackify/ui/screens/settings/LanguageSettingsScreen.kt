@@ -17,6 +17,7 @@ import com.onlive.trackify.R
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.LocaleHelper
 import com.onlive.trackify.utils.LocalLocaleManager
+import com.onlive.trackify.utils.NotificationHelper
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.stringResource
 
@@ -87,6 +88,7 @@ fun LanguageSettingsScreen(
                             selectedLanguageCode = language.code
                             preferenceManager.setLanguageCode(language.code)
                             localeManager.setLocale(language.code)
+                            NotificationHelper(context).createNotificationChannel()
                         },
                         modifier = Modifier.animateItem()
                     )

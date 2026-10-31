@@ -52,10 +52,12 @@ fun TrackifyApp(
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
-    val startDestination = if (preferenceManager.isOnboardingCompleted()) {
-        Screen.Home.route
-    } else {
-        Screen.Onboarding.route
+    val startDestination = remember {
+        if (preferenceManager.isOnboardingCompleted()) {
+            Screen.Home.route
+        } else {
+            Screen.Onboarding.route
+        }
     }
 
     LaunchedEffect(initialSubscriptionId) {

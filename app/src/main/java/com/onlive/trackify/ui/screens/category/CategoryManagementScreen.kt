@@ -189,7 +189,7 @@ fun CategoryItem(
                 ) {
                     Icon(
                         imageVector = Icons.Default.MoreVert,
-                        contentDescription = null,
+                        contentDescription = stringResource(R.string.more_options),
                         modifier = Modifier.size(20.dp)
                     )
                 }

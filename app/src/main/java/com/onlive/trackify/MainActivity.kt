@@ -38,7 +38,13 @@ class MainActivity : ComponentActivity() {
         val savedLanguage = preferenceManager.getLanguageCode()
         localeManager.setLocale(savedLanguage)
 
-        val initialSubscriptionId = intent.getLongExtra("subscription_id", -1L)
+        val initialSubscriptionId = if (savedInstanceState == null) {
+            intent.getLongExtra("subscription_id", -1L).also {
+                intent.removeExtra("subscription_id")
+            }
+        } else {
+            -1L
+        }
 
         setContent {
             ProvideLocaleManager(localeManager = localeManager) {

@@ -1,6 +1,8 @@
 package com.onlive.trackify.ui.theme
 
 import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
@@ -90,7 +92,7 @@ fun TrackifyTheme(
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
-            val window = (view.context as Activity).window
+            val window = view.context.findActivity()?.window ?: return@SideEffect
 
             WindowCompat.getInsetsController(window, view).apply {
                 isAppearanceLightStatusBars = !useDarkTheme
@@ -106,4 +108,10 @@ fun TrackifyTheme(
         motionScheme = MotionScheme.expressive(),
         content = content
     )
+}
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }

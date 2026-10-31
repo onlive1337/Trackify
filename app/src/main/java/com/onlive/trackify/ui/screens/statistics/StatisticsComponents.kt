@@ -171,8 +171,14 @@ private fun CategoryItem(
                     .background(accentColor)
             )
 
+            val displayName = if (category.categoryId == null) {
+                stringResource(R.string.without_category)
+            } else {
+                category.categoryName
+            }
+
             Text(
-                text = category.categoryName,
+                text = displayName,
                 style = MaterialTheme.typography.bodyMediumEmphasized,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,

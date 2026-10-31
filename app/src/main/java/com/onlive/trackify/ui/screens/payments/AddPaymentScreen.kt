@@ -81,6 +81,7 @@ fun AddPaymentScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .imePadding()
                 .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState())
         ) {
@@ -101,10 +102,13 @@ fun AddPaymentScreen(
 
             OutlinedTextField(
                 value = amount,
-                onValueChange = {
-                    if (it.isEmpty() || it.toDoubleOrNull() != null) {
-                        amount = it
-                        if (amountError && it.toDoubleOrNull()?.let { v -> v > 0 } == true) amountError = false
+                onValueChange = { input ->
+                    val sanitized = input.replace(',', '.')
+                    if (sanitized.isEmpty() || sanitized == "." || sanitized.matches(Regex("""^\d*\.?\d*$"""))) {
+                        amount = sanitized
+                        if (amountError && sanitized.toDoubleOrNull()?.let { v -> v > 0 } == true) {
+                            amountError = false
+                        }
                     }
                 },
                 label = { Text(stringResource(R.string.payment_amount)) },

@@ -13,8 +13,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 import com.onlive.trackify.R
+import com.onlive.trackify.utils.PaymentScheduleCalculator
 import java.util.concurrent.ConcurrentHashMap
 
 class LiveStatisticsUpdater(
@@ -107,11 +109,19 @@ class LiveStatisticsUpdater(
         }
     }
 
+    private fun activeSubscriptions(referenceDate: Date = Date()): List<Subscription> {
+        val todayStart = PaymentScheduleCalculator.normalizeToStartOfDay(referenceDate)
+        return subscriptions.values.filter { subscription ->
+            val endDate = subscription.endDate
+            endDate == null || !PaymentScheduleCalculator.normalizeToStartOfDay(endDate).before(todayStart)
+        }
+    }
+
     private fun calculateMonthlySpendingInternal() {
         try {
             var monthlyCost = 0.0
 
-            for (subscription in subscriptions.values) {
+            for (subscription in activeSubscriptions()) {
                 monthlyCost += when (subscription.billingFrequency) {
                     BillingFrequency.MONTHLY -> subscription.price
                     BillingFrequency.YEARLY -> subscription.price / 12
@@ -130,7 +140,7 @@ class LiveStatisticsUpdater(
         try {
             var yearlyCost = 0.0
 
-            for (subscription in subscriptions.values) {
+            for (subscription in activeSubscriptions()) {
                 yearlyCost += when (subscription.billingFrequency) {
                     BillingFrequency.MONTHLY -> subscription.price * 12
                     BillingFrequency.YEARLY -> subscription.price
@@ -153,7 +163,7 @@ class LiveStatisticsUpdater(
                 categorySpendingMap[category.categoryId] = 0.0
             }
 
-            for (subscription in subscriptions.values) {
+            for (subscription in activeSubscriptions()) {
                 val monthlyCost = when (subscription.billingFrequency) {
                     BillingFrequency.MONTHLY -> subscription.price
                     BillingFrequency.YEARLY -> subscription.price / 12
@@ -242,7 +252,7 @@ class LiveStatisticsUpdater(
             var monthlyTotal = 0.0
             var yearlyTotal = 0.0
 
-            for (subscription in subscriptions.values) {
+            for (subscription in activeSubscriptions()) {
                 when (subscription.billingFrequency) {
                     BillingFrequency.MONTHLY -> monthlyTotal += subscription.price
                     BillingFrequency.YEARLY -> yearlyTotal += subscription.price / 12

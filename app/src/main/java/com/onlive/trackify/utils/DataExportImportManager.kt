@@ -38,6 +38,7 @@ class DataExportImportManager(private val context: Context) {
         val currencyCode: String = "RUB",
         val languageCode: String = "",
         val themeMode: Int = 0,
+        val dynamicColorEnabled: Boolean = true,
     )
 
     data class ExportData(
@@ -66,6 +67,7 @@ class DataExportImportManager(private val context: Context) {
                 currencyCode = preferenceManager.getCurrencyCode(),
                 languageCode = preferenceManager.getLanguageCode(),
                 themeMode = themeManager.getThemeMode(),
+                dynamicColorEnabled = themeManager.isDynamicColorEnabled(),
             )
 
             val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
@@ -179,6 +181,7 @@ class DataExportImportManager(private val context: Context) {
                 preferenceManager.setLanguageCode(userPreferences.languageCode)
 
                 themeManager.setThemeMode(userPreferences.themeMode)
+                themeManager.setDynamicColorEnabled(userPreferences.dynamicColorEnabled)
             } catch (e: Exception) {
                 Log.e(tag, "Error restoring user preferences", e)
             }

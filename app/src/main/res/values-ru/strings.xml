@@ -219,4 +219,28 @@
     <string name="send_log_no_logs">Пока нет логов для отправки</string>
     <string name="send_log_error">Не удалось открыть лог</string>
 
+    <string name="invalid_end_date">Дата окончания не может быть раньше даты начала</string>
+    <string name="privacy_policy">Политика конфиденциальности</string>
+    <string name="made_by_footer">Сделано onlive с </string>
+
+    <!-- Accessibility -->
+    <string name="navigate_back">Назад</string>
+    <string name="more_options">Ещё</string>
+    <string name="calendar_view">Календарь</string>
+    <string name="quick_pick_view">Быстрый выбор</string>
+    <string name="color_option">Цвет %1$s</string>
+
+    <!-- Currencies -->
+    <string name="currency_usd">Доллар США</string>
+    <string name="currency_eur">Евро</string>
+    <string name="currency_gbp">Британский фунт</string>
+    <string name="currency_rub">Российский рубль</string>
+    <string name="currency_jpy">Японская иена</string>
+    <string name="currency_cny">Китайский юань</string>
+    <string name="currency_inr">Индийская рупия</string>
+    <string name="currency_cad">Канадский доллар</string>
+    <string name="currency_aud">Австралийский доллар</string>
+    <string name="currency_chf">Швейцарский франк</string>
+    <string name="currency_uzs">Узбекский сум</string>
+
 </resources>

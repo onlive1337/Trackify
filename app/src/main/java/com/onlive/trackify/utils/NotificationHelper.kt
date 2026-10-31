@@ -16,8 +16,12 @@ import com.onlive.trackify.MainActivity
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Subscription
 
-class NotificationHelper(private val context: Context) {
+class NotificationHelper(rawContext: Context) {
 
+    private val context: Context = LocaleHelper.getLocalizedContext(
+        rawContext.applicationContext ?: rawContext,
+        PreferenceManager(rawContext)
+    )
     private val channelId = "trackify_notifications"
     private val tag = "NotificationHelper"
 

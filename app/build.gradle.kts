@@ -1,5 +1,5 @@
+import java.io.File
 import java.util.Properties
-import java.io.FileInputStream
 
 plugins {
     alias(libs.plugins.android.application)
@@ -11,8 +11,23 @@ ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
 }
 
-val hasReleaseKeystore: Boolean = System.getenv("KEYSTORE_FILE") != null ||
-    rootProject.file("keystore.properties").exists()
+val keystoreProperties: Properties? = rootProject.file("keystore.properties")
+    .takeIf { it.exists() }
+    ?.inputStream()
+    ?.use { stream -> Properties().apply { load(stream) } }
+
+val hasReleaseKeystore: Boolean = System.getenv("KEYSTORE_FILE") != null || keystoreProperties != null
+
+val sdkDirPath: String? = System.getenv("ANDROID_HOME")
+    ?: System.getenv("ANDROID_SDK_ROOT")
+    ?: rootProject.file("local.properties")
+        .takeIf { it.exists() }
+        ?.inputStream()
+        ?.use { stream -> Properties().apply { load(stream) }.getProperty("sdk.dir") }
+
+val hasInstalledNdk: Boolean = sdkDirPath?.let { dir ->
+    File(dir, "ndk").listFiles()?.any { it.isDirectory } == true
+} == true
 
 android {
     namespace = "com.onlive.trackify"
@@ -40,51 +55,14 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = if (System.getenv("KEYSTORE_FILE") != null) {
-                file(System.getenv("KEYSTORE_FILE"))
-            } else {
-                val keystorePropertiesFile = rootProject.file("keystore.properties")
-                if (keystorePropertiesFile.exists()) {
-                    val keystoreProperties = Properties()
-                    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-                    keystoreProperties["storeFile"]?.let { file(it) }
-                } else {
-                    null
-                }
-            }
-
-            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: run {
-                val keystorePropertiesFile = rootProject.file("keystore.properties")
-                if (keystorePropertiesFile.exists()) {
-                    val keystoreProperties = Properties()
-                    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-                    keystoreProperties["storePassword"] as String?
-                } else {
-                    null
-                }
-            }
-
-            keyAlias = System.getenv("KEY_ALIAS") ?: run {
-                val keystorePropertiesFile = rootProject.file("keystore.properties")
-                if (keystorePropertiesFile.exists()) {
-                    val keystoreProperties = Properties()
-                    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-                    keystoreProperties["keyAlias"] as String?
-                } else {
-                    null
-                }
-            }
-
-            keyPassword = System.getenv("KEY_PASSWORD") ?: run {
-                val keystorePropertiesFile = rootProject.file("keystore.properties")
-                if (keystorePropertiesFile.exists()) {
-                    val keystoreProperties = Properties()
-                    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-                    keystoreProperties["keyPassword"] as String?
-                } else {
-                    null
-                }
-            }
+            storeFile = System.getenv("KEYSTORE_FILE")?.let { file(it) }
+                ?: keystoreProperties?.getProperty("storeFile")?.let { file(it) }
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+                ?: keystoreProperties?.getProperty("storePassword")
+            keyAlias = System.getenv("KEY_ALIAS")
+                ?: keystoreProperties?.getProperty("keyAlias")
+            keyPassword = System.getenv("KEY_PASSWORD")
+                ?: keystoreProperties?.getProperty("keyPassword")
         }
     }
 
@@ -93,6 +71,11 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             isDebuggable = false
+            if (hasInstalledNdk) {
+                ndk {
+                    debugSymbolLevel = "FULL"
+                }
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -124,8 +107,10 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
-        jniLibs {
-            keepDebugSymbols += "**/libandroidx.graphics.path.so"
+        if (!hasInstalledNdk) {
+            jniLibs {
+                keepDebugSymbols += "**/libandroidx.graphics.path.so"
+            }
         }
     }
 }
@@ -150,7 +135,6 @@ gradle.taskGraph.whenReady {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
     implementation(libs.material)

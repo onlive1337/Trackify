@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -26,6 +27,7 @@ import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.ExposedDropdownMenu
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
@@ -69,6 +71,7 @@ import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.ui.components.formFieldColors
 import com.onlive.trackify.utils.CurrencyFormatter
 import com.onlive.trackify.utils.DateUtils
+import com.onlive.trackify.utils.PaymentScheduleCalculator
 import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.CategoryViewModel
 import com.onlive.trackify.viewmodel.PaymentViewModel
@@ -118,9 +121,11 @@ fun SubscriptionDetailScreen(
 
     var nameError by remember { mutableStateOf(false) }
     var priceError by remember { mutableStateOf(false) }
+    var dateError by remember { mutableStateOf(false) }
 
     val requiredFieldStr = stringResource(R.string.required_field)
     val invalidPriceStr = stringResource(R.string.invalid_price)
+    val invalidEndDateStr = stringResource(R.string.invalid_end_date)
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
@@ -137,7 +142,7 @@ fun SubscriptionDetailScreen(
                         IconButton(onClick = { showDeleteDialog.value = true }) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
-                                contentDescription = null,
+                                contentDescription = stringResource(R.string.delete),
                                 tint = MaterialTheme.colorScheme.error
                             )
                         }
@@ -150,6 +155,7 @@ fun SubscriptionDetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .imePadding()
                 .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState())
         ) {
@@ -177,10 +183,13 @@ fun SubscriptionDetailScreen(
 
             OutlinedTextField(
                 value = price,
-                onValueChange = {
-                    if (it.isEmpty() || it.toDoubleOrNull() != null) {
-                        price = it
-                        if (priceError && it.toDoubleOrNull()?.let { v -> v > 0 } == true) priceError = false
+                onValueChange = { input ->
+                    val sanitized = input.replace(',', '.')
+                    if (sanitized.isEmpty() || sanitized == "." || sanitized.matches(Regex("""^\d*\.?\d*$"""))) {
+                        price = sanitized
+                        if (priceError && sanitized.toDoubleOrNull()?.let { v -> v > 0 } == true) {
+                            priceError = false
+                        }
                     }
                 },
                 label = { Text(stringResource(R.string.subscription_price)) },
@@ -258,6 +267,16 @@ fun SubscriptionDetailScreen(
                 )
             }
 
+            if (dateError) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = invalidEndDateStr,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
@@ -277,14 +296,16 @@ fun SubscriptionDetailScreen(
                     val priceValue = price.toDoubleOrNull() ?: 0.0
                     val isNameValid = name.isNotBlank()
                     val isPriceValid = priceValue > 0
+                    val isEndDateValid = endDate == null || !PaymentScheduleCalculator.normalizeToStartOfDay(endDate!!).before(PaymentScheduleCalculator.normalizeToStartOfDay(startDate))
 
                     nameError = !isNameValid
                     priceError = !isPriceValid
+                    dateError = !isEndDateValid
 
-                    if (isNameValid && isPriceValid) {
+                    if (isNameValid && isPriceValid && isEndDateValid) {
                         val sub = Subscription(
                             subscriptionId = if (subscriptionId == -1L) 0 else subscriptionId,
-                            name = name,
+                            name = name.trim(),
                             description = description.ifBlank { null },
                             price = priceValue,
                             billingFrequency = billingFrequency,
@@ -326,7 +347,12 @@ fun SubscriptionDetailScreen(
     if (showStartDatePicker.value) {
         TrackifyDatePicker(
             selectedDate = startDate,
-            onDateSelected = { startDate = it },
+            onDateSelected = {
+                startDate = it
+                if (endDate != null) {
+                    dateError = PaymentScheduleCalculator.normalizeToStartOfDay(endDate!!).before(PaymentScheduleCalculator.normalizeToStartOfDay(it))
+                }
+            },
             onDismiss = { showStartDatePicker.value = false }
         )
     }
@@ -334,7 +360,15 @@ fun SubscriptionDetailScreen(
     if (showEndDatePicker.value) {
         TrackifyDatePicker(
             selectedDate = endDate ?: Date(),
-            onDateSelected = { endDate = if (it.time == Long.MAX_VALUE) null else it },
+            onDateSelected = {
+                val selected = if (it.time == Long.MAX_VALUE) null else it
+                endDate = selected
+                if (selected != null) {
+                    dateError = PaymentScheduleCalculator.normalizeToStartOfDay(selected).before(PaymentScheduleCalculator.normalizeToStartOfDay(startDate))
+                } else {
+                    dateError = false
+                }
+            },
             onDismiss = { showEndDatePicker.value = false },
             allowNull = true
         )

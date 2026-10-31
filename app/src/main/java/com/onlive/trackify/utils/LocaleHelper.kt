@@ -2,6 +2,7 @@ package com.onlive.trackify.utils
 
 import android.content.Context
 import android.content.res.Configuration
+import android.content.res.Resources
 import java.util.Locale
 
 object LocaleHelper {
@@ -23,6 +24,16 @@ object LocaleHelper {
     fun getLocalizedContext(context: Context, preferenceManager: PreferenceManager): Context {
         val languageCode = preferenceManager.getLanguageCode()
         return updateLocale(context, languageCode)
+    }
+
+    fun getSupportedSystemLanguage(): String {
+        val sysLang = runCatching {
+            Resources.getSystem().configuration.locales[0]?.language
+        }.getOrNull().takeUnless { it.isNullOrBlank() }
+            ?: Locale.getDefault().language
+
+        val supportedCodes = getAvailableLanguages().map { it.code }.toSet()
+        return if (sysLang in supportedCodes) sysLang else "en"
     }
 
     fun getAvailableLanguages(): List<Language> {

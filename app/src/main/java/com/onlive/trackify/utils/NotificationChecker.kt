@@ -23,8 +23,7 @@ class NotificationChecker(private val context: Context) {
         preferenceManager.cleanupOldNotificationRecords()
 
         val reminderDays = preferenceManager.getReminderDays()
-        val maxReminderDay = reminderDays.maxOrNull()
-        if (maxReminderDay == null) {
+        if (reminderDays.isEmpty()) {
             Log.d(tag, "No reminder days configured, nothing to do")
             return
         }
@@ -32,18 +31,18 @@ class NotificationChecker(private val context: Context) {
         val subscriptions = database.subscriptionDao().getAllSubscriptionsForWorker()
         val today = Date()
 
-        Log.d(tag, "Checking ${subscriptions.size} subscriptions (window=$maxReminderDay days)")
+        Log.d(tag, "Checking ${subscriptions.size} subscriptions (days=$reminderDays)")
 
         for (subscription in subscriptions) {
-            checkPaymentReminder(subscription, today, maxReminderDay, notificationHelper, preferenceManager)
-            checkExpirationReminder(subscription, today, maxReminderDay, notificationHelper, preferenceManager)
+            checkPaymentReminder(subscription, today, reminderDays, notificationHelper, preferenceManager)
+            checkExpirationReminder(subscription, today, reminderDays, notificationHelper, preferenceManager)
         }
     }
 
     private fun checkPaymentReminder(
         subscription: Subscription,
         today: Date,
-        maxReminderDay: Int,
+        reminderDays: Set<Int>,
         notificationHelper: NotificationHelper,
         preferenceManager: PreferenceManager,
     ) {
@@ -55,20 +54,20 @@ class NotificationChecker(private val context: Context) {
         ) ?: return
 
         val daysUntil = PaymentScheduleCalculator.getDaysDifference(today, nextPaymentDate)
-        if (daysUntil < 0 || daysUntil > maxReminderDay) return
+        val matchedThreshold = resolveReminderThreshold(daysUntil, reminderDays) ?: return
 
         val dateKey = preferenceManager.formatDateKey(nextPaymentDate)
-        if (preferenceManager.wasNotificationSentForDate(subscription.subscriptionId, TYPE_PAYMENT, dateKey)) return
+        if (preferenceManager.wasNotificationSentForDate(subscription.subscriptionId, TYPE_PAYMENT, dateKey, matchedThreshold)) return
 
         notificationHelper.showPaymentReminderNotification(subscription, daysUntil)
-        preferenceManager.markNotificationSentForDate(subscription.subscriptionId, TYPE_PAYMENT, dateKey)
-        Log.d(tag, "Payment reminder sent for ${subscription.name} (in $daysUntil days, cycle $dateKey)")
+        preferenceManager.markNotificationSentForDate(subscription.subscriptionId, TYPE_PAYMENT, dateKey, matchedThreshold)
+        Log.d(tag, "Payment reminder sent for ${subscription.name} (in $daysUntil days, threshold=$matchedThreshold, cycle $dateKey)")
     }
 
     private fun checkExpirationReminder(
         subscription: Subscription,
         today: Date,
-        maxReminderDay: Int,
+        reminderDays: Set<Int>,
         notificationHelper: NotificationHelper,
         preferenceManager: PreferenceManager,
     ) {
@@ -78,18 +77,27 @@ class NotificationChecker(private val context: Context) {
         if (endDateStart.before(todayStart)) return
 
         val daysUntil = PaymentScheduleCalculator.getDaysDifference(today, endDate)
-        if (daysUntil < 0 || daysUntil > maxReminderDay) return
+        val matchedThreshold = resolveReminderThreshold(daysUntil, reminderDays) ?: return
 
         val dateKey = preferenceManager.formatDateKey(endDate)
-        if (preferenceManager.wasNotificationSentForDate(subscription.subscriptionId, TYPE_EXPIRATION, dateKey)) return
+        if (preferenceManager.wasNotificationSentForDate(subscription.subscriptionId, TYPE_EXPIRATION, dateKey, matchedThreshold)) return
 
         notificationHelper.showExpirationReminderNotification(subscription, daysUntil)
-        preferenceManager.markNotificationSentForDate(subscription.subscriptionId, TYPE_EXPIRATION, dateKey)
-        Log.d(tag, "Expiration reminder sent for ${subscription.name} (in $daysUntil days, cycle $dateKey)")
+        preferenceManager.markNotificationSentForDate(subscription.subscriptionId, TYPE_EXPIRATION, dateKey, matchedThreshold)
+        Log.d(tag, "Expiration reminder sent for ${subscription.name} (in $daysUntil days, threshold=$matchedThreshold, cycle $dateKey)")
     }
 
     companion object {
         private const val TYPE_PAYMENT = "payment"
         private const val TYPE_EXPIRATION = "expiration"
+
+        internal fun resolveReminderThreshold(daysUntil: Int, reminderDays: Set<Int>): Int? {
+            if (daysUntil < 0 || reminderDays.isEmpty()) return null
+            return when {
+                daysUntil in reminderDays -> daysUntil
+                (daysUntil + 1) in reminderDays -> daysUntil + 1
+                else -> null
+            }
+        }
     }
 }

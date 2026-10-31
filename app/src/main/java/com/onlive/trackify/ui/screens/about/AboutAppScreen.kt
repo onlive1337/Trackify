@@ -19,6 +19,7 @@ import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -149,6 +150,14 @@ fun AboutAppScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             AboutLinkItem(
+                icon = Icons.Default.Security,
+                label = stringResource(R.string.privacy_policy),
+                onClick = { uriHandler.openUri("https://github.com/onlive1337/Trackify/blob/master/PRIVACY_POLICY.md") }
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            AboutLinkItem(
                 icon = Icons.Default.BugReport,
                 label = stringResource(R.string.send_log),
                 onClick = { shareLatestLog(context) }
@@ -165,7 +174,7 @@ fun AboutAppScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Made by onlive with ",
+                    text = stringResource(R.string.made_by_footer),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

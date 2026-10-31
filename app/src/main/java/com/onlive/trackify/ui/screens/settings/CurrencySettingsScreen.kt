@@ -92,7 +92,7 @@ private fun CurrencyItem(
     ListItem(
         headlineContent = {
             Text(
-                text = currency.name,
+                text = stringResource(currency.nameRes),
                 style = MaterialTheme.typography.titleMedium
             )
         },

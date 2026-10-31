@@ -42,7 +42,7 @@ fun TrackifyTopAppBar(
                 IconButton(onClick = onBackClick) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.cancel),
+                        contentDescription = stringResource(R.string.navigate_back),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }

@@ -41,8 +41,10 @@ data class Subscription(
     val image: String? = null
 ) {
     @Ignore
+    @Transient
     var categoryName: String? = null
 
     @Ignore
+    @Transient
     var categoryColor: String? = null
 }

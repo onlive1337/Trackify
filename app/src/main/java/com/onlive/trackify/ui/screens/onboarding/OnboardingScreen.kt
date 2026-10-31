@@ -63,6 +63,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -81,11 +82,11 @@ import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Currency
 import com.onlive.trackify.utils.LocaleHelper
 import com.onlive.trackify.utils.LocaleManager
+import com.onlive.trackify.utils.NotificationHelper
 import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.stringResource
 import kotlinx.coroutines.delay
-import java.util.Locale
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -103,17 +104,13 @@ fun OnboardingScreen(
         notificationScheduler.scheduleNotifications()
     }
 
-    var currentStep by remember { mutableIntStateOf(0) }
-    var selectedLanguage by remember { mutableStateOf("") }
-    var selectedCurrency by remember { mutableStateOf("USD") }
+    var currentStep by rememberSaveable { mutableIntStateOf(0) }
+    var selectedLanguage by rememberSaveable { mutableStateOf(preferenceManager.getLanguageCode()) }
+    var selectedCurrency by rememberSaveable { mutableStateOf(preferenceManager.getCurrencyCode()) }
 
-    LaunchedEffect(currentStep) {
-        if (currentStep == 1 && selectedLanguage.isBlank()) {
-            val deviceLang = Locale.getDefault().language.takeIf { it.isNotBlank() }
-            val defaultLang = deviceLang ?: "en"
-            selectedLanguage = defaultLang
-            localeManager.setLocale(defaultLang)
-        }
+    val completeOnboarding = {
+        finishOnboarding(preferenceManager, selectedLanguage, selectedCurrency, onComplete)
+        NotificationHelper(context).createNotificationChannel()
     }
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
@@ -122,7 +119,7 @@ fun OnboardingScreen(
         if (granted) {
             enableNotifications()
         }
-        finishOnboarding(preferenceManager, selectedLanguage, selectedCurrency, onComplete)
+        completeOnboarding()
     }
 
     val showBottomContinue = currentStep == 1 || currentStep == 2
@@ -151,7 +148,7 @@ fun OnboardingScreen(
                 OnboardingProgressIndicator(
                     currentStep = currentStep,
                     onStepClick = { step -> currentStep = step },
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 24.dp)
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 3.dp)
                 )
 
                 AnimatedContent(
@@ -199,7 +196,7 @@ fun OnboardingScreen(
 
                                     if (hasPermission) {
                                         enableNotifications()
-                                        finishOnboarding(preferenceManager, selectedLanguage, selectedCurrency, onComplete)
+                                        completeOnboarding()
                                     } else {
                                         notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                                     }
@@ -207,11 +204,11 @@ fun OnboardingScreen(
                                     // Pre-Android 13: no runtime permission needed,
                                     // the user agreed, so enable reminders directly.
                                     enableNotifications()
-                                    finishOnboarding(preferenceManager, selectedLanguage, selectedCurrency, onComplete)
+                                    completeOnboarding()
                                 }
                             },
                             onSkip = {
-                                finishOnboarding(preferenceManager, selectedLanguage, selectedCurrency, onComplete)
+                                completeOnboarding()
                             }
                         )
                     }
@@ -263,17 +260,24 @@ private fun OnboardingProgressIndicator(
             Box(
                 modifier = Modifier
                     .weight(animatedWeight)
-                    .height(6.dp)
-                    .clip(CircleShape)
-                    .background(
-                        if (isActive) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.surfaceVariant
-                    )
+                    .height(48.dp)
                     .clickable(
                         enabled = index < currentStep,
                         onClick = { onStepClick(index) }
-                    )
-            )
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(6.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (isActive) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.surfaceVariant
+                        )
+                )
+            }
         }
     }
 }
@@ -658,7 +662,7 @@ private fun CurrencyOption(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = currency.name,
+                    text = stringResource(currency.nameRes),
                     style = if (selected) MaterialTheme.typography.titleMediumEmphasized else MaterialTheme.typography.titleMedium,
                     color = if (selected)
                         MaterialTheme.colorScheme.onPrimaryContainer

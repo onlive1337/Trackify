@@ -71,25 +71,45 @@ class PreferenceManager(context: Context) {
     }
 
     fun getLanguageCode(): String {
-        return prefs.getString(KEY_LANGUAGE_CODE, "en") ?: "en"
+        val saved = prefs.getString(KEY_LANGUAGE_CODE, null)
+        return if (!saved.isNullOrBlank()) {
+            saved
+        } else {
+            LocaleHelper.getSupportedSystemLanguage()
+        }
     }
 
     fun setLanguageCode(languageCode: String) {
         prefs.edit { putString(KEY_LANGUAGE_CODE, languageCode) }
     }
 
-    fun wasNotificationSentForDate(subscriptionId: Long, type: String, dateKey: String): Boolean {
-        val key = getNotificationKey(subscriptionId, type, dateKey)
+    fun wasNotificationSentForDate(
+        subscriptionId: Long,
+        type: String,
+        dateKey: String,
+        thresholdDay: Int
+    ): Boolean {
+        val key = getNotificationKey(subscriptionId, type, dateKey, thresholdDay)
         return prefs.contains(key)
     }
 
-    fun markNotificationSentForDate(subscriptionId: Long, type: String, dateKey: String) {
-        val key = getNotificationKey(subscriptionId, type, dateKey)
+    fun markNotificationSentForDate(
+        subscriptionId: Long,
+        type: String,
+        dateKey: String,
+        thresholdDay: Int
+    ) {
+        val key = getNotificationKey(subscriptionId, type, dateKey, thresholdDay)
         prefs.edit { putString(key, dateKey) }
     }
 
-    private fun getNotificationKey(subscriptionId: Long, type: String, dateKey: String): String {
-        return "notified_${type}_${subscriptionId}_$dateKey"
+    private fun getNotificationKey(
+        subscriptionId: Long,
+        type: String,
+        dateKey: String,
+        thresholdDay: Int
+    ): String {
+        return "notified_${type}_${subscriptionId}_${dateKey}_$thresholdDay"
     }
 
     fun formatDateKey(date: java.util.Date): String {

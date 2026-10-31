@@ -215,4 +215,28 @@
     <string name="send_log_no_logs">No logs to send yet</string>
     <string name="send_log_error">Could not open the log</string>
 
+    <string name="invalid_end_date">End date cannot be before start date</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="made_by_footer">Made by onlive with </string>
+
+    <!-- Accessibility -->
+    <string name="navigate_back">Navigate back</string>
+    <string name="more_options">More options</string>
+    <string name="calendar_view">Calendar view</string>
+    <string name="quick_pick_view">Quick pick options</string>
+    <string name="color_option">Color %1$s</string>
+
+    <!-- Currencies -->
+    <string name="currency_usd">US Dollar</string>
+    <string name="currency_eur">Euro</string>
+    <string name="currency_gbp">British Pound</string>
+    <string name="currency_rub">Russian Ruble</string>
+    <string name="currency_jpy">Japanese Yen</string>
+    <string name="currency_cny">Chinese Yuan</string>
+    <string name="currency_inr">Indian Rupee</string>
+    <string name="currency_cad">Canadian Dollar</string>
+    <string name="currency_aud">Australian Dollar</string>
+    <string name="currency_chf">Swiss Franc</string>
+    <string name="currency_uzs">Uzbekistani Som</string>
+
 </resources>

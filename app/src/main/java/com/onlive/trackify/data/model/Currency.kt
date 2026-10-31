@@ -1,5 +1,7 @@
 package com.onlive.trackify.data.model
 
+import androidx.annotation.StringRes
+import com.onlive.trackify.R
 import java.text.NumberFormat
 import java.util.Currency as JavaCurrency
 import java.util.Locale
@@ -8,21 +10,22 @@ data class Currency(
     val code: String,
     val symbol: String,
     val name: String,
+    @StringRes val nameRes: Int,
     val format: CurrencyFormat = CurrencyFormat.SYMBOL_BEFORE
 ) {
     companion object {
         val POPULAR_CURRENCIES = listOf(
-            Currency("USD", "$", "US Dollar"),
-            Currency("EUR", "€", "Euro"),
-            Currency("GBP", "£", "British Pound"),
-            Currency("RUB", "₽", "Russian Ruble", CurrencyFormat.SYMBOL_AFTER),
-            Currency("JPY", "¥", "Japanese Yen"),
-            Currency("CNY", "¥", "Chinese Yuan"),
-            Currency("INR", "₹", "Indian Rupee"),
-            Currency("CAD", "C$", "Canadian Dollar"),
-            Currency("AUD", "A$", "Australian Dollar"),
-            Currency("CHF", "Fr", "Swiss Franc", CurrencyFormat.SYMBOL_AFTER),
-            Currency("UZS", "UZS", "Uzbekistani Som", CurrencyFormat.SYMBOL_AFTER)
+            Currency("USD", "$", "US Dollar", R.string.currency_usd),
+            Currency("EUR", "€", "Euro", R.string.currency_eur),
+            Currency("GBP", "£", "British Pound", R.string.currency_gbp),
+            Currency("RUB", "₽", "Russian Ruble", R.string.currency_rub, CurrencyFormat.SYMBOL_AFTER),
+            Currency("JPY", "¥", "Japanese Yen", R.string.currency_jpy),
+            Currency("CNY", "¥", "Chinese Yuan", R.string.currency_cny),
+            Currency("INR", "₹", "Indian Rupee", R.string.currency_inr),
+            Currency("CAD", "C$", "Canadian Dollar", R.string.currency_cad),
+            Currency("AUD", "A$", "Australian Dollar", R.string.currency_aud),
+            Currency("CHF", "Fr", "Swiss Franc", R.string.currency_chf, CurrencyFormat.SYMBOL_AFTER),
+            Currency("UZS", "UZS", "Uzbekistani Som", R.string.currency_uzs, CurrencyFormat.SYMBOL_AFTER)
         )
 
         fun getCurrencyByCode(code: String): Currency {

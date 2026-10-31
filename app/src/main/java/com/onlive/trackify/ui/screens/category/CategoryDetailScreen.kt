@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -45,12 +46,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
@@ -111,8 +115,10 @@ fun CategoryDetailContent(
         "#8D6E63", "#BDBDBD", "#212121", "#455A64"
     )
 
-    var categoryName by remember(initialName) { mutableStateOf(initialName) }
-    var categoryColor by remember(initialColor) { mutableStateOf(initialColor) }
+    var categoryName by rememberSaveable(initialName) { mutableStateOf(initialName) }
+    var categoryColor by rememberSaveable(initialColor) { mutableStateOf(initialColor) }
+    var hasAttemptedSave by rememberSaveable { mutableStateOf(false) }
+    val isNameError = hasAttemptedSave && categoryName.trim().isEmpty()
     val showDeleteDialogState = remember { mutableStateOf(false) }
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -132,6 +138,7 @@ fun CategoryDetailContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .imePadding()
                 .verticalScroll(rememberScrollState())
         ) {
             Column(
@@ -166,20 +173,23 @@ fun CategoryDetailContent(
 
                     OutlinedTextField(
                         value = categoryName,
-                        onValueChange = { categoryName = it },
+                        onValueChange = {
+                            categoryName = it
+                            if (hasAttemptedSave && it.isNotBlank()) hasAttemptedSave = false
+                        },
                         placeholder = { Text(stringResource(R.string.category_name)) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         shape = MaterialTheme.shapes.extraLarge,
                         textStyle = MaterialTheme.typography.bodyLargeEmphasized,
-                        isError = categoryName.isEmpty(),
+                        isError = isNameError,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
                             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
                         )
                     )
 
-                    if (categoryName.isEmpty()) {
+                    if (isNameError) {
                         Text(
                             text = stringResource(R.string.category_no_name),
                             color = MaterialTheme.colorScheme.error,
@@ -241,8 +251,10 @@ fun CategoryDetailContent(
 
                     Button(
                         onClick = {
-                            if (categoryName.isNotEmpty()) {
-                                onSave(categoryName, categoryColor)
+                            if (categoryName.isNotBlank()) {
+                                onSave(categoryName.trim(), categoryColor)
+                            } else {
+                                hasAttemptedSave = true
                             }
                         },
                         shape = MaterialTheme.shapes.extraLarge,
@@ -360,6 +372,7 @@ fun ColorChip(
     } catch (_: Exception) {
         Color.Gray
     }
+    val colorDescription = stringResource(R.string.color_option, colorCode)
 
     FilterChip(
         selected = isSelected,
@@ -387,6 +400,8 @@ fun ColorChip(
             selectedLeadingIconColor = if (color.luminance() > 0.5f) Color.Black else Color.White
         ),
         border = null,
-        modifier = Modifier.size(56.dp)
+        modifier = Modifier
+            .size(56.dp)
+            .semantics { contentDescription = colorDescription }
     )
 }
