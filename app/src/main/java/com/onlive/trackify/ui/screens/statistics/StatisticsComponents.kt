@@ -20,7 +20,6 @@ import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.StatisticsViewModel
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SpendingHeroCard(
     monthlyAmount: Double,
@@ -85,7 +84,6 @@ fun SpendingHeroCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun CategoryBreakdownCard(
     categories: List<StatisticsViewModel.CategorySpending>,
@@ -133,7 +131,6 @@ fun CategoryBreakdownCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun CategoryItem(
     category: StatisticsViewModel.CategorySpending,

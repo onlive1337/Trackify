@@ -164,14 +164,10 @@ class DataExportImportManager(private val context: Context) {
 
             try {
                 val prefs = validated.userPreferences
-                val hasNotificationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.POST_NOTIFICATIONS
-                    ) == PackageManager.PERMISSION_GRANTED
-                } else {
-                    true
-                }
+                val hasNotificationPermission = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
                 val effectiveNotificationsEnabled = prefs.notificationsEnabled && hasNotificationPermission
 
                 preferenceManager.clearAllNotificationRecords()
@@ -236,7 +232,7 @@ class DataExportImportManager(private val context: Context) {
                     if (read == -1) break
                     totalRead += read
                     if (totalRead > maxChars) return null
-                    builder.append(buffer, 0, read)
+                    builder.appendRange(buffer, 0, read)
                 }
                 return builder.toString()
             }

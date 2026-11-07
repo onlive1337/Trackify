@@ -110,7 +110,6 @@ fun CategoryAvatar(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SubscriptionListItem(
     item: SubscriptionWithCategory,
@@ -220,7 +219,6 @@ fun SubscriptionListItem(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun SubscriptionDueIndicator(
     dueStatus: SubscriptionDueStatus,
@@ -297,7 +295,6 @@ private fun SubscriptionDueIndicator(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun DuePillBadge(
     icon: ImageVector,

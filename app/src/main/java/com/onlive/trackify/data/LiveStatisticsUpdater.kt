@@ -42,10 +42,9 @@ class LiveStatisticsUpdater(
             val categorySpendingMap = mutableMapOf<Long?, Double>()
             val categoryLookup = mutableMapOf<Long, Category>()
 
-            for (item in activeSubscriptions) {
-                val subscription = item.subscription
+            for ((subscription, category) in activeSubscriptions) {
                 val safePrice = subscription.price.takeIf { it.isFinite() && it > 0.0 } ?: continue
-                item.category?.let { categoryLookup[it.categoryId] = it }
+                category?.let { categoryLookup[it.categoryId] = it }
 
                 val monthlyCost = when (subscription.billingFrequency) {
                     BillingFrequency.MONTHLY -> safePrice

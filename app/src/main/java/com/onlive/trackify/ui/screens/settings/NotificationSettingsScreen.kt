@@ -31,7 +31,6 @@ import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.stringResource
 import java.util.Calendar
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun NotificationSettingsScreen(
     onNavigateBack: () -> Unit
@@ -178,7 +177,6 @@ fun NotificationSettingsScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun BatteryOptimizationSection() {
     val context = LocalContext.current
@@ -258,7 +256,6 @@ private fun BatteryOptimizationSection() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun TimePickerDialog(
     initialHour: Int,
@@ -313,7 +310,6 @@ fun TimePickerDialog(
     )
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ReminderDayOption(
     title: String,

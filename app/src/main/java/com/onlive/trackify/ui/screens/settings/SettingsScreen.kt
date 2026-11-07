@@ -38,7 +38,6 @@ import com.onlive.trackify.utils.ThemeManager
 import com.onlive.trackify.utils.stringResource
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SettingsScreen(
     onNavigateToCategoryManagement: () -> Unit,
@@ -57,14 +56,10 @@ fun SettingsScreen(
     val coroutineScope = rememberCoroutineScope()
 
     val checkNotificationPermission = {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            ContextCompat.checkSelfPermission(
-                context,
-                android.Manifest.permission.POST_NOTIFICATIONS
-            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-        } else {
-            true
-        }
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || ContextCompat.checkSelfPermission(
+            context,
+            android.Manifest.permission.POST_NOTIFICATIONS
+        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
     }
 
     var notificationsEnabled by remember {
@@ -336,7 +331,6 @@ fun SettingsScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun SettingsToggleRow(
     icon: ImageVector,
@@ -382,7 +376,6 @@ private fun SettingsToggleRow(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun SettingsRow(
     icon: ImageVector,

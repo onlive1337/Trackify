@@ -3,7 +3,6 @@ package com.onlive.trackify.ui.screens.category
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,8 +26,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -66,7 +63,6 @@ import com.onlive.trackify.utils.CurrencyFormatter
 import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.CategoryViewModel
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryDetailScreen(
     categoryId: Long,
@@ -144,7 +140,6 @@ fun CategoryDetailScreen(
     )
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun CategoryDetailContent(
     categoryId: Long,
@@ -360,7 +355,6 @@ fun CategoryDetailContent(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun SubscriptionItemPreview(
     name: String,
@@ -418,7 +412,6 @@ private fun SubscriptionItemPreview(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ColorChip(
     colorCode: String,

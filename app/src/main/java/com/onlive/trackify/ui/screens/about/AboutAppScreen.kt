@@ -25,8 +25,6 @@ import androidx.compose.material.icons.rounded.BugReport
 import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Security
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -56,7 +54,6 @@ import com.onlive.trackify.utils.CrashLogger
 import com.onlive.trackify.utils.LocalLocalizedContext
 import com.onlive.trackify.utils.stringResource
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun AboutAppScreen(
     onNavigateBack: () -> Unit
@@ -230,7 +227,6 @@ private fun shareLatestLog(context: Context, localizedContext: Context) {
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun AboutLinkItem(
     icon: ImageVector,

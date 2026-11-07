@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ButtonGroupDefaults
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.ListItemShapes
 import androidx.compose.material3.MaterialTheme
@@ -18,7 +17,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SettingsSection(
     modifier: Modifier = Modifier,
@@ -52,7 +50,6 @@ fun SettingsSection(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SegmentedSettingsSection(
     modifier: Modifier = Modifier,
@@ -79,7 +76,6 @@ fun SegmentedSettingsSection(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun segmentedListItemShapes(index: Int, count: Int): ListItemShapes {
     val base = ListItemDefaults.segmentedShapes(index = index, count = count)
@@ -95,14 +91,12 @@ fun segmentedListItemShapes(index: Int, count: Int): ListItemShapes {
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun connectedLeadingToggleShapes(): ToggleButtonShapes =
     ButtonGroupDefaults.connectedLeadingButtonShapes(
         checkedShape = ButtonGroupDefaults.connectedLeadingButtonShape
     )
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun connectedTrailingToggleShapes(): ToggleButtonShapes =
     ButtonGroupDefaults.connectedTrailingButtonShapes(

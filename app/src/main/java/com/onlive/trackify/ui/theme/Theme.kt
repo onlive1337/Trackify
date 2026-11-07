@@ -85,7 +85,6 @@ private val LightColorScheme = lightColorScheme(
     surfaceContainerHighest = md_theme_light_surfaceContainerHighest,
 )
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun TrackifyTheme(
     themeManager: ThemeManager? = null,

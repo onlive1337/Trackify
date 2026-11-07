@@ -36,7 +36,7 @@ import kotlinx.coroutines.withContext
 private val BACKUP_FILE_DATE_FORMATTER: DateTimeFormatter =
     DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss", Locale.US)
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun DataManagementScreen(
     onNavigateBack: () -> Unit,

@@ -33,7 +33,6 @@ import com.onlive.trackify.ui.components.resolveCategoryColor
 import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.CategoryViewModel
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun CategoryManagementScreen(
     onNavigateBack: () -> Unit,
@@ -148,7 +147,6 @@ fun CategoriesList(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun CategoryItem(
     category: Category,

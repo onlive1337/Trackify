@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenu
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -24,7 +23,6 @@ import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.utils.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubscriptionSelector(
     subscriptions: List<Subscription>,

@@ -54,10 +54,6 @@ object LocaleHelper {
         }.getOrDefault(SystemPerAppLocaleState.Unavailable)
     }
 
-    fun getSystemPerAppLanguageCode(context: Context): String? {
-        return (querySystemPerAppLocaleState(context) as? SystemPerAppLocaleState.Overridden)?.languageCode
-    }
-
     fun syncAppLanguageToSystemIfNeeded(context: Context, languageCode: String) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
         val normalized = normalizeLanguageCode(languageCode) ?: return

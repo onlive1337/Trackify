@@ -19,7 +19,6 @@ import com.onlive.trackify.utils.LocalCurrency
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun CurrencySettingsScreen(
     onNavigateBack: () -> Unit
@@ -93,7 +92,6 @@ fun CurrencySettingsScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun CurrencyItem(
     currency: Currency,

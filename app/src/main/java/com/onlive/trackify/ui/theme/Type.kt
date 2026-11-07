@@ -1,13 +1,11 @@
 package com.onlive.trackify.ui.theme
 
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 val Typography = Typography(
     headlineLarge = TextStyle(
         fontFamily = FontFamily.Default,

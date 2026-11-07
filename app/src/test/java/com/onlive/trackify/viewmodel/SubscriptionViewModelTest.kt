@@ -213,13 +213,13 @@ class SubscriptionViewModelTest {
         override suspend fun insert(subscription: Subscription): Long {
             if (shouldThrowOnWrite) throw IllegalStateException("Simulated SQLite error")
             val id = if (subscription.subscriptionId == 0L) nextId++ else subscription.subscriptionId
-            items.value = items.value + subscription.copy(subscriptionId = id)
+            items.value += subscription.copy(subscriptionId = id)
             return id
         }
 
         override suspend fun insertAll(subscriptions: List<Subscription>) {
             if (shouldThrowOnWrite) throw IllegalStateException("Simulated SQLite error")
-            items.value = items.value + subscriptions
+            items.value += subscriptions
         }
 
         override suspend fun update(subscription: Subscription): Int {

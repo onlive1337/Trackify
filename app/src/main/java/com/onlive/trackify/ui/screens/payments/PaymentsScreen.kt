@@ -165,7 +165,6 @@ fun PaymentsScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun PaymentItem(
     payment: Payment,

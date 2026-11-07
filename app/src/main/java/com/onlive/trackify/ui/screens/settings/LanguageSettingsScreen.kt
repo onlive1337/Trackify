@@ -20,7 +20,6 @@ import com.onlive.trackify.utils.NotificationHelper
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun LanguageSettingsScreen(
     onNavigateBack: () -> Unit
@@ -104,7 +103,6 @@ fun LanguageSettingsScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun LanguageItem(
     languageName: String,
