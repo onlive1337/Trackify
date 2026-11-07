@@ -3,9 +3,11 @@ package com.onlive.trackify.ui.screens.category
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -13,9 +15,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -42,6 +41,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,13 +56,13 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Category
 import com.onlive.trackify.ui.components.CategoryAvatar
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.ui.components.resolveCategoryColor
+import com.onlive.trackify.utils.CurrencyFormatter
 import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.CategoryViewModel
 
@@ -76,13 +76,35 @@ fun CategoryDetailScreen(
     val categoryFlow = remember(categoryId, categoryViewModel) {
         categoryViewModel.getCategoryById(categoryId)
     }
-    val existingCategory by categoryFlow.collectAsStateWithLifecycle(initialValue = null)
-    var isSaving by remember { mutableStateOf(false) }
+    var loadedCategory by remember(categoryId) { mutableStateOf<Category?>(null) }
+    var categoryName by rememberSaveable(categoryId) { mutableStateOf("") }
+    var categoryColor by rememberSaveable(categoryId) { mutableStateOf("#FF5252") }
+    var hasLoadedExisting by rememberSaveable(categoryId) { mutableStateOf(false) }
+    var isSaving by remember(categoryId) { mutableStateOf(false) }
+
+    LaunchedEffect(categoryId, categoryFlow) {
+        if (categoryId == -1L) return@LaunchedEffect
+        categoryFlow.collect { category ->
+            loadedCategory = category
+            if (category == null) {
+                if (!isSaving) {
+                    onNavigateBack()
+                }
+            } else if (!hasLoadedExisting) {
+                categoryName = category.name
+                categoryColor = category.colorCode
+                hasLoadedExisting = true
+            }
+        }
+    }
 
     CategoryDetailContent(
+        categoryId = categoryId,
         title = if (categoryId == -1L) stringResource(R.string.add_category) else stringResource(R.string.edit_category),
-        initialName = existingCategory?.name ?: "",
-        initialColor = existingCategory?.colorCode ?: "#FF5252",
+        categoryName = categoryName,
+        onCategoryNameChange = { categoryName = it },
+        categoryColor = categoryColor,
+        onCategoryColorChange = { categoryColor = it },
         isEditMode = categoryId != -1L,
         onNavigateBack = onNavigateBack,
         onSave = { name, color ->
@@ -95,7 +117,7 @@ fun CategoryDetailScreen(
                         onError = { isSaving = false }
                     )
                 } else {
-                    val current = existingCategory
+                    val current = loadedCategory
                     if (current != null) {
                         categoryViewModel.update(
                             category = current.copy(name = name, colorCode = color),
@@ -109,7 +131,7 @@ fun CategoryDetailScreen(
             }
         },
         onDelete = {
-            val current = existingCategory
+            val current = loadedCategory
             if (!isSaving && current != null) {
                 isSaving = true
                 categoryViewModel.delete(
@@ -122,12 +144,15 @@ fun CategoryDetailScreen(
     )
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun CategoryDetailContent(
+    categoryId: Long,
     title: String,
-    initialName: String,
-    initialColor: String,
+    categoryName: String,
+    onCategoryNameChange: (String) -> Unit,
+    categoryColor: String,
+    onCategoryColorChange: (String) -> Unit,
     isEditMode: Boolean,
     onNavigateBack: () -> Unit,
     onSave: (String, String) -> Unit,
@@ -139,11 +164,9 @@ fun CategoryDetailContent(
         "#8D6E63", "#BDBDBD", "#212121", "#455A64"
     )
 
-    var categoryName by rememberSaveable(initialName) { mutableStateOf(initialName) }
-    var categoryColor by rememberSaveable(initialColor) { mutableStateOf(initialColor) }
-    var hasAttemptedSave by rememberSaveable { mutableStateOf(false) }
+    var hasAttemptedSave by rememberSaveable(categoryId) { mutableStateOf(false) }
     val isNameError = hasAttemptedSave && categoryName.trim().isEmpty()
-    val showDeleteDialogState = remember { mutableStateOf(false) }
+    val showDeleteDialogState = rememberSaveable(categoryId) { mutableStateOf(false) }
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
@@ -162,6 +185,7 @@ fun CategoryDetailContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .consumeWindowInsets(paddingValues)
                 .imePadding()
                 .verticalScroll(rememberScrollState())
         ) {
@@ -183,7 +207,7 @@ fun CategoryDetailContent(
                     SubscriptionItemPreview(
                         name = stringResource(R.string.mock_subscription_name),
                         categoryName = categoryName.ifEmpty { stringResource(R.string.category_name) },
-                        price = stringResource(R.string.mock_subscription_price),
+                        price = CurrencyFormatter.formatAmount(9.99),
                         color = previewColor
                     )
                 }
@@ -198,7 +222,7 @@ fun CategoryDetailContent(
                     OutlinedTextField(
                         value = categoryName,
                         onValueChange = {
-                            categoryName = it
+                            onCategoryNameChange(it)
                             if (hasAttemptedSave && it.isNotBlank()) hasAttemptedSave = false
                         },
                         placeholder = { Text(stringResource(R.string.category_name)) },
@@ -230,18 +254,18 @@ fun CategoryDetailContent(
                         color = MaterialTheme.colorScheme.primary
                     )
 
-                    LazyVerticalGrid(
-                        columns = GridCells.Adaptive(minSize = 56.dp),
-                        contentPadding = PaddingValues(vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    FlowRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.height(280.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(predefinedColors) { colorCode ->
+                        predefinedColors.forEach { colorCode ->
                             ColorChip(
                                 colorCode = colorCode,
                                 isSelected = colorCode == categoryColor,
-                                onClick = { categoryColor = colorCode }
+                                onClick = { onCategoryColorChange(colorCode) }
                             )
                         }
                     }

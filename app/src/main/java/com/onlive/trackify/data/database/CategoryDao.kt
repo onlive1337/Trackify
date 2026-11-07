@@ -17,7 +17,7 @@ interface CategoryDao {
     suspend fun insertAll(categories: List<Category>)
 
     @Update
-    suspend fun update(category: Category)
+    suspend fun update(category: Category): Int
 
     @Delete
     suspend fun delete(category: Category)

@@ -1,5 +1,6 @@
 package com.onlive.trackify.ui.screens.settings
 
+import android.content.ActivityNotFoundException
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -8,6 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -44,16 +46,16 @@ fun DataManagementScreen(
     val localeManager = LocalLocaleManager.current
     val haptic = LocalHapticFeedback.current
     val coroutineScope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
 
     val dataManager = remember { DataExportImportManager(context) }
 
-    val showImportDialogState = remember { mutableStateOf(false) }
-    val showExportSuccessDialogState = remember { mutableStateOf(false) }
-    val showImportSuccessDialogState = remember { mutableStateOf(false) }
-    val showErrorDialogState = remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf("") }
-    var exportFilePath by remember { mutableStateOf("") }
+    val showImportDialogState = rememberSaveable { mutableStateOf(false) }
+    val showExportSuccessDialogState = rememberSaveable { mutableStateOf(false) }
+    val showImportSuccessDialogState = rememberSaveable { mutableStateOf(false) }
+    val showErrorDialogState = rememberSaveable { mutableStateOf(false) }
+    var isExportError by rememberSaveable { mutableStateOf(false) }
+    var errorMessage by rememberSaveable { mutableStateOf("") }
+    var exportFilePath by rememberSaveable { mutableStateOf("") }
 
     var isLoading by remember { mutableStateOf(false) }
 
@@ -71,10 +73,12 @@ fun DataManagementScreen(
                         exportFilePath = it.lastPathSegment ?: it.toString()
                         showExportSuccessDialogState.value = true
                     } else {
+                        isExportError = true
                         errorMessage = context.getString(R.string.data_export_error)
                         showErrorDialogState.value = true
                     }
                 } catch (e: Exception) {
+                    isExportError = true
                     errorMessage = e.message ?: context.getString(R.string.data_export_error)
                     showErrorDialogState.value = true
                 } finally {
@@ -101,10 +105,12 @@ fun DataManagementScreen(
                         NotificationHelper(context).createNotificationChannel()
                         showImportSuccessDialogState.value = true
                     } else {
+                        isExportError = false
                         errorMessage = context.getString(R.string.data_import_error)
                         showErrorDialogState.value = true
                     }
                 } catch (e: Exception) {
+                    isExportError = false
                     errorMessage = e.message ?: context.getString(R.string.data_import_error)
                     showErrorDialogState.value = true
                 } finally {
@@ -125,9 +131,6 @@ fun DataManagementScreen(
                 onBackClick = onNavigateBack,
                 scrollBehavior = scrollBehavior
             )
-        },
-        snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState)
         }
     ) { paddingValues ->
         Box(
@@ -161,7 +164,13 @@ fun DataManagementScreen(
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 val dateString = LocalDateTime.now().format(BACKUP_FILE_DATE_FORMATTER)
                                 val fileName = "trackify_backup_$dateString.json"
-                                exportLauncher.launch(fileName)
+                                try {
+                                    exportLauncher.launch(fileName)
+                                } catch (_: ActivityNotFoundException) {
+                                    isExportError = true
+                                    errorMessage = context.getString(R.string.data_export_error)
+                                    showErrorDialogState.value = true
+                                }
                             },
                             shapes = ButtonDefaults.shapes(),
                             modifier = Modifier.fillMaxWidth(),
@@ -226,7 +235,15 @@ fun DataManagementScreen(
                     onClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         showImportDialogState.value = false
-                        importLauncher.launch(arrayOf("application/json"))
+                        try {
+                            importLauncher.launch(
+                                arrayOf("application/json", "text/*", "application/octet-stream")
+                            )
+                        } catch (_: ActivityNotFoundException) {
+                            isExportError = false
+                            errorMessage = context.getString(R.string.data_import_error)
+                            showErrorDialogState.value = true
+                        }
                     },
                     shapes = ButtonDefaults.shapes()
                 ) {
@@ -282,7 +299,13 @@ fun DataManagementScreen(
     if (showErrorDialogState.value) {
         AlertDialog(
             onDismissRequest = { showErrorDialogState.value = false },
-            title = { Text(stringResource(R.string.import_error)) },
+            title = {
+                Text(
+                    stringResource(
+                        if (isExportError) R.string.export_error else R.string.import_error
+                    )
+                )
+            },
             text = { Text(errorMessage) },
             confirmButton = {
                 TextButton(

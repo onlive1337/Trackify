@@ -11,6 +11,7 @@ import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.data.model.SubscriptionWithCategory
 import com.onlive.trackify.data.repository.SubscriptionRepository
 import com.onlive.trackify.utils.ErrorReporter
+import com.onlive.trackify.utils.NotificationHelper
 import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.Result
@@ -24,7 +25,8 @@ import kotlinx.coroutines.launch
 class SubscriptionViewModel(
     private val repository: SubscriptionRepository,
     private val errorReporter: ErrorReporter,
-    private val onSubscriptionMutated: () -> Unit = {}
+    private val onSubscriptionMutated: () -> Unit = {},
+    private val onSubscriptionDeleted: (Long) -> Unit = {}
 ) : ViewModel() {
 
     val allSubscriptions: StateFlow<List<SubscriptionWithCategory>?> = repository.allSubscriptions
@@ -90,7 +92,7 @@ class SubscriptionViewModel(
         try {
             when (val result = repository.delete(subscription)) {
                 is Result.Success -> {
-                    onSubscriptionMutated()
+                    onSubscriptionDeleted(subscription.subscriptionId)
                     onSuccess()
                 }
                 is Result.Error -> {
@@ -122,6 +124,14 @@ class SubscriptionViewModel(
                             val scheduler = NotificationScheduler(app)
                             scheduler.scheduleNotifications()
                             scheduler.triggerImmediateCheck()
+                        }
+                    },
+                    onSubscriptionDeleted = { deletedId ->
+                        val prefs = PreferenceManager(app)
+                        NotificationHelper(app).cancelNotificationsForSubscription(deletedId)
+                        prefs.clearNotificationRecordsForSubscription(deletedId)
+                        if (prefs.areNotificationsEnabled()) {
+                            NotificationScheduler(app).scheduleNotifications()
                         }
                     }
                 )

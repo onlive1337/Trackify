@@ -33,7 +33,8 @@ import com.onlive.trackify.utils.UiErrorMessage
 fun TrackifyApp(
     themeManager: ThemeManager,
     localeManager: LocaleManager,
-    initialSubscriptionId: Long = -1L
+    initialSubscriptionId: Long = -1L,
+    onInitialSubscriptionConsumed: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val currentLocalizedContext by rememberUpdatedState(LocalLocalizedContext.current)
@@ -71,8 +72,13 @@ fun TrackifyApp(
     }
 
     LaunchedEffect(initialSubscriptionId) {
-        if (initialSubscriptionId != -1L && preferenceManager.isOnboardingCompleted()) {
-            navController.navigate(Screen.SubscriptionDetail(initialSubscriptionId))
+        if (initialSubscriptionId != -1L) {
+            if (preferenceManager.isOnboardingCompleted()) {
+                navController.navigate(Screen.SubscriptionDetail(initialSubscriptionId)) {
+                    launchSingleTop = true
+                }
+            }
+            onInitialSubscriptionConsumed()
         }
     }
 

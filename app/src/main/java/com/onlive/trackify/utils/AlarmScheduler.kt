@@ -28,7 +28,7 @@ class AlarmScheduler(private val context: Context) {
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
 
-            if (before(Calendar.getInstance())) {
+            if (!after(Calendar.getInstance())) {
                 add(Calendar.DAY_OF_YEAR, 1)
             }
         }

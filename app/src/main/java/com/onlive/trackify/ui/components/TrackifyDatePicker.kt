@@ -82,8 +82,16 @@ fun TrackifyDatePicker(
     }
     val isLargeScreen = windowHeight >= 650.dp
 
+    val safeInitialDate = remember(selectedDate) {
+        val clampedYear = selectedDate.year.coerceIn(
+            DatePickerDefaults.YearRange.first,
+            DatePickerDefaults.YearRange.last
+        )
+        if (clampedYear == selectedDate.year) selectedDate else selectedDate.withYear(clampedYear)
+    }
+
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = DateUtils.toUtcEpochMillis(selectedDate)
+        initialSelectedDateMillis = DateUtils.toUtcEpochMillis(safeInitialDate)
     )
 
     var showCalendar by rememberSaveable { mutableStateOf(true) }
@@ -288,27 +296,27 @@ fun TrackifyDatePicker(
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                    if (showCalendar) {
+                        Spacer(modifier = Modifier.width(8.dp))
 
-                    Button(
-                        onClick = {
-                            if (showCalendar) {
+                        Button(
+                            onClick = {
                                 datePickerState.selectedDateMillis?.let {
                                     onDateSelected(DateUtils.fromUtcEpochMillis(it))
                                 }
-                            }
-                            onDismiss()
-                        },
-                        shapes = ButtonDefaults.shapes(
-                            shape = MaterialTheme.shapes.medium,
-                            pressedShape = ButtonDefaults.pressedShape
-                        ),
-                        enabled = if (showCalendar) datePickerState.selectedDateMillis != null else true
-                    ) {
-                        Text(
-                            text = stringResource(R.string.choose),
-                            style = MaterialTheme.typography.bodyLargeEmphasized
-                        )
+                                onDismiss()
+                            },
+                            shapes = ButtonDefaults.shapes(
+                                shape = MaterialTheme.shapes.medium,
+                                pressedShape = ButtonDefaults.pressedShape
+                            ),
+                            enabled = datePickerState.selectedDateMillis != null
+                        ) {
+                            Text(
+                                text = stringResource(R.string.choose),
+                                style = MaterialTheme.typography.bodyLargeEmphasized
+                            )
+                        }
                     }
                 }
             }
@@ -401,7 +409,7 @@ private fun QuickPickCard(
         ) {
             Icon(
                 imageVector = option.icon,
-                contentDescription = option.label,
+                contentDescription = null,
                 modifier = Modifier.size(iconSize),
                 tint = if (option.isSpecial) {
                     MaterialTheme.colorScheme.onTertiaryContainer

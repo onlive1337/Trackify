@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -54,6 +55,7 @@ import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.ui.components.connectedLeadingToggleShapes
 import com.onlive.trackify.ui.components.connectedTrailingToggleShapes
 import com.onlive.trackify.ui.components.formFieldColors
+import com.onlive.trackify.utils.CurrencyFormatter
 import com.onlive.trackify.utils.DateUtils
 import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.CategoryViewModel
@@ -74,44 +76,52 @@ fun SubscriptionDetailScreen(
     val subscriptionFlow = remember(subscriptionId, subscriptionViewModel) {
         subscriptionViewModel.getSubscriptionById(subscriptionId)
     }
-    val subscriptionState = subscriptionFlow.collectAsStateWithLifecycle(initialValue = null)
     val paymentsFlow = remember(subscriptionId, paymentViewModel) {
         paymentViewModel.getPaymentsBySubscription(subscriptionId)
     }
     val allPayments by paymentsFlow.collectAsStateWithLifecycle(initialValue = emptyList())
 
-    var name by rememberSaveable { mutableStateOf("") }
-    var price by rememberSaveable { mutableStateOf("") }
-    var description by rememberSaveable { mutableStateOf("") }
-    var billingFrequency by rememberSaveable { mutableStateOf(BillingFrequency.MONTHLY) }
-    var startDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
-    var endDate by rememberSaveable { mutableStateOf<LocalDate?>(null) }
-    var categoryId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var name by rememberSaveable(subscriptionId) { mutableStateOf("") }
+    var price by rememberSaveable(subscriptionId) { mutableStateOf("") }
+    var description by rememberSaveable(subscriptionId) { mutableStateOf("") }
+    var billingFrequency by rememberSaveable(subscriptionId) { mutableStateOf(BillingFrequency.MONTHLY) }
+    var startDate by rememberSaveable(subscriptionId) { mutableStateOf(LocalDate.now()) }
+    var endDate by rememberSaveable(subscriptionId) { mutableStateOf<LocalDate?>(null) }
+    var categoryId by rememberSaveable(subscriptionId) { mutableStateOf<Long?>(null) }
 
-    var hasLoadedExisting by rememberSaveable { mutableStateOf(false) }
+    var hasLoadedExisting by rememberSaveable(subscriptionId) { mutableStateOf(false) }
 
-    LaunchedEffect(subscriptionState.value) {
-        val loaded = subscriptionState.value?.subscription
-        if (subscriptionId != -1L && loaded != null && !hasLoadedExisting) {
-            name = loaded.name
-            price = loaded.price.toString()
-            description = loaded.description ?: ""
-            billingFrequency = loaded.billingFrequency
-            startDate = loaded.startDate
-            endDate = loaded.endDate
-            categoryId = loaded.categoryId
-            hasLoadedExisting = true
+    val showStartDatePicker = rememberSaveable(subscriptionId) { mutableStateOf(false) }
+    val showEndDatePicker = rememberSaveable(subscriptionId) { mutableStateOf(false) }
+    val showDeleteDialog = rememberSaveable(subscriptionId) { mutableStateOf(false) }
+
+    var loadedSubscription by remember(subscriptionId) { mutableStateOf<Subscription?>(null) }
+    var nameError by remember(subscriptionId) { mutableStateOf(false) }
+    var priceError by remember(subscriptionId) { mutableStateOf(false) }
+    var dateError by remember(subscriptionId) { mutableStateOf(false) }
+    var isSaving by remember(subscriptionId) { mutableStateOf(false) }
+
+    LaunchedEffect(subscriptionId, subscriptionFlow) {
+        if (subscriptionId == -1L) return@LaunchedEffect
+        subscriptionFlow.collect { item ->
+            val loaded = item?.subscription
+            loadedSubscription = loaded
+            if (loaded == null) {
+                if (!isSaving) {
+                    onNavigateBack()
+                }
+            } else if (!hasLoadedExisting) {
+                name = loaded.name
+                price = CurrencyFormatter.formatPlainAmount(loaded.price)
+                description = loaded.description ?: ""
+                billingFrequency = loaded.billingFrequency
+                startDate = loaded.startDate
+                endDate = loaded.endDate
+                categoryId = loaded.categoryId
+                hasLoadedExisting = true
+            }
         }
     }
-
-    val showStartDatePicker = remember { mutableStateOf(false) }
-    val showEndDatePicker = remember { mutableStateOf(false) }
-    val showDeleteDialog = remember { mutableStateOf(false) }
-
-    var nameError by remember { mutableStateOf(false) }
-    var priceError by remember { mutableStateOf(false) }
-    var dateError by remember { mutableStateOf(false) }
-    var isSaving by remember { mutableStateOf(false) }
 
     val requiredFieldStr = stringResource(R.string.required_field)
     val invalidPriceStr = stringResource(R.string.invalid_price)
@@ -148,6 +158,7 @@ fun SubscriptionDetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .consumeWindowInsets(paddingValues)
                 .imePadding()
                 .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState())
@@ -177,10 +188,10 @@ fun SubscriptionDetailScreen(
             OutlinedTextField(
                 value = price,
                 onValueChange = { input ->
-                    val sanitized = input.replace(',', '.')
-                    if (sanitized.isEmpty() || sanitized == "." || sanitized.matches(Regex("""^\d*\.?\d*$"""))) {
+                    val sanitized = CurrencyFormatter.sanitizeAmountInput(input)
+                    if (sanitized != null) {
                         price = sanitized
-                        if (priceError && sanitized.toDoubleOrNull()?.let { v -> v > 0 } == true) {
+                        if (priceError && CurrencyFormatter.parseValidPositiveAmount(sanitized) != null) {
                             priceError = false
                         }
                     }
@@ -286,16 +297,16 @@ fun SubscriptionDetailScreen(
 
             Button(
                 onClick = {
-                    val priceValue = price.toDoubleOrNull() ?: 0.0
+                    val priceValue = CurrencyFormatter.parseValidPositiveAmount(price)
                     val isNameValid = name.isNotBlank()
-                    val isPriceValid = priceValue > 0
+                    val isPriceValid = priceValue != null
                     val isEndDateValid = endDate?.let { !it.isBefore(startDate) } ?: true
 
                     nameError = !isNameValid
                     priceError = !isPriceValid
                     dateError = !isEndDateValid
 
-                    if (isNameValid && isPriceValid && isEndDateValid && !isSaving) {
+                    if (isNameValid && priceValue != null && isEndDateValid && !isSaving) {
                         isSaving = true
                         val sub = Subscription(
                             subscriptionId = if (subscriptionId == -1L) 0 else subscriptionId,
@@ -306,7 +317,7 @@ fun SubscriptionDetailScreen(
                             startDate = startDate,
                             endDate = endDate,
                             categoryId = categoryId,
-                            image = subscriptionState.value?.subscription?.image
+                            image = loadedSubscription?.image
                         )
                         if (subscriptionId == -1L) {
                             subscriptionViewModel.insert(
@@ -385,7 +396,7 @@ fun SubscriptionDetailScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        val current = subscriptionState.value?.subscription
+                        val current = loadedSubscription
                         showDeleteDialog.value = false
                         if (!isSaving && current != null) {
                             isSaving = true

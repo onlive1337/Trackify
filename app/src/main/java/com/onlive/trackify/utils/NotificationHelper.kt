@@ -25,6 +25,12 @@ class NotificationHelper(rawContext: Context) {
     private val channelId = "trackify_notifications"
     private val tag = "NotificationHelper"
 
+    companion object {
+        private const val TAG_PAYMENT_REMINDER = "payment_reminder"
+        private const val TAG_EXPIRATION_REMINDER = "expiration_reminder"
+        const val EXTRA_SUBSCRIPTION_ID = "subscription_id"
+    }
+
     fun createNotificationChannel() {
         val name = context.getString(R.string.notification_channel_name)
         val descriptionText = context.getString(R.string.notification_channel_description)
@@ -48,13 +54,18 @@ class NotificationHelper(rawContext: Context) {
             return false
         }
 
+        val notificationId = subscription.subscriptionId.hashCode()
+        val requestCode = notificationId * 31 + 1
+
         val intent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            putExtra("subscription_id", subscription.subscriptionId)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                Intent.FLAG_ACTIVITY_SINGLE_TOP
+            putExtra(EXTRA_SUBSCRIPTION_ID, subscription.subscriptionId)
         }
 
         val pendingIntent: PendingIntent = PendingIntent.getActivity(
-            context, subscription.subscriptionId.toInt(), intent,
+            context, requestCode, intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -81,7 +92,7 @@ class NotificationHelper(rawContext: Context) {
 
         return try {
             with(NotificationManagerCompat.from(context)) {
-                notify(subscription.subscriptionId.toInt(), builder.build())
+                notify(TAG_PAYMENT_REMINDER, notificationId, builder.build())
             }
             Log.d(tag, "Payment reminder notification sent for ${subscription.name}")
             true
@@ -97,13 +108,18 @@ class NotificationHelper(rawContext: Context) {
             return false
         }
 
+        val notificationId = subscription.subscriptionId.hashCode()
+        val requestCode = notificationId * 31 + 2
+
         val intent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            putExtra("subscription_id", subscription.subscriptionId)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                Intent.FLAG_ACTIVITY_SINGLE_TOP
+            putExtra(EXTRA_SUBSCRIPTION_ID, subscription.subscriptionId)
         }
 
         val pendingIntent: PendingIntent = PendingIntent.getActivity(
-            context, (subscription.subscriptionId + 10000).toInt(), intent,
+            context, requestCode, intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -118,6 +134,7 @@ class NotificationHelper(rawContext: Context) {
             .setSmallIcon(R.drawable.ic_info)
             .setContentTitle(title)
             .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setContentIntent(pendingIntent)
@@ -126,13 +143,30 @@ class NotificationHelper(rawContext: Context) {
 
         return try {
             with(NotificationManagerCompat.from(context)) {
-                notify((subscription.subscriptionId + 10000).toInt(), builder.build())
+                notify(TAG_EXPIRATION_REMINDER, notificationId, builder.build())
             }
             Log.d(tag, "Expiration reminder notification sent for ${subscription.name}")
             true
         } catch (e: SecurityException) {
             Log.e(tag, "Failed to send notification: ${e.message}")
             false
+        }
+    }
+
+    fun cancelNotificationsForSubscription(subscriptionId: Long) {
+        runCatching {
+            val manager = NotificationManagerCompat.from(context)
+            val notificationId = subscriptionId.hashCode()
+            manager.cancel(TAG_PAYMENT_REMINDER, notificationId)
+            manager.cancel(TAG_EXPIRATION_REMINDER, notificationId)
+            manager.cancel(subscriptionId.toInt())
+            manager.cancel((subscriptionId + 10000).toInt())
+        }
+    }
+
+    fun cancelAllNotifications() {
+        runCatching {
+            NotificationManagerCompat.from(context).cancelAll()
         }
     }
 

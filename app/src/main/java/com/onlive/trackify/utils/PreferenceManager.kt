@@ -17,10 +17,12 @@ class PreferenceManager(context: Context) {
         const val KEY_NOTIFICATION_TIME_MINUTE = "notification_time_minute"
         const val KEY_CURRENCY_CODE = "currency_code"
         const val KEY_LANGUAGE_CODE = "language_code"
+        const val KEY_SYSTEM_LOCALE_OVERRIDDEN = "system_locale_overridden"
         const val KEY_ONBOARDING_COMPLETED = "onboarding_completed"
         const val KEY_SUBSCRIPTION_SORT = "subscription_sort"
         const val KEY_THEME_MODE = "theme_mode"
         const val KEY_DYNAMIC_COLOR = "dynamic_color"
+        val VALID_REMINDER_DAYS: Set<Int> = setOf(0, 1, 3, 7)
     }
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -64,49 +66,64 @@ class PreferenceManager(context: Context) {
     fun getReminderDays(): Set<Int> {
         val defaultSet = setOf(0, 1, 3)
         val stringSet = prefs.getStringSet(KEY_REMINDER_DAYS, defaultSet.map { it.toString() }.toSet()) ?: emptySet()
-        return stringSet.mapNotNull { it.toIntOrNull() }.toSet()
+        return stringSet.mapNotNull { it.toIntOrNull() }.filter { it in VALID_REMINDER_DAYS }.toSet()
     }
 
     fun setReminderDays(days: Set<Int>) {
-        prefs.edit { putStringSet(KEY_REMINDER_DAYS, days.map { it.toString() }.toSet()) }
+        val sanitized = days.filter { it in VALID_REMINDER_DAYS }.map { it.toString() }.toSet()
+        prefs.edit { putStringSet(KEY_REMINDER_DAYS, sanitized) }
     }
 
     fun getNotificationTime(): Pair<Int, Int> {
-        val hour = prefs.getInt(KEY_NOTIFICATION_TIME_HOUR, 9)
-        val minute = prefs.getInt(KEY_NOTIFICATION_TIME_MINUTE, 0)
+        val hour = prefs.getInt(KEY_NOTIFICATION_TIME_HOUR, 9).coerceIn(0, 23)
+        val minute = prefs.getInt(KEY_NOTIFICATION_TIME_MINUTE, 0).coerceIn(0, 59)
         return Pair(hour, minute)
     }
 
     fun setNotificationTime(hour: Int, minute: Int) {
         prefs.edit {
-            putInt(KEY_NOTIFICATION_TIME_HOUR, hour)
-                .putInt(KEY_NOTIFICATION_TIME_MINUTE, minute)
+            putInt(KEY_NOTIFICATION_TIME_HOUR, hour.coerceIn(0, 23))
+                .putInt(KEY_NOTIFICATION_TIME_MINUTE, minute.coerceIn(0, 59))
         }
     }
 
     fun getCurrencyCode(): String {
-        return prefs.getString(KEY_CURRENCY_CODE, "USD") ?: "USD"
+        val code = prefs.getString(KEY_CURRENCY_CODE, "USD") ?: "USD"
+        return if (Currency.isSupportedCurrencyCode(code)) code else "USD"
     }
 
     fun setCurrencyCode(currencyCode: String) {
-        prefs.edit { putString(KEY_CURRENCY_CODE, currencyCode) }
+        val validCode = if (Currency.isSupportedCurrencyCode(currencyCode)) currencyCode else "USD"
+        prefs.edit { putString(KEY_CURRENCY_CODE, validCode) }
     }
 
     fun getCurrentCurrency(): Currency {
         return Currency.getCurrencyByCode(getCurrencyCode())
     }
 
+    fun getSavedLanguageCodeOrNull(): String? {
+        return LocaleHelper.normalizeLanguageCode(prefs.getString(KEY_LANGUAGE_CODE, null))
+    }
+
     fun getLanguageCode(): String {
-        val saved = prefs.getString(KEY_LANGUAGE_CODE, null)
-        return if (!saved.isNullOrBlank()) {
-            saved
-        } else {
-            LocaleHelper.getSupportedSystemLanguage()
-        }
+        return getSavedLanguageCodeOrNull() ?: LocaleHelper.getSupportedSystemLanguage()
     }
 
     fun setLanguageCode(languageCode: String) {
-        prefs.edit { putString(KEY_LANGUAGE_CODE, languageCode) }
+        val normalized = LocaleHelper.normalizeLanguageCode(languageCode) ?: return
+        prefs.edit { putString(KEY_LANGUAGE_CODE, normalized) }
+    }
+
+    fun clearSavedLanguageCode() {
+        prefs.edit { remove(KEY_LANGUAGE_CODE) }
+    }
+
+    fun isSystemLocaleOverridden(): Boolean {
+        return prefs.getBoolean(KEY_SYSTEM_LOCALE_OVERRIDDEN, false)
+    }
+
+    fun setSystemLocaleOverridden(overridden: Boolean) {
+        prefs.edit { putBoolean(KEY_SYSTEM_LOCALE_OVERRIDDEN, overridden) }
     }
 
     fun getSubscriptionSortOption(): SubscriptionSortOption {
@@ -118,11 +135,21 @@ class PreferenceManager(context: Context) {
     }
 
     fun getThemeMode(): Int {
-        return prefs.getInt(KEY_THEME_MODE, ThemeManager.MODE_DARK)
+        val saved = prefs.getInt(KEY_THEME_MODE, ThemeManager.MODE_DARK)
+        return if (saved == ThemeManager.MODE_LIGHT || saved == ThemeManager.MODE_DARK) {
+            saved
+        } else {
+            ThemeManager.MODE_DARK
+        }
     }
 
     fun setThemeMode(mode: Int) {
-        prefs.edit { putInt(KEY_THEME_MODE, mode) }
+        val validMode = if (mode == ThemeManager.MODE_LIGHT || mode == ThemeManager.MODE_DARK) {
+            mode
+        } else {
+            ThemeManager.MODE_DARK
+        }
+        prefs.edit { putInt(KEY_THEME_MODE, validMode) }
     }
 
     fun isDynamicColorEnabled(): Boolean {
@@ -178,20 +205,45 @@ class PreferenceManager(context: Context) {
         return date.toString()
     }
 
+    fun clearNotificationRecordsForSubscription(subscriptionId: Long) {
+        val token = "_${subscriptionId}_"
+        val matchingKeys = prefs.all.keys.filter { key ->
+            key.startsWith("notified_") && key.contains(token)
+        }
+        if (matchingKeys.isNotEmpty()) {
+            prefs.edit {
+                matchingKeys.forEach { remove(it) }
+            }
+        }
+    }
+
+    fun clearAllNotificationRecords() {
+        val matchingKeys = prefs.all.keys.filter { key ->
+            key.startsWith("notified_") || key.startsWith("notification_sent_")
+        }
+        if (matchingKeys.isNotEmpty()) {
+            prefs.edit {
+                matchingKeys.forEach { remove(it) }
+            }
+        }
+    }
+
     fun cleanupOldNotificationRecords() {
         val today = formatDateKey(LocalDate.now())
-        prefs.all.keys.toList().forEach { key ->
+        val keysToRemove = prefs.all.keys.filter { key ->
             when {
                 key.startsWith("notified_") -> {
                     val savedDate = prefs.getString(key, null)
-                    if (savedDate != null && savedDate < today) {
-                        prefs.edit { remove(key) }
-                    }
+                    savedDate != null && savedDate < today
                 }
                 // Legacy keys from the old daysUntil-based dedup: drop them all.
-                key.startsWith("notification_sent_") -> {
-                    prefs.edit { remove(key) }
-                }
+                key.startsWith("notification_sent_") -> true
+                else -> false
+            }
+        }
+        if (keysToRemove.isNotEmpty()) {
+            prefs.edit {
+                keysToRemove.forEach { remove(it) }
             }
         }
     }

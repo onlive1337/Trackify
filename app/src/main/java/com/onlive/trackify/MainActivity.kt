@@ -1,13 +1,18 @@
 package com.onlive.trackify
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.setValue
 import com.onlive.trackify.ui.theme.TrackifyTheme
 import com.onlive.trackify.utils.LocaleHelper
 import com.onlive.trackify.utils.LocaleManager
+import com.onlive.trackify.utils.NotificationHelper
 import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.ProvideCurrency
@@ -19,6 +24,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var preferenceManager: PreferenceManager
     private lateinit var themeManager: ThemeManager
     private lateinit var localeManager: LocaleManager
+    private var pendingSubscriptionId by mutableLongStateOf(-1L)
 
     override fun attachBaseContext(newBase: Context) {
         preferenceManager = PreferenceManager(newBase)
@@ -37,12 +43,8 @@ class MainActivity : ComponentActivity() {
         val savedLanguage = preferenceManager.getLanguageCode()
         localeManager.setLocale(savedLanguage)
 
-        val initialSubscriptionId = if (savedInstanceState == null) {
-            intent.getLongExtra("subscription_id", -1L).also {
-                intent.removeExtra("subscription_id")
-            }
-        } else {
-            -1L
+        if (savedInstanceState == null) {
+            pendingSubscriptionId = consumeSubscriptionIdFromIntent(intent)
         }
 
         setContent {
@@ -52,12 +54,31 @@ class MainActivity : ComponentActivity() {
                         TrackifyApp(
                             themeManager = themeManager,
                             localeManager = localeManager,
-                            initialSubscriptionId = initialSubscriptionId
+                            initialSubscriptionId = pendingSubscriptionId,
+                            onInitialSubscriptionConsumed = { pendingSubscriptionId = -1L }
                         )
                     }
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        val targetId = consumeSubscriptionIdFromIntent(intent)
+        if (targetId != -1L) {
+            pendingSubscriptionId = targetId
+        }
+    }
+
+    private fun consumeSubscriptionIdFromIntent(source: Intent?): Long {
+        if (source == null) return -1L
+        val id = source.getLongExtra(NotificationHelper.EXTRA_SUBSCRIPTION_ID, -1L)
+        if (id != -1L) {
+            source.removeExtra(NotificationHelper.EXTRA_SUBSCRIPTION_ID)
+        }
+        return id
     }
 
     override fun onStart() {

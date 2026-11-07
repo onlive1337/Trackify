@@ -12,8 +12,10 @@ import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,7 +42,10 @@ fun CategoryManagementScreen(
     categoryViewModel: CategoryViewModel = viewModel(factory = CategoryViewModel.Factory)
 ) {
     val allCategories by categoryViewModel.allCategories.collectAsStateWithLifecycle()
-    val showDeleteDialogState = remember { mutableStateOf<Category?>(null) }
+    var deleteTargetCategoryId by rememberSaveable { mutableLongStateOf(-1L) }
+    val categoryToDelete = remember(deleteTargetCategoryId, allCategories) {
+        allCategories.find { it.categoryId == deleteTargetCategoryId }
+    }
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
@@ -66,7 +71,7 @@ fun CategoryManagementScreen(
                 CategoriesList(
                     categories = allCategories,
                     onEditCategory = onEditCategory,
-                    onDeleteCategory = { showDeleteDialogState.value = it }
+                    onDeleteCategory = { deleteTargetCategoryId = it.categoryId }
                 )
             }
 
@@ -79,18 +84,16 @@ fun CategoryManagementScreen(
             )
         }
 
-        if (showDeleteDialogState.value != null) {
+        if (categoryToDelete != null) {
             AlertDialog(
-                onDismissRequest = { showDeleteDialogState.value = null },
+                onDismissRequest = { deleteTargetCategoryId = -1L },
                 title = { Text(stringResource(R.string.delete_category_confirmation)) },
                 text = { Text(stringResource(R.string.delete_category_message)) },
                 confirmButton = {
                     Button(
                         onClick = {
-                            showDeleteDialogState.value?.let {
-                                categoryViewModel.delete(it)
-                            }
-                            showDeleteDialogState.value = null
+                            categoryViewModel.delete(categoryToDelete)
+                            deleteTargetCategoryId = -1L
                         },
                         shapes = ButtonDefaults.shapes(),
                         colors = ButtonDefaults.buttonColors(
@@ -102,7 +105,7 @@ fun CategoryManagementScreen(
                 },
                 dismissButton = {
                     TextButton(
-                        onClick = { showDeleteDialogState.value = null },
+                        onClick = { deleteTargetCategoryId = -1L },
                         shapes = ButtonDefaults.shapes()
                     ) {
                         Text(stringResource(R.string.cancel))

@@ -44,15 +44,16 @@ class LiveStatisticsUpdater(
 
             for (item in activeSubscriptions) {
                 val subscription = item.subscription
+                val safePrice = subscription.price.takeIf { it.isFinite() && it > 0.0 } ?: continue
                 item.category?.let { categoryLookup[it.categoryId] = it }
 
                 val monthlyCost = when (subscription.billingFrequency) {
-                    BillingFrequency.MONTHLY -> subscription.price
-                    BillingFrequency.YEARLY -> subscription.price / 12.0
+                    BillingFrequency.MONTHLY -> safePrice
+                    BillingFrequency.YEARLY -> safePrice / 12.0
                 }
                 val yearlyCost = when (subscription.billingFrequency) {
-                    BillingFrequency.MONTHLY -> subscription.price * 12.0
-                    BillingFrequency.YEARLY -> subscription.price
+                    BillingFrequency.MONTHLY -> safePrice * 12.0
+                    BillingFrequency.YEARLY -> safePrice
                 }
 
                 totalMonthly += monthlyCost

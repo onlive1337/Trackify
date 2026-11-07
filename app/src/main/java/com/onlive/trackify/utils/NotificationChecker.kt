@@ -5,16 +5,18 @@ import android.util.Log
 import com.onlive.trackify.data.database.AppDatabase
 import com.onlive.trackify.data.model.Subscription
 import java.time.LocalDate
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class NotificationChecker(private val context: Context) {
 
     private val tag = "NotificationChecker"
 
-    suspend fun checkNotifications() {
+    suspend fun checkNotifications() = checkMutex.withLock {
         val preferenceManager = PreferenceManager(context)
         if (!preferenceManager.areNotificationsEnabled()) {
             Log.d(tag, "Notifications disabled, skipping check")
-            return
+            return@withLock
         }
 
         val database = AppDatabase.getDatabase(context)
@@ -25,7 +27,7 @@ class NotificationChecker(private val context: Context) {
         val reminderDays = preferenceManager.getReminderDays()
         if (reminderDays.isEmpty()) {
             Log.d(tag, "No reminder days configured, nothing to do")
-            return
+            return@withLock
         }
 
         val subscriptions = database.subscriptionDao().getAllSubscriptionsForWorker()
@@ -90,6 +92,7 @@ class NotificationChecker(private val context: Context) {
     companion object {
         private const val TYPE_PAYMENT = "payment"
         private const val TYPE_EXPIRATION = "expiration"
+        private val checkMutex = Mutex()
 
         internal fun resolveReminderThreshold(daysUntil: Int, reminderDays: Set<Int>): Int? {
             if (daysUntil < 0 || reminderDays.isEmpty()) return null

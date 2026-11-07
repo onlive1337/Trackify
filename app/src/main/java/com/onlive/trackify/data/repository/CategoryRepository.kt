@@ -8,6 +8,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 
@@ -16,7 +17,9 @@ class CategoryRepository(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
 
-    val allCategories: Flow<List<Category>> = categoryDao.getAllCategories()
+    val allCategories: Flow<List<Category>> = categoryDao.getAllCategories().catch {
+        emit(emptyList())
+    }
 
     suspend fun insert(category: Category): Result<Long> = withContext(ioDispatcher) {
         try {
@@ -31,8 +34,12 @@ class CategoryRepository(
 
     suspend fun update(category: Category): Result<Unit> = withContext(ioDispatcher) {
         try {
-            categoryDao.update(category)
-            Result.Success(Unit)
+            val rowsUpdated = categoryDao.update(category)
+            if (rowsUpdated == 0) {
+                Result.Error(R.string.error_updating_category, IllegalStateException("Category not found"))
+            } else {
+                Result.Success(Unit)
+            }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -53,6 +60,8 @@ class CategoryRepository(
 
     fun getCategoryById(id: Long): Flow<Category?> {
         if (id == -1L) return flowOf(null)
-        return categoryDao.getCategoryById(id)
+        return categoryDao.getCategoryById(id).catch {
+            emit(null)
+        }
     }
 }

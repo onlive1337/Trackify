@@ -17,7 +17,7 @@ interface PaymentDao {
     suspend fun insertAll(payments: List<Payment>)
 
     @Update
-    suspend fun update(payment: Payment)
+    suspend fun update(payment: Payment): Int
 
     @Delete
     suspend fun delete(payment: Payment)

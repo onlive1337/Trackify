@@ -18,6 +18,7 @@ import com.onlive.trackify.ui.components.SubscriptionSelector
 import com.onlive.trackify.ui.components.TrackifyDatePicker
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.ui.components.formFieldColors
+import com.onlive.trackify.utils.CurrencyFormatter
 import com.onlive.trackify.utils.DateUtils
 import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.PaymentViewModel
@@ -38,33 +39,38 @@ fun AddPaymentScreen(
         allSubscriptionsState.orEmpty().map { it.subscription }
     }
 
-    var selectedSubscriptionId by rememberSaveable { mutableLongStateOf(subscriptionId) }
-    var amount by rememberSaveable { mutableStateOf("") }
-    var date by rememberSaveable { mutableStateOf(LocalDate.now()) }
-    var notes by rememberSaveable { mutableStateOf("") }
+    var selectedSubscriptionId by rememberSaveable(subscriptionId, paymentId) { mutableLongStateOf(subscriptionId) }
+    var amount by rememberSaveable(subscriptionId, paymentId) { mutableStateOf("") }
+    var date by rememberSaveable(subscriptionId, paymentId) { mutableStateOf(LocalDate.now()) }
+    var notes by rememberSaveable(subscriptionId, paymentId) { mutableStateOf("") }
 
     val paymentFlow = remember(paymentId, paymentViewModel) {
         paymentViewModel.getPaymentById(paymentId)
     }
-    val existingPayment by paymentFlow.collectAsStateWithLifecycle(initialValue = null)
-    var hasLoadedExisting by rememberSaveable { mutableStateOf(false) }
+    var hasLoadedExisting by rememberSaveable(subscriptionId, paymentId) { mutableStateOf(false) }
 
-    LaunchedEffect(existingPayment) {
-        val payment = existingPayment
-        if (paymentId != -1L && payment != null && !hasLoadedExisting) {
-            selectedSubscriptionId = payment.subscriptionId
-            amount = payment.amount.toString()
-            date = payment.date
-            notes = payment.notes ?: ""
-            hasLoadedExisting = true
+    val showDatePicker = rememberSaveable(subscriptionId, paymentId) { mutableStateOf(false) }
+
+    var subError by remember(subscriptionId, paymentId) { mutableStateOf(false) }
+    var amountError by remember(subscriptionId, paymentId) { mutableStateOf(false) }
+    var isSaving by remember(subscriptionId, paymentId) { mutableStateOf(false) }
+
+    LaunchedEffect(paymentId, paymentFlow) {
+        if (paymentId == -1L) return@LaunchedEffect
+        paymentFlow.collect { payment ->
+            if (payment == null) {
+                if (!isSaving) {
+                    onNavigateBack()
+                }
+            } else if (!hasLoadedExisting) {
+                selectedSubscriptionId = payment.subscriptionId
+                amount = CurrencyFormatter.formatPlainAmount(payment.amount)
+                date = payment.date
+                notes = payment.notes ?: ""
+                hasLoadedExisting = true
+            }
         }
     }
-
-    val showDatePicker = remember { mutableStateOf(false) }
-
-    var subError by remember { mutableStateOf(false) }
-    var amountError by remember { mutableStateOf(false) }
-    var isSaving by remember { mutableStateOf(false) }
 
     val requiredFieldStr = stringResource(R.string.required_field)
     val invalidAmountStr = stringResource(R.string.invalid_amount)
@@ -86,6 +92,7 @@ fun AddPaymentScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .consumeWindowInsets(paddingValues)
                 .imePadding()
                 .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState())
@@ -108,10 +115,10 @@ fun AddPaymentScreen(
             OutlinedTextField(
                 value = amount,
                 onValueChange = { input ->
-                    val sanitized = input.replace(',', '.')
-                    if (sanitized.isEmpty() || sanitized == "." || sanitized.matches(Regex("""^\d*\.?\d*$"""))) {
+                    val sanitized = CurrencyFormatter.sanitizeAmountInput(input)
+                    if (sanitized != null) {
                         amount = sanitized
-                        if (amountError && sanitized.toDoubleOrNull()?.let { v -> v > 0 } == true) {
+                        if (amountError && CurrencyFormatter.parseValidPositiveAmount(sanitized) != null) {
                             amountError = false
                         }
                     }
@@ -155,14 +162,14 @@ fun AddPaymentScreen(
 
             Button(
                 onClick = {
-                    val amountValue = amount.toDoubleOrNull() ?: 0.0
+                    val amountValue = CurrencyFormatter.parseValidPositiveAmount(amount)
                     val isSubValid = selectedSubscriptionId != -1L
-                    val isAmountValid = amountValue > 0
+                    val isAmountValid = amountValue != null
 
                     subError = !isSubValid
                     amountError = !isAmountValid
 
-                    if (isSubValid && isAmountValid && !isSaving) {
+                    if (isSubValid && amountValue != null && !isSaving) {
                         isSaving = true
                         val payment = Payment(
                             paymentId = if (paymentId == -1L) 0 else paymentId,

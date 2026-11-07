@@ -7,13 +7,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -50,11 +53,7 @@ fun NotificationSettingsScreen(
         mutableStateOf(formatTime(context, notificationHourState.intValue, notificationMinuteState.intValue))
     }
 
-    val showTimePickerDialogState = remember { mutableStateOf(false) }
-
-    LaunchedEffect(reminderDays, notificationHourState.intValue, notificationMinuteState.intValue) {
-        notificationScheduler.scheduleNotifications()
-    }
+    val showTimePickerDialogState = rememberSaveable { mutableStateOf(false) }
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
@@ -144,6 +143,8 @@ fun NotificationSettingsScreen(
                                     reminderDays - dayOffset
                                 }
                                 preferenceManager.setReminderDays(reminderDays)
+                                notificationScheduler.scheduleNotifications()
+                                notificationScheduler.triggerImmediateCheck()
                             }
                         )
                     }
@@ -170,6 +171,7 @@ fun NotificationSettingsScreen(
                 notificationTime = formatTime(context, selectedHour, selectedMinute)
                 preferenceManager.setNotificationTime(selectedHour, selectedMinute)
                 notificationScheduler.scheduleNotifications()
+                notificationScheduler.triggerImmediateCheck()
                 showTimePickerDialogState.value = false
             }
         )
@@ -270,16 +272,26 @@ fun TimePickerDialog(
         initialMinute = initialMinute,
         is24Hour = is24Hour
     )
+    val windowHeight = with(LocalDensity.current) {
+        LocalWindowInfo.current.containerSize.height.toDp()
+    }
+    val useCompactInput = windowHeight < 480.dp
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.select_time)) },
         text = {
             Box(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
                 contentAlignment = Alignment.Center
             ) {
-                TimePicker(state = state)
+                if (useCompactInput) {
+                    TimeInput(state = state)
+                } else {
+                    TimePicker(state = state)
+                }
             }
         },
         confirmButton = {

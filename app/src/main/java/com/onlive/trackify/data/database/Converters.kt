@@ -30,7 +30,7 @@ class Converters {
 
     @TypeConverter
     fun toBillingFrequency(value: String): BillingFrequency {
-        return BillingFrequency.valueOf(value)
+        return runCatching { BillingFrequency.valueOf(value) }.getOrDefault(BillingFrequency.MONTHLY)
     }
 
     private companion object {

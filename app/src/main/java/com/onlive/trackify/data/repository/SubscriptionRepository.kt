@@ -9,6 +9,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 
@@ -18,7 +19,9 @@ class SubscriptionRepository(
 ) {
 
     val allSubscriptions: Flow<List<SubscriptionWithCategory>> =
-        subscriptionDao.getAllSubscriptionsWithCategory()
+        subscriptionDao.getAllSubscriptionsWithCategory().catch {
+            emit(emptyList())
+        }
 
     suspend fun insert(subscription: Subscription): Result<Long> = withContext(ioDispatcher) {
         try {
@@ -33,8 +36,12 @@ class SubscriptionRepository(
 
     suspend fun update(subscription: Subscription): Result<Unit> = withContext(ioDispatcher) {
         try {
-            subscriptionDao.update(subscription)
-            Result.Success(Unit)
+            val rowsUpdated = subscriptionDao.update(subscription)
+            if (rowsUpdated == 0) {
+                Result.Error(R.string.error_updating_subscription, IllegalStateException("Subscription not found"))
+            } else {
+                Result.Success(Unit)
+            }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -55,6 +62,8 @@ class SubscriptionRepository(
 
     fun getSubscriptionById(id: Long): Flow<SubscriptionWithCategory?> {
         if (id == -1L) return flowOf(null)
-        return subscriptionDao.getSubscriptionWithCategoryById(id)
+        return subscriptionDao.getSubscriptionWithCategoryById(id).catch {
+            emit(null)
+        }
     }
 }

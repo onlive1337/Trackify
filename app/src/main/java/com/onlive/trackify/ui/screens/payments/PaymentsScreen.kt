@@ -30,14 +30,17 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -74,36 +77,50 @@ fun PaymentsScreen(
         allSubscriptions.orEmpty().associateBy { it.subscription.subscriptionId }
     }
 
-    val showDeleteDialogState = remember { mutableStateOf<Payment?>(null) }
+    var deleteTargetPaymentId by rememberSaveable { mutableLongStateOf(-1L) }
+    val paymentToDelete = remember(deleteTargetPaymentId, allPayments) {
+        allPayments.find { it.paymentId == deleteTargetPaymentId }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (allPayments.isEmpty()) {
-            EmptyState(
-                icon = Icons.Rounded.Payments,
-                title = stringResource(R.string.no_payments)
-            )
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 96.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(
-                    items = allPayments,
-                    key = { it.paymentId }
-                ) { payment ->
-                    val subscriptionItem = subscriptionMap[payment.subscriptionId]
-                    val subscriptionName = subscriptionItem?.subscription?.name ?: stringResource(R.string.unknown)
+        when {
+            allPayments.isEmpty() -> {
+                EmptyState(
+                    icon = Icons.Rounded.Payments,
+                    title = stringResource(R.string.no_payments)
+                )
+            }
+            allSubscriptions == null -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    LoadingIndicator(color = MaterialTheme.colorScheme.primary)
+                }
+            }
+            else -> {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 96.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(
+                        items = allPayments,
+                        key = { it.paymentId }
+                    ) { payment ->
+                        val subscriptionItem = subscriptionMap[payment.subscriptionId]
+                        val subscriptionName = subscriptionItem?.subscription?.name ?: stringResource(R.string.unknown)
 
-                    PaymentItem(
-                        payment = payment,
-                        subscriptionName = subscriptionName,
-                        categoryColor = subscriptionItem?.categoryColor,
-                        formatAmount = formatAmount,
-                        onEdit = { onAddPayment(payment.subscriptionId, payment.paymentId) },
-                        onDelete = { showDeleteDialogState.value = payment },
-                        modifier = Modifier.animateItem()
-                    )
+                        PaymentItem(
+                            payment = payment,
+                            subscriptionName = subscriptionName,
+                            categoryColor = subscriptionItem?.categoryColor,
+                            formatAmount = formatAmount,
+                            onEdit = { onAddPayment(payment.subscriptionId, payment.paymentId) },
+                            onDelete = { deleteTargetPaymentId = payment.paymentId },
+                            modifier = Modifier.animateItem()
+                        )
+                    }
                 }
             }
         }
@@ -117,16 +134,16 @@ fun PaymentsScreen(
         )
     }
 
-    if (showDeleteDialogState.value != null) {
+    if (paymentToDelete != null) {
         AlertDialog(
-            onDismissRequest = { showDeleteDialogState.value = null },
+            onDismissRequest = { deleteTargetPaymentId = -1L },
             title = { Text(stringResource(R.string.delete_payment_confirmation)) },
             text = { Text(stringResource(R.string.delete_payment_message)) },
             confirmButton = {
                 Button(
                     onClick = {
-                        showDeleteDialogState.value?.let { paymentViewModel.delete(it) }
-                        showDeleteDialogState.value = null
+                        paymentViewModel.delete(paymentToDelete)
+                        deleteTargetPaymentId = -1L
                     },
                     shapes = ButtonDefaults.shapes(),
                     colors = ButtonDefaults.buttonColors(
@@ -138,7 +155,7 @@ fun PaymentsScreen(
             },
             dismissButton = {
                 TextButton(
-                    onClick = { showDeleteDialogState.value = null },
+                    onClick = { deleteTargetPaymentId = -1L },
                     shapes = ButtonDefaults.shapes()
                 ) {
                     Text(stringResource(R.string.cancel))

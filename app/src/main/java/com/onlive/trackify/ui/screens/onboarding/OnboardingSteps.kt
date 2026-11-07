@@ -49,6 +49,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -104,7 +105,8 @@ internal fun WelcomeStep(
             ) {
                 Image(
                     painter = painterResource(id = R.mipmap.ic_launcher_foreground),
-                    contentDescription = "Trackify Logo",
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimaryContainer),
                     modifier = Modifier.size(100.dp)
                 )
             }
@@ -207,14 +209,11 @@ internal fun NotificationPermissionStep(
     onSkip: () -> Unit
 ) {
     val context = LocalContext.current
-    val hasNotificationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    val hasRuntimePermissionGranted = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
         ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.POST_NOTIFICATIONS
         ) == PackageManager.PERMISSION_GRANTED
-    } else {
-        true
-    }
 
     Column(
         modifier = Modifier
@@ -258,7 +257,7 @@ internal fun NotificationPermissionStep(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.padding(bottom = 24.dp, top = 32.dp)
         ) {
-            if (hasNotificationPermission) {
+            if (hasRuntimePermissionGranted) {
                 OnboardingButton(
                     text = stringResource(R.string.notifications_already_enabled),
                     onClick = onGrantPermission,
@@ -271,19 +270,19 @@ internal fun NotificationPermissionStep(
                     onClick = onGrantPermission,
                     icon = Icons.Rounded.Notifications
                 )
+            }
 
-                TextButton(
-                    onClick = onSkip,
-                    shapes = ButtonDefaults.shapes(),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = stringResource(R.string.skip_for_now),
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+            TextButton(
+                onClick = onSkip,
+                shapes = ButtonDefaults.shapes(),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(R.string.skip_for_now),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }

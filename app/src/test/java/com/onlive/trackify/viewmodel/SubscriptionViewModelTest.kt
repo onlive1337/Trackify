@@ -124,6 +124,73 @@ class SubscriptionViewModelTest {
         )
     }
 
+    @Test
+    fun `update on deleted subscription reports error and invokes onError`() = runTest(testDispatcher) {
+        val fakeDao = FakeSubscriptionDao()
+        val repository = SubscriptionRepository(fakeDao, testDispatcher)
+        val errorReporter = FakeErrorReporter()
+        var onSuccessCalled = false
+        var onErrorCalled = false
+
+        val viewModel = SubscriptionViewModel(
+            repository = repository,
+            errorReporter = errorReporter
+        )
+
+        val ghostSub = Subscription(
+            subscriptionId = 999L,
+            name = "Deleted Plan",
+            description = null,
+            price = 9.99,
+            billingFrequency = BillingFrequency.MONTHLY,
+            startDate = LocalDate.of(2026, 11, 1),
+            endDate = null,
+            categoryId = null
+        )
+
+        viewModel.update(
+            subscription = ghostSub,
+            onSuccess = { onSuccessCalled = true },
+            onError = { onErrorCalled = true }
+        )
+
+        assertFalse(onSuccessCalled)
+        assertTrue(onErrorCalled)
+        assertEquals(R.string.error_updating_subscription, errorReporter.reportedErrors.single().messageRes)
+    }
+
+    @Test
+    fun `delete invokes onSubscriptionDeleted with deleted id`() = runTest(testDispatcher) {
+        val fakeDao = FakeSubscriptionDao()
+        val repository = SubscriptionRepository(fakeDao, testDispatcher)
+        val errorReporter = FakeErrorReporter()
+        val deletedIds = mutableListOf<Long>()
+
+        val viewModel = SubscriptionViewModel(
+            repository = repository,
+            errorReporter = errorReporter,
+            onSubscriptionDeleted = { deletedIds += it }
+        )
+
+        val sub = Subscription(
+            subscriptionId = 42L,
+            name = "Cloud Storage",
+            description = null,
+            price = 2.99,
+            billingFrequency = BillingFrequency.MONTHLY,
+            startDate = LocalDate.of(2026, 11, 1),
+            endDate = null,
+            categoryId = null
+        )
+        fakeDao.insert(sub)
+
+        var deleted = false
+        viewModel.delete(subscription = sub, onSuccess = { deleted = true })
+
+        assertTrue(deleted)
+        assertEquals(listOf(42L), deletedIds)
+    }
+
     private class FakeErrorReporter : ErrorReporter {
         val reportedErrors = mutableListOf<Result.Error>()
         val reportedExceptions = mutableListOf<Throwable>()
@@ -155,11 +222,18 @@ class SubscriptionViewModelTest {
             items.value = items.value + subscriptions
         }
 
-        override suspend fun update(subscription: Subscription) {
+        override suspend fun update(subscription: Subscription): Int {
             if (shouldThrowOnWrite) throw IllegalStateException("Simulated SQLite error")
+            var updated = 0
             items.value = items.value.map {
-                if (it.subscriptionId == subscription.subscriptionId) subscription else it
+                if (it.subscriptionId == subscription.subscriptionId) {
+                    updated++
+                    subscription
+                } else {
+                    it
+                }
             }
+            return updated
         }
 
         override suspend fun delete(subscription: Subscription) {

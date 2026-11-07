@@ -10,11 +10,13 @@ import androidx.core.content.ContextCompat
 import com.onlive.trackify.data.database.AppDatabase
 import com.onlive.trackify.data.model.BillingFrequency
 import com.onlive.trackify.data.model.Category
+import com.onlive.trackify.data.model.Currency
 import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.data.model.SubscriptionSortOption
 import java.io.BufferedReader
 import java.io.BufferedWriter
+import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.time.Instant
@@ -115,8 +117,12 @@ class DataExportImportManager(private val context: Context) {
                 exportedAt = Instant.now()
             )
 
-            context.contentResolver.openOutputStream(uri)?.use { outputStream ->
-                BufferedWriter(OutputStreamWriter(outputStream, Charsets.UTF_8)).use { writer ->
+            val outputStream = runCatching {
+                context.contentResolver.openOutputStream(uri, "wt")
+            }.getOrNull() ?: context.contentResolver.openOutputStream(uri)
+
+            outputStream?.use { stream ->
+                BufferedWriter(OutputStreamWriter(stream, Charsets.UTF_8)).use { writer ->
                     writer.write(jsonData)
                     writer.flush()
                 }
@@ -133,9 +139,7 @@ class DataExportImportManager(private val context: Context) {
     suspend fun importData(uri: Uri): Boolean = withContext(Dispatchers.IO) {
         try {
             val jsonData = context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                BufferedReader(InputStreamReader(inputStream, Charsets.UTF_8)).use { reader ->
-                    reader.readText()
-                }
+                readBoundedUtf8Text(inputStream, MAX_BACKUP_CHARS)
             } ?: return@withContext false
 
             val validated = decodeAndValidateBackup(jsonData) ?: run {
@@ -170,6 +174,9 @@ class DataExportImportManager(private val context: Context) {
                 }
                 val effectiveNotificationsEnabled = prefs.notificationsEnabled && hasNotificationPermission
 
+                preferenceManager.clearAllNotificationRecords()
+                NotificationHelper(context).cancelAllNotifications()
+
                 preferenceManager.setNotificationsEnabled(effectiveNotificationsEnabled)
                 preferenceManager.setReminderDays(prefs.reminderDays)
                 preferenceManager.setNotificationTime(
@@ -190,6 +197,7 @@ class DataExportImportManager(private val context: Context) {
                 val scheduler = NotificationScheduler(context)
                 if (effectiveNotificationsEnabled) {
                     scheduler.scheduleNotifications()
+                    scheduler.triggerImmediateCheck()
                 } else {
                     scheduler.cancelNotifications()
                 }
@@ -207,12 +215,31 @@ class DataExportImportManager(private val context: Context) {
 
     companion object {
         const val CURRENT_BACKUP_VERSION = 1
+        private const val MAX_BACKUP_CHARS = 5_000_000
+        private const val MIN_BACKUP_YEAR = 1970
+        private const val MAX_BACKUP_YEAR = 2100
 
         private val json = Json {
             prettyPrint = true
             ignoreUnknownKeys = true
             encodeDefaults = true
             explicitNulls = false
+        }
+
+        internal fun readBoundedUtf8Text(inputStream: InputStream, maxChars: Int = MAX_BACKUP_CHARS): String? {
+            BufferedReader(InputStreamReader(inputStream, Charsets.UTF_8)).use { reader ->
+                val builder = StringBuilder()
+                val buffer = CharArray(8192)
+                var totalRead = 0
+                while (true) {
+                    val read = reader.read(buffer)
+                    if (read == -1) break
+                    totalRead += read
+                    if (totalRead > maxChars) return null
+                    builder.append(buffer, 0, read)
+                }
+                return builder.toString()
+            }
         }
 
         fun encodeBackup(
@@ -272,19 +299,21 @@ class DataExportImportManager(private val context: Context) {
             val paymentDtos = payload.payments ?: return null
 
             val categories = categoryDtos.map { dto ->
+                if (dto.categoryId <= 0L) return null
                 if (dto.name.isBlank() || dto.colorCode.isBlank()) return null
                 Category(
                     categoryId = dto.categoryId,
-                    name = dto.name,
+                    name = dto.name.trim(),
                     description = dto.description,
-                    colorCode = dto.colorCode,
+                    colorCode = dto.colorCode.trim(),
                 )
             }
             val categoryIds = categories.map { it.categoryId }.toSet()
             if (categoryIds.size != categories.size) return null
 
             val subscriptions = subscriptionDtos.map { dto ->
-                if (dto.name.isBlank() || !dto.price.isFinite() || dto.price <= 0.0) return null
+                if (dto.subscriptionId <= 0L) return null
+                if (dto.name.isBlank() || !CurrencyFormatter.isValidPositiveAmount(dto.price)) return null
                 val frequency = runCatching {
                     BillingFrequency.valueOf(dto.billingFrequency)
                 }.getOrNull() ?: return null
@@ -295,7 +324,7 @@ class DataExportImportManager(private val context: Context) {
 
                 Subscription(
                     subscriptionId = dto.subscriptionId,
-                    name = dto.name,
+                    name = dto.name.trim(),
                     description = dto.description,
                     price = dto.price,
                     billingFrequency = frequency,
@@ -309,7 +338,8 @@ class DataExportImportManager(private val context: Context) {
             if (subscriptionIds.size != subscriptions.size) return null
 
             val payments = paymentDtos.map { dto ->
-                if (!dto.amount.isFinite() || dto.amount <= 0.0) return null
+                if (dto.paymentId <= 0L) return null
+                if (!CurrencyFormatter.isValidPositiveAmount(dto.amount)) return null
                 if (dto.subscriptionId !in subscriptionIds) return null
                 val paymentDate = parseBackupDate(dto.date) ?: return null
 
@@ -324,19 +354,42 @@ class DataExportImportManager(private val context: Context) {
             val paymentIds = payments.map { it.paymentId }.toSet()
             if (paymentIds.size != payments.size) return null
 
+            val rawPrefs = payload.userPreferences ?: UserPreferencesBackupDto()
+            val sanitizedPrefs = rawPrefs.copy(
+                reminderDays = rawPrefs.reminderDays.filter { it in PreferenceManager.VALID_REMINDER_DAYS }.toSet(),
+                notificationHour = rawPrefs.notificationHour.coerceIn(0, 23),
+                notificationMinute = rawPrefs.notificationMinute.coerceIn(0, 59),
+                currencyCode = if (Currency.isSupportedCurrencyCode(rawPrefs.currencyCode)) {
+                    rawPrefs.currencyCode
+                } else {
+                    "USD"
+                },
+                languageCode = LocaleHelper.normalizeLanguageCode(rawPrefs.languageCode) ?: "",
+                themeMode = if (
+                    rawPrefs.themeMode == ThemeManager.MODE_LIGHT ||
+                    rawPrefs.themeMode == ThemeManager.MODE_DARK
+                ) {
+                    rawPrefs.themeMode
+                } else {
+                    ThemeManager.MODE_DARK
+                },
+            )
+
             return ValidatedBackup(
                 categories = categories,
                 subscriptions = subscriptions,
                 payments = payments,
-                userPreferences = payload.userPreferences ?: UserPreferencesBackupDto(),
+                userPreferences = sanitizedPrefs,
             )
         }
 
         internal fun parseBackupDate(raw: String): LocalDate? {
             val trimmed = raw.trim()
             if (trimmed.isEmpty()) return null
-            return runCatching { LocalDate.parse(trimmed) }.getOrNull()
+            val parsed = runCatching { LocalDate.parse(trimmed) }.getOrNull()
                 ?: runCatching { LocalDate.parse(trimmed.take(10)) }.getOrNull()
+                ?: return null
+            return parsed.takeIf { it.year in MIN_BACKUP_YEAR..MAX_BACKUP_YEAR }
         }
     }
 }

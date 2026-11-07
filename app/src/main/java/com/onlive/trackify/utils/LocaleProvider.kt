@@ -1,24 +1,30 @@
 package com.onlive.trackify.utils
 
 import android.content.Context
+import android.content.res.Configuration
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalConfiguration
+import java.util.Locale
 
 class LocaleManager(private val context: Context) {
     private var _localizedContext by mutableStateOf(context)
     val localizedContext: Context get() = _localizedContext
 
+    var currentLocale: Locale by mutableStateOf(
+        LocaleHelper.toSafeLocale(context.resources.configuration.locales[0]?.language)
+    )
+        private set
+
     fun setLocale(languageCode: String) {
-        val locale = if (languageCode.isEmpty()) {
-            java.util.Locale.getDefault()
-        } else {
-            java.util.Locale.Builder().setLanguage(languageCode).build()
-        }
+        val locale = LocaleHelper.toSafeLocale(languageCode)
+        Locale.setDefault(locale)
+        currentLocale = locale
 
-        java.util.Locale.setDefault(locale)
-
-        val config = android.content.res.Configuration(context.resources.configuration)
+        val config = Configuration(context.resources.configuration)
         config.setLocale(locale)
         _localizedContext = context.createConfigurationContext(config)
+
+        LocaleHelper.syncAppLanguageToSystemIfNeeded(context, locale.language)
     }
 }
 
@@ -35,9 +41,17 @@ fun ProvideLocaleManager(
     localeManager: LocaleManager,
     content: @Composable () -> Unit
 ) {
+    val baseConfiguration = LocalConfiguration.current
+    val localizedConfiguration = remember(baseConfiguration, localeManager.currentLocale) {
+        Configuration(baseConfiguration).apply {
+            setLocale(localeManager.currentLocale)
+        }
+    }
+
     CompositionLocalProvider(
         LocalLocaleManager provides localeManager,
         LocalLocalizedContext provides localeManager.localizedContext,
+        LocalConfiguration provides localizedConfiguration,
         content = content
     )
 }

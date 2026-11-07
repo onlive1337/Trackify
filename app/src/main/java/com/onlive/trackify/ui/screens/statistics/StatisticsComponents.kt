@@ -18,6 +18,7 @@ import com.onlive.trackify.ui.components.AutoSizeText
 import com.onlive.trackify.ui.components.resolveCategoryColor
 import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.StatisticsViewModel
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -200,7 +201,7 @@ private fun CategoryItem(
         )
 
         Text(
-            text = "${(percentage * 100).toInt()}%",
+            text = "${(percentage * 100).roundToInt()}%",
             style = MaterialTheme.typography.labelSmallEmphasized,
             color = accentColor.copy(alpha = 0.8f),
             modifier = Modifier.align(Alignment.End)

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Trackify</string>
+    <string name="app_name" translatable="false">Trackify</string>
     <string name="title_subscriptions">Subscriptions</string>
     <string name="title_payments">Payments</string>
     <string name="title_statistics">Statistics</string>
@@ -114,8 +114,8 @@
     <string name="data_import_error">Error when importing data</string>
     <string name="data_export_error">Error when exporting data</string>
     <string name="links">Useful links</string>
-    <string name="telegram">Telegram</string>
-    <string name="github">Github</string>
+    <string name="telegram" translatable="false">Telegram</string>
+    <string name="github" translatable="false">GitHub</string>
 
     <string name="today">Today</string>
     <string name="tomorrow">Tomorrow</string>
@@ -148,7 +148,6 @@
     <string name="category_no_name">Enter category name</string>
     <string name="preview">Preview</string>
     <string name="mock_subscription_name">Example Subscription</string>
-    <string name="mock_subscription_price">$9.99</string>
 
     <string name="without_category">No category</string>
     <string name="unknown">Unknown</string>
@@ -163,6 +162,7 @@
     <string name="import_confirmation_message">Importing data will replace all existing data in the application. Continue?</string>
     <string name="export_success">Data successfully exported to %s</string>
     <string name="import_success">Data successfully imported</string>
+    <string name="export_error">Error exporting data</string>
     <string name="import_error">Error importing data</string>
     <string name="select_subscription">Select a subscription</string>
 

@@ -19,7 +19,7 @@ interface SubscriptionDao {
     suspend fun insertAll(subscriptions: List<Subscription>)
 
     @Update
-    suspend fun update(subscription: Subscription)
+    suspend fun update(subscription: Subscription): Int
 
     @Delete
     suspend fun delete(subscription: Subscription)

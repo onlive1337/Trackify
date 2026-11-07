@@ -26,11 +26,14 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -59,6 +62,8 @@ import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.stringResource
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 
 private val OnboardingPredictiveBackEasing = CubicBezierEasing(0.1f, 0.1f, 0.0f, 1.0f)
 private const val ONBOARDING_PREDICTIVE_DURATION_MS = 300
@@ -94,7 +99,7 @@ fun OnboardingScreen(
     var swipeEdge by remember { mutableIntStateOf(BackEventCompat.EDGE_LEFT) }
 
     LaunchedEffect(currentStep) {
-        if (!isInPredictiveBack && transitionState.targetState != currentStep) {
+        if (!isInPredictiveBack && (transitionState.targetState != currentStep || transitionState.currentState != currentStep)) {
             transitionState.animateTo(currentStep)
         }
     }
@@ -115,7 +120,9 @@ fun OnboardingScreen(
             transitionState.animateTo(targetStep)
         } catch (_: CancellationException) {
             isInPredictiveBack = false
-            transitionState.animateTo(currentStep)
+            withContext(NonCancellable) {
+                transitionState.animateTo(currentStep)
+            }
         }
     }
 
@@ -149,11 +156,14 @@ fun OnboardingScreen(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.systemBars.union(WindowInsets.displayCutout))
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .statusBarsPadding()
                     .padding(bottom = if (showBottomContinue) 80.dp + 24.dp else 0.dp)
             ) {
                 OnboardingProgressIndicator(
@@ -221,13 +231,17 @@ fun OnboardingScreen(
                             selectedLanguage = selectedLanguage,
                             onLanguageSelected = { languageCode ->
                                 selectedLanguage = languageCode
+                                preferenceManager.setLanguageCode(languageCode)
                                 localeManager.setLocale(languageCode)
                             }
                         )
 
                         2 -> CurrencySelectionStep(
                             selectedCurrency = selectedCurrency,
-                            onCurrencySelected = { selectedCurrency = it }
+                            onCurrencySelected = { currencyCode ->
+                                selectedCurrency = currencyCode
+                                preferenceManager.setCurrencyCode(currencyCode)
+                            }
                         )
 
                         3 -> NotificationPermissionStep(
@@ -265,8 +279,7 @@ fun OnboardingScreen(
                         .align(Alignment.BottomCenter)
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp)
-                        .padding(bottom = 32.dp)
-                        .navigationBarsPadding(),
+                        .padding(bottom = 32.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     OnboardingButton(

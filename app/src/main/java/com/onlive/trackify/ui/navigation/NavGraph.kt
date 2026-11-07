@@ -24,9 +24,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -46,6 +48,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -331,45 +334,103 @@ sealed interface Screen {
     data object AboutApp : Screen
 }
 
-class NavigationActions(navController: NavHostController) {
-    val navigateToHome: () -> Unit = {
-        navController.navigate(Screen.Home) {
-            popUpTo<Screen.Onboarding> { inclusive = true }
-            launchSingleTop = true
+class NavigationActions(private val navController: NavHostController) {
+    private fun canActFrom(entry: NavBackStackEntry): Boolean {
+        return navController.currentBackStackEntry?.id == entry.id &&
+            entry.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+    }
+
+    fun navigateToHome(from: NavBackStackEntry): () -> Unit = {
+        if (canActFrom(from)) {
+            navController.navigate(Screen.Home) {
+                popUpTo<Screen.Onboarding> { inclusive = true }
+                launchSingleTop = true
+            }
         }
     }
-    val navigateToAddSubscription: () -> Unit = {
-        navController.navigate(Screen.AddSubscription)
+
+    fun navigateToAddSubscription(from: NavBackStackEntry): () -> Unit = {
+        if (canActFrom(from)) {
+            navController.navigate(Screen.AddSubscription) {
+                launchSingleTop = true
+            }
+        }
     }
-    val navigateToSubscriptionDetail: (Long) -> Unit = { subscriptionId ->
-        navController.navigate(Screen.SubscriptionDetail(subscriptionId))
+
+    fun navigateToSubscriptionDetail(from: NavBackStackEntry): (Long) -> Unit = { subscriptionId ->
+        if (canActFrom(from)) {
+            navController.navigate(Screen.SubscriptionDetail(subscriptionId)) {
+                launchSingleTop = true
+            }
+        }
     }
-    val navigateToAddPayment: (Long, Long) -> Unit = { subscriptionId, paymentId ->
-        navController.navigate(Screen.AddPayment(subscriptionId = subscriptionId, paymentId = paymentId))
+
+    fun navigateToAddPayment(from: NavBackStackEntry): (Long, Long) -> Unit = { subscriptionId, paymentId ->
+        if (canActFrom(from)) {
+            navController.navigate(Screen.AddPayment(subscriptionId = subscriptionId, paymentId = paymentId)) {
+                launchSingleTop = true
+            }
+        }
     }
-    val navigateToCategoryManagement: () -> Unit = {
-        navController.navigate(Screen.CategoryManagement)
+
+    fun navigateToCategoryManagement(from: NavBackStackEntry): () -> Unit = {
+        if (canActFrom(from)) {
+            navController.navigate(Screen.CategoryManagement) {
+                launchSingleTop = true
+            }
+        }
     }
-    val navigateToCategoryDetail: (Long) -> Unit = { categoryId ->
-        navController.navigate(Screen.CategoryDetail(categoryId))
+
+    fun navigateToCategoryDetail(from: NavBackStackEntry): (Long) -> Unit = { categoryId ->
+        if (canActFrom(from)) {
+            navController.navigate(Screen.CategoryDetail(categoryId)) {
+                launchSingleTop = true
+            }
+        }
     }
-    val navigateToCurrencySettings: () -> Unit = {
-        navController.navigate(Screen.CurrencySettings)
+
+    fun navigateToCurrencySettings(from: NavBackStackEntry): () -> Unit = {
+        if (canActFrom(from)) {
+            navController.navigate(Screen.CurrencySettings) {
+                launchSingleTop = true
+            }
+        }
     }
-    val navigateToLanguageSettings: () -> Unit = {
-        navController.navigate(Screen.LanguageSettings)
+
+    fun navigateToLanguageSettings(from: NavBackStackEntry): () -> Unit = {
+        if (canActFrom(from)) {
+            navController.navigate(Screen.LanguageSettings) {
+                launchSingleTop = true
+            }
+        }
     }
-    val navigateToNotificationSettings: () -> Unit = {
-        navController.navigate(Screen.NotificationSettings)
+
+    fun navigateToNotificationSettings(from: NavBackStackEntry): () -> Unit = {
+        if (canActFrom(from)) {
+            navController.navigate(Screen.NotificationSettings) {
+                launchSingleTop = true
+            }
+        }
     }
-    val navigateToDataManagement: () -> Unit = {
-        navController.navigate(Screen.DataManagement)
+
+    fun navigateToDataManagement(from: NavBackStackEntry): () -> Unit = {
+        if (canActFrom(from)) {
+            navController.navigate(Screen.DataManagement) {
+                launchSingleTop = true
+            }
+        }
     }
-    val navigateToAboutApp: () -> Unit = {
-        navController.navigate(Screen.AboutApp)
+
+    fun navigateToAboutApp(from: NavBackStackEntry): () -> Unit = {
+        if (canActFrom(from)) {
+            navController.navigate(Screen.AboutApp) {
+                launchSingleTop = true
+            }
+        }
     }
-    val navigateBack: () -> Unit = {
-        if (navController.previousBackStackEntry != null) {
+
+    fun navigateBack(from: NavBackStackEntry): () -> Unit = {
+        if (canActFrom(from) && navController.previousBackStackEntry != null) {
             navController.popBackStack()
         }
     }
@@ -410,7 +471,7 @@ private fun MainTabScaffold(
             )
         },
         containerColor = MaterialTheme.colorScheme.background,
-        contentWindowInsets = WindowInsets.systemBars
+        contentWindowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout)
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -500,34 +561,34 @@ fun TrackifyNavGraph(
             predictiveBackExitTransition(swipeEdge)
         }
     ) {
-        composable<Screen.Onboarding> {
+        composable<Screen.Onboarding> { entry ->
             OnboardingScreen(
-                onComplete = navigationActions.navigateToHome,
+                onComplete = navigationActions.navigateToHome(entry),
                 localeManager = localeManager
             )
         }
-        composable<Screen.Home> {
+        composable<Screen.Home> { entry ->
             MainTabScaffold(
                 titleRes = R.string.title_subscriptions,
                 currentTab = Screen.Home,
                 navController = navController
             ) {
                 HomeScreen(
-                    onAddSubscription = navigationActions.navigateToAddSubscription,
-                    onSubscriptionClick = navigationActions.navigateToSubscriptionDetail
+                    onAddSubscription = navigationActions.navigateToAddSubscription(entry),
+                    onSubscriptionClick = navigationActions.navigateToSubscriptionDetail(entry)
                 )
             }
         }
         predictiveBackComposable<Screen.Payments>(
             navController = navController,
             currentEntryProvider = { currentBackStackEntry }
-        ) {
+        ) { entry ->
             MainTabScaffold(
                 titleRes = R.string.title_payments,
                 currentTab = Screen.Payments,
                 navController = navController
             ) {
-                PaymentsScreen(onAddPayment = navigationActions.navigateToAddPayment)
+                PaymentsScreen(onAddPayment = navigationActions.navigateToAddPayment(entry))
             }
         }
         predictiveBackComposable<Screen.Statistics>(
@@ -545,19 +606,19 @@ fun TrackifyNavGraph(
         predictiveBackComposable<Screen.Settings>(
             navController = navController,
             currentEntryProvider = { currentBackStackEntry }
-        ) {
+        ) { entry ->
             MainTabScaffold(
                 titleRes = R.string.title_settings,
                 currentTab = Screen.Settings,
                 navController = navController
             ) {
                 SettingsScreen(
-                    onNavigateToCategoryManagement = navigationActions.navigateToCategoryManagement,
-                    onNavigateToNotificationSettings = navigationActions.navigateToNotificationSettings,
-                    onNavigateToCurrencySettings = navigationActions.navigateToCurrencySettings,
-                    onNavigateToLanguageSettings = navigationActions.navigateToLanguageSettings,
-                    onNavigateToDataManagement = navigationActions.navigateToDataManagement,
-                    onNavigateToAboutApp = navigationActions.navigateToAboutApp,
+                    onNavigateToCategoryManagement = navigationActions.navigateToCategoryManagement(entry),
+                    onNavigateToNotificationSettings = navigationActions.navigateToNotificationSettings(entry),
+                    onNavigateToCurrencySettings = navigationActions.navigateToCurrencySettings(entry),
+                    onNavigateToLanguageSettings = navigationActions.navigateToLanguageSettings(entry),
+                    onNavigateToDataManagement = navigationActions.navigateToDataManagement(entry),
+                    onNavigateToAboutApp = navigationActions.navigateToAboutApp(entry),
                     themeManager = themeManager
                 )
             }
@@ -569,16 +630,16 @@ fun TrackifyNavGraph(
             val args = entry.toRoute<Screen.SubscriptionDetail>()
             SubscriptionDetailScreen(
                 subscriptionId = args.subscriptionId,
-                onNavigateBack = navigationActions.navigateBack
+                onNavigateBack = navigationActions.navigateBack(entry)
             )
         }
         predictiveBackComposable<Screen.AddSubscription>(
             navController = navController,
             currentEntryProvider = { currentBackStackEntry }
-        ) {
+        ) { entry ->
             SubscriptionDetailScreen(
                 subscriptionId = -1L,
-                onNavigateBack = navigationActions.navigateBack
+                onNavigateBack = navigationActions.navigateBack(entry)
             )
         }
         predictiveBackComposable<Screen.AddPayment>(
@@ -589,17 +650,18 @@ fun TrackifyNavGraph(
             AddPaymentScreen(
                 subscriptionId = args.subscriptionId,
                 paymentId = args.paymentId,
-                onNavigateBack = navigationActions.navigateBack
+                onNavigateBack = navigationActions.navigateBack(entry)
             )
         }
         predictiveBackComposable<Screen.CategoryManagement>(
             navController = navController,
             currentEntryProvider = { currentBackStackEntry }
-        ) {
+        ) { entry ->
+            val navigateToCategoryDetail = navigationActions.navigateToCategoryDetail(entry)
             CategoryManagementScreen(
-                onNavigateBack = navigationActions.navigateBack,
-                onAddCategory = { navigationActions.navigateToCategoryDetail(-1L) },
-                onEditCategory = navigationActions.navigateToCategoryDetail
+                onNavigateBack = navigationActions.navigateBack(entry),
+                onAddCategory = { navigateToCategoryDetail(-1L) },
+                onEditCategory = navigateToCategoryDetail
             )
         }
         predictiveBackComposable<Screen.CategoryDetail>(
@@ -609,41 +671,41 @@ fun TrackifyNavGraph(
             val args = entry.toRoute<Screen.CategoryDetail>()
             CategoryDetailScreen(
                 categoryId = args.categoryId,
-                onNavigateBack = navigationActions.navigateBack
+                onNavigateBack = navigationActions.navigateBack(entry)
             )
         }
         predictiveBackComposable<Screen.CurrencySettings>(
             navController = navController,
             currentEntryProvider = { currentBackStackEntry }
-        ) {
-            CurrencySettingsScreen(onNavigateBack = navigationActions.navigateBack)
+        ) { entry ->
+            CurrencySettingsScreen(onNavigateBack = navigationActions.navigateBack(entry))
         }
         predictiveBackComposable<Screen.LanguageSettings>(
             navController = navController,
             currentEntryProvider = { currentBackStackEntry }
-        ) {
-            LanguageSettingsScreen(onNavigateBack = navigationActions.navigateBack)
+        ) { entry ->
+            LanguageSettingsScreen(onNavigateBack = navigationActions.navigateBack(entry))
         }
         predictiveBackComposable<Screen.NotificationSettings>(
             navController = navController,
             currentEntryProvider = { currentBackStackEntry }
-        ) {
-            NotificationSettingsScreen(onNavigateBack = navigationActions.navigateBack)
+        ) { entry ->
+            NotificationSettingsScreen(onNavigateBack = navigationActions.navigateBack(entry))
         }
         predictiveBackComposable<Screen.DataManagement>(
             navController = navController,
             currentEntryProvider = { currentBackStackEntry }
-        ) {
+        ) { entry ->
             DataManagementScreen(
-                onNavigateBack = navigationActions.navigateBack,
+                onNavigateBack = navigationActions.navigateBack(entry),
                 themeManager = themeManager
             )
         }
         predictiveBackComposable<Screen.AboutApp>(
             navController = navController,
             currentEntryProvider = { currentBackStackEntry }
-        ) {
-            AboutAppScreen(onNavigateBack = navigationActions.navigateBack)
+        ) { entry ->
+            AboutAppScreen(onNavigateBack = navigationActions.navigateBack(entry))
         }
     }
 }

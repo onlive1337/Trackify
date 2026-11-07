@@ -1,6 +1,8 @@
 package com.onlive.trackify.ui.screens.settings
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -140,10 +142,18 @@ fun SettingsScreen(
                 )
                 if (result == SnackbarResult.ActionPerformed) {
                     waitingForPermissionState.value = true
-                    val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                    val notificationIntent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
                         putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
                     }
-                    settingsLauncher.launch(intent)
+                    try {
+                        settingsLauncher.launch(notificationIntent)
+                    } catch (_: ActivityNotFoundException) {
+                        val fallbackIntent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = Uri.fromParts("package", context.packageName, null)
+                        }
+                        runCatching { settingsLauncher.launch(fallbackIntent) }
+                            .onFailure { waitingForPermissionState.value = false }
+                    }
                 }
             }
         }

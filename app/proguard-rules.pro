@@ -29,6 +29,7 @@
 
 # --- Room Entities & Enums ---
 -keep @androidx.room.Entity class com.onlive.trackify.data.model.** { *; }
+-keep enum com.onlive.trackify.data.model.** { *; }
 -keepclassmembers enum com.onlive.trackify.** {
     public static **[] values();
     public static ** valueOf(java.lang.String);

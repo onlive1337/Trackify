@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Trackify</string>
     <string name="title_subscriptions">Подписки</string>
     <string name="title_payments">Платежи</string>
     <string name="title_statistics">Статистика</string>
@@ -118,8 +117,6 @@
     <string name="data_export_error">Ошибка при экспорте данных</string>
     <string name="app_description">Trackify помогает отслеживать ваши подписки и регулярные платежи. Следите за расходами, получайте уведомления о предстоящих платежах и анализируйте свои траты по категориям.</string>
     <string name="links">Полезные ссылки</string>
-    <string name="telegram">Telegram</string>
-    <string name="github">Github</string>
 
     <string name="today">Сегодня</string>
     <string name="tomorrow">Завтра</string>
@@ -152,7 +149,6 @@
     <string name="category_no_name">Введите название категории</string>
     <string name="preview">Предпросмотр</string>
     <string name="mock_subscription_name">Пример подписки</string>
-    <string name="mock_subscription_price">899 ₽</string>
 
     <string name="without_category">Без категории</string>
     <string name="unknown">Неизвестно</string>
@@ -167,6 +163,7 @@
     <string name="import_confirmation_message">Импорт данных заменит все существующие данные в приложении. Продолжить?</string>
     <string name="export_success">Данные успешно экспортированы в %s</string>
     <string name="import_success">Данные успешно импортированы</string>
+    <string name="export_error">Ошибка при экспорте данных</string>
     <string name="import_error">Ошибка при импорте данных</string>
     <string name="select_subscription">Выберите подписку</string>
 
@@ -180,7 +177,7 @@
     <string name="welcome_description">Ваш персональный помощник для отслеживания подписок и регулярных платежей. Никогда больше не забывайте о важных платежах!</string>
     <string name="get_started">Начать</string>
     <string name="continue_text">Продолжить</string>
-    <string name="skip_for_now">Пропустить пока</string>
+    <string name="skip_for_now">Пока пропустить</string>
 
     <string name="choose_your_language">Выберите язык</string>
     <string name="language_onboarding_description">Выберите предпочитаемый язык для использования приложения</string>

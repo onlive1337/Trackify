@@ -17,7 +17,9 @@ class PaymentRepository(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
 
-    val allPayments: Flow<List<Payment>> = paymentDao.getAllPayments()
+    val allPayments: Flow<List<Payment>> = paymentDao.getAllPayments().catch {
+        emit(emptyList())
+    }
 
     suspend fun insert(payment: Payment): Result<Long> = withContext(ioDispatcher) {
         try {
@@ -32,8 +34,12 @@ class PaymentRepository(
 
     suspend fun update(payment: Payment): Result<Unit> = withContext(ioDispatcher) {
         try {
-            paymentDao.update(payment)
-            Result.Success(Unit)
+            val rowsUpdated = paymentDao.update(payment)
+            if (rowsUpdated == 0) {
+                Result.Error(R.string.error_updating_payment, IllegalStateException("Payment not found"))
+            } else {
+                Result.Success(Unit)
+            }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {

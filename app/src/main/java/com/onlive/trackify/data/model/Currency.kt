@@ -31,6 +31,10 @@ data class Currency(
         fun getCurrencyByCode(code: String): Currency {
             return POPULAR_CURRENCIES.find { it.code == code } ?: POPULAR_CURRENCIES[0]
         }
+
+        fun isSupportedCurrencyCode(code: String): Boolean {
+            return POPULAR_CURRENCIES.any { it.code == code }
+        }
     }
 
     fun format(amount: Double, includeSymbol: Boolean = true, maxDecimals: Int = 2): String {
