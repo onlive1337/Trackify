@@ -5,30 +5,31 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextOverflow
-import com.onlive.trackify.utils.LocalLocalizedContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.onlive.trackify.R
-import com.onlive.trackify.ui.components.SettingsSection
+import com.onlive.trackify.ui.components.SegmentedSettingsSection
+import com.onlive.trackify.ui.components.connectedLeadingToggleShapes
+import com.onlive.trackify.ui.components.connectedTrailingToggleShapes
+import com.onlive.trackify.ui.components.segmentedListItemShapes
+import com.onlive.trackify.utils.LocalLocalizedContext
 import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.ThemeManager
@@ -110,6 +111,7 @@ fun SettingsScreen(
                 notificationsEnabled = true
                 preferenceManager.setNotificationsEnabled(true)
                 notificationScheduler.scheduleNotifications()
+                notificationScheduler.triggerImmediateCheck()
             } else {
                 coroutineScope.launch {
                     snackbarHostState.showSnackbar(
@@ -121,11 +123,42 @@ fun SettingsScreen(
         }
     }
 
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            notificationsEnabled = true
+            preferenceManager.setNotificationsEnabled(true)
+            notificationScheduler.scheduleNotifications()
+            notificationScheduler.triggerImmediateCheck()
+        } else {
+            coroutineScope.launch {
+                val result = snackbarHostState.showSnackbar(
+                    message = context.getString(R.string.notification_permission_denied),
+                    actionLabel = context.getString(R.string.title_settings),
+                    duration = SnackbarDuration.Long
+                )
+                if (result == SnackbarResult.ActionPerformed) {
+                    waitingForPermissionState.value = true
+                    val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                        putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                    }
+                    settingsLauncher.launch(intent)
+                }
+            }
+        }
+    }
+
+    val supportsDynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    val themeSectionCount = if (supportsDynamicColor) 2 else 1
+    val notificationSectionCount = if (notificationsEnabled) 2 else 1
+
     Scaffold(
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState)
         },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -137,64 +170,75 @@ fun SettingsScreen(
         ) {
             Spacer(modifier = Modifier.height(8.dp))
 
-            SettingsSection(title = stringResource(R.string.theme_settings)) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
+            SegmentedSettingsSection(title = stringResource(R.string.theme_settings)) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = ListItemDefaults.segmentedShapes(
+                        index = 0,
+                        count = themeSectionCount
+                    ).shape,
+                    color = MaterialTheme.colorScheme.surfaceContainerLow
                 ) {
-                    ToggleButton(
-                        checked = selectedThemeMode == ThemeManager.MODE_LIGHT,
-                        onCheckedChange = {
-                            selectedThemeMode = ThemeManager.MODE_LIGHT
-                            themeManager.setThemeMode(ThemeManager.MODE_LIGHT)
-                        },
-                        shapes = ButtonGroupDefaults.connectedLeadingButtonShapes(),
-                        modifier = Modifier.weight(1f)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.LightMode,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(ToggleButtonDefaults.IconSpacing))
-                        Text(
-                            text = stringResource(R.string.light_theme),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
+                        ToggleButton(
+                            checked = selectedThemeMode == ThemeManager.MODE_LIGHT,
+                            onCheckedChange = {
+                                selectedThemeMode = ThemeManager.MODE_LIGHT
+                                themeManager.setThemeMode(ThemeManager.MODE_LIGHT)
+                            },
+                            shapes = connectedLeadingToggleShapes(),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.LightMode,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(ToggleButtonDefaults.IconSpacing))
+                            Text(
+                                text = stringResource(R.string.light_theme),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
 
-                    ToggleButton(
-                        checked = selectedThemeMode == ThemeManager.MODE_DARK,
-                        onCheckedChange = {
-                            selectedThemeMode = ThemeManager.MODE_DARK
-                            themeManager.setThemeMode(ThemeManager.MODE_DARK)
-                        },
-                        shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.DarkMode,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(ToggleButtonDefaults.IconSpacing))
-                        Text(
-                            text = stringResource(R.string.dark_theme),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                        ToggleButton(
+                            checked = selectedThemeMode == ThemeManager.MODE_DARK,
+                            onCheckedChange = {
+                                selectedThemeMode = ThemeManager.MODE_DARK
+                                themeManager.setThemeMode(ThemeManager.MODE_DARK)
+                            },
+                            shapes = connectedTrailingToggleShapes(),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.DarkMode,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(ToggleButtonDefaults.IconSpacing))
+                            Text(
+                                text = stringResource(R.string.dark_theme),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                     }
                 }
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (supportsDynamicColor) {
                     SettingsToggleRow(
                         icon = Icons.Outlined.Palette,
                         title = stringResource(R.string.dynamic_colors),
                         description = stringResource(R.string.dynamic_colors_description),
                         checked = dynamicColorEnabled,
+                        index = 1,
+                        count = themeSectionCount,
                         onToggle = {
                             dynamicColorEnabled = it
                             themeManager.setDynamicColorEnabled(it)
@@ -203,23 +247,22 @@ fun SettingsScreen(
                 }
             }
 
-            SettingsSection {
+            SegmentedSettingsSection {
                 SettingsToggleRow(
                     icon = Icons.Outlined.Notifications,
                     title = stringResource(R.string.notifications),
                     checked = notificationsEnabled,
+                    index = 0,
+                    count = notificationSectionCount,
                     onToggle = { enabled ->
                         if (enabled) {
                             if (checkNotificationPermission()) {
                                 notificationsEnabled = true
                                 preferenceManager.setNotificationsEnabled(true)
                                 notificationScheduler.scheduleNotifications()
-                            } else {
-                                waitingForPermissionState.value = true
-                                val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
-                                    putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-                                }
-                                settingsLauncher.launch(intent)
+                                notificationScheduler.triggerImmediateCheck()
+                            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                notificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
                             }
                         } else {
                             notificationsEnabled = false
@@ -231,37 +274,49 @@ fun SettingsScreen(
 
                 if (notificationsEnabled) {
                     SettingsRow(
-                        icon = Icons.Outlined.Notifications,
+                        icon = Icons.Outlined.Tune,
                         title = stringResource(R.string.notification_settings),
+                        index = 1,
+                        count = notificationSectionCount,
                         onClick = onNavigateToNotificationSettings
                     )
                 }
             }
 
-            SettingsSection(title = stringResource(R.string.general_settings)) {
+            SegmentedSettingsSection(title = stringResource(R.string.general_settings)) {
                 SettingsRow(
                     icon = Icons.Outlined.Category,
                     title = stringResource(R.string.manage_categories),
+                    index = 0,
+                    count = 5,
                     onClick = onNavigateToCategoryManagement
                 )
                 SettingsRow(
                     icon = Icons.Outlined.Payments,
                     title = stringResource(R.string.currency_settings),
+                    index = 1,
+                    count = 5,
                     onClick = onNavigateToCurrencySettings
                 )
                 SettingsRow(
                     icon = Icons.Outlined.Language,
                     title = stringResource(R.string.language_settings),
+                    index = 2,
+                    count = 5,
                     onClick = onNavigateToLanguageSettings
                 )
                 SettingsRow(
                     icon = Icons.Outlined.DataObject,
                     title = stringResource(R.string.data_management),
+                    index = 3,
+                    count = 5,
                     onClick = onNavigateToDataManagement
                 )
                 SettingsRow(
                     icon = Icons.Outlined.Info,
                     title = stringResource(R.string.about_app),
+                    index = 4,
+                    count = 5,
                     onClick = onNavigateToAboutApp
                 )
             }
@@ -271,66 +326,86 @@ fun SettingsScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun SettingsToggleRow(
     icon: ImageVector,
     title: String,
     checked: Boolean,
+    index: Int,
+    count: Int,
     onToggle: (Boolean) -> Unit,
     description: String? = null
 ) {
     val haptic = LocalHapticFeedback.current
-    ListItem(
-        headlineContent = { Text(title) },
-        supportingContent = description?.let { { Text(it) } },
+    SegmentedListItem(
+        checked = checked,
+        onCheckedChange = {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            onToggle(it)
+        },
+        shapes = segmentedListItemShapes(index = index, count = count),
+        colors = ListItemDefaults.segmentedColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            leadingContentColor = MaterialTheme.colorScheme.primary,
+            selectedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            selectedContentColor = MaterialTheme.colorScheme.onSurface,
+            selectedLeadingContentColor = MaterialTheme.colorScheme.primary,
+            selectedSupportingContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            selectedTrailingContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        ),
         leadingContent = {
             Icon(
                 imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
+                contentDescription = null
             )
         },
+        supportingContent = description?.let { { Text(it) } },
         trailingContent = {
             Switch(
                 checked = checked,
-                onCheckedChange = {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onToggle(it)
-                }
+                onCheckedChange = null
             )
-        },
-        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-    )
+        }
+    ) {
+        Text(title)
+    }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun SettingsRow(
     icon: ImageVector,
     title: String,
+    index: Int,
+    count: Int,
     onClick: () -> Unit
 ) {
     val haptic = LocalHapticFeedback.current
-    ListItem(
-        headlineContent = { Text(title) },
+    SegmentedListItem(
+        onClick = {
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            onClick()
+        },
+        shapes = segmentedListItemShapes(index = index, count = count),
+        colors = ListItemDefaults.segmentedColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            leadingContentColor = MaterialTheme.colorScheme.primary
+        ),
         leadingContent = {
             Icon(
                 imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
+                contentDescription = null
             )
         },
         trailingContent = {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
             )
-        },
-        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-        modifier = Modifier.clickable {
-            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-            onClick()
         }
-    )
+    ) {
+        Text(title)
+    }
 }

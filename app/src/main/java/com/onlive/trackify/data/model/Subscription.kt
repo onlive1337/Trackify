@@ -2,10 +2,9 @@ package com.onlive.trackify.data.model
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import java.util.Date
+import java.time.LocalDate
 
 enum class BillingFrequency {
     MONTHLY,
@@ -35,16 +34,8 @@ data class Subscription(
     val description: String?,
     val price: Double,
     val billingFrequency: BillingFrequency,
-    val startDate: Date,
-    val endDate: Date?,
+    val startDate: LocalDate,
+    val endDate: LocalDate?,
     val categoryId: Long?,
     val image: String? = null
-) {
-    @Ignore
-    @Transient
-    var categoryName: String? = null
-
-    @Ignore
-    @Transient
-    var categoryColor: String? = null
-}
+)

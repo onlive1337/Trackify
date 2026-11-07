@@ -1,293 +1,85 @@
 package com.onlive.trackify.data
 
-import android.content.Context
-import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
 import com.onlive.trackify.data.model.BillingFrequency
 import com.onlive.trackify.data.model.Category
-import com.onlive.trackify.data.model.Subscription
+import com.onlive.trackify.data.model.SubscriptionWithCategory
 import com.onlive.trackify.viewmodel.StatisticsViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
-import com.onlive.trackify.R
-import com.onlive.trackify.utils.PaymentScheduleCalculator
-import java.util.concurrent.ConcurrentHashMap
+import java.time.LocalDate
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 
 class LiveStatisticsUpdater(
-    private val context: Context,
-    subscriptionsLiveData: LiveData<List<Subscription>>,
-    categoriesLiveData: LiveData<List<Category>>,
-    private val calculationScope: CoroutineScope
+    subscriptionsFlow: Flow<List<SubscriptionWithCategory>>,
+    defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) {
-    val totalMonthlySpending = MediatorLiveData<Double>()
-    val totalYearlySpending = MediatorLiveData<Double>()
-    val spendingByCategory = MediatorLiveData<List<StatisticsViewModel.CategorySpending>>()
-    val monthlySpendingHistory = MediatorLiveData<List<StatisticsViewModel.MonthlySpending>>()
-    val subscriptionTypeSpending = MediatorLiveData<List<StatisticsViewModel.SubscriptionTypeSpending>>()
-    val isLoading = MediatorLiveData<Boolean>()
-
-    private val subscriptions = ConcurrentHashMap<Long, Subscription>()
-    private val categories = ConcurrentHashMap<Long, Category>()
-
-    private var calculationJob: Job? = null
-
-    private val tag = "LiveStatisticsUpdater"
-
-    private var subscriptionsReceived = false
-    private var categoriesReceived = false
-
-    init {
-        isLoading.value = true
-
-        totalMonthlySpending.addSource(subscriptionsLiveData) { subs ->
-            Log.d(tag, "Subscriptions received: ${subs.size}")
-            subscriptionsReceived = true
-            updateSubscriptions(subs)
-            recalculateAll()
+    val statisticsFlow: Flow<StatisticsViewModel.UiState> = subscriptionsFlow
+        .map { subscriptions -> calculateStatistics(subscriptions = subscriptions) }
+        .flowOn(defaultDispatcher)
+        .distinctUntilChanged()
+        .catch {
+            emit(StatisticsViewModel.UiState(isLoading = false))
         }
 
-        totalMonthlySpending.addSource(categoriesLiveData) { cats ->
-            Log.d(tag, "Categories received: ${cats.size}")
-            categoriesReceived = true
-            updateCategories(cats)
-            recalculateAll()
-        }
-    }
+    companion object {
+        private const val DEFAULT_CATEGORY_COLOR = "#808080"
 
-
-    private fun recalculateAll() {
-        if (!subscriptionsReceived || !categoriesReceived) {
-            Log.d(tag, "Waiting for data: subs=$subscriptionsReceived, cats=$categoriesReceived")
-            return
-        }
-
-        calculationJob?.cancel()
-        calculationJob = calculationScope.launch {
-            isLoading.postValue(true)
-            Log.d(tag, "Starting calculation with ${subscriptions.size} subscriptions")
-
-            try {
-                calculateMonthlySpendingInternal()
-                calculateYearlySpendingInternal()
-                calculateSpendingByCategoryInternal()
-                calculateMonthlySpendingHistoryInternal()
-                calculateSpendingBySubscriptionTypeInternal()
-                Log.d(tag, "Calculation completed")
-            } catch (e: Exception) {
-                Log.e(tag, "Error calculating statistics", e)
+        fun calculateStatistics(
+            subscriptions: List<SubscriptionWithCategory>,
+            referenceDate: LocalDate = LocalDate.now()
+        ): StatisticsViewModel.UiState {
+            val activeSubscriptions = subscriptions.filter { item ->
+                val endDate = item.subscription.endDate
+                endDate == null || !endDate.isBefore(referenceDate)
             }
 
-            isLoading.postValue(false)
-        }
-    }
-
-    private fun updateSubscriptions(subs: List<Subscription>) {
-        try {
-            subscriptions.clear()
-            subs.forEach { subscription ->
-                subscriptions[subscription.subscriptionId] = subscription
-            }
-        } catch (e: Exception) {
-            Log.e(tag, "Error updating subscriptions", e)
-        }
-    }
-
-    private fun updateCategories(cats: List<Category>) {
-        try {
-            categories.clear()
-            cats.forEach { category ->
-                categories[category.categoryId] = category
-            }
-        } catch (e: Exception) {
-            Log.e(tag, "Error updating categories", e)
-        }
-    }
-
-    private fun activeSubscriptions(referenceDate: Date = Date()): List<Subscription> {
-        val todayStart = PaymentScheduleCalculator.normalizeToStartOfDay(referenceDate)
-        return subscriptions.values.filter { subscription ->
-            val endDate = subscription.endDate
-            endDate == null || !PaymentScheduleCalculator.normalizeToStartOfDay(endDate).before(todayStart)
-        }
-    }
-
-    private fun calculateMonthlySpendingInternal() {
-        try {
-            var monthlyCost = 0.0
-
-            for (subscription in activeSubscriptions()) {
-                monthlyCost += when (subscription.billingFrequency) {
-                    BillingFrequency.MONTHLY -> subscription.price
-                    BillingFrequency.YEARLY -> subscription.price / 12
-                }
-            }
-
-            Log.d(tag, "Monthly spending calculated: $monthlyCost")
-            totalMonthlySpending.postValue(monthlyCost)
-        } catch (e: Exception) {
-            Log.e(tag, "Error calculating monthly spending", e)
-            totalMonthlySpending.postValue(0.0)
-        }
-    }
-
-    private fun calculateYearlySpendingInternal() {
-        try {
-            var yearlyCost = 0.0
-
-            for (subscription in activeSubscriptions()) {
-                yearlyCost += when (subscription.billingFrequency) {
-                    BillingFrequency.MONTHLY -> subscription.price * 12
-                    BillingFrequency.YEARLY -> subscription.price
-                }
-            }
-
-            totalYearlySpending.postValue(yearlyCost)
-        } catch (e: Exception) {
-            Log.e(tag, "Error calculating yearly spending", e)
-            totalYearlySpending.postValue(0.0)
-        }
-    }
-
-    private fun calculateSpendingByCategoryInternal() {
-        try {
+            var totalMonthly = 0.0
+            var totalYearly = 0.0
             val categorySpendingMap = mutableMapOf<Long?, Double>()
+            val categoryLookup = mutableMapOf<Long, Category>()
 
-            categorySpendingMap[null] = 0.0
-            categories.values.forEach { category ->
-                categorySpendingMap[category.categoryId] = 0.0
-            }
+            for (item in activeSubscriptions) {
+                val subscription = item.subscription
+                item.category?.let { categoryLookup[it.categoryId] = it }
 
-            for (subscription in activeSubscriptions()) {
                 val monthlyCost = when (subscription.billingFrequency) {
                     BillingFrequency.MONTHLY -> subscription.price
-                    BillingFrequency.YEARLY -> subscription.price / 12
+                    BillingFrequency.YEARLY -> subscription.price / 12.0
+                }
+                val yearlyCost = when (subscription.billingFrequency) {
+                    BillingFrequency.MONTHLY -> subscription.price * 12.0
+                    BillingFrequency.YEARLY -> subscription.price
                 }
 
-                val currentAmount = categorySpendingMap[subscription.categoryId] ?: 0.0
-                categorySpendingMap[subscription.categoryId] = currentAmount + monthlyCost
+                totalMonthly += monthlyCost
+                totalYearly += yearlyCost
+                categorySpendingMap[subscription.categoryId] =
+                    (categorySpendingMap[subscription.categoryId] ?: 0.0) + monthlyCost
             }
 
-            val result = categorySpendingMap.map { (categoryId, amount) ->
-                val category = if (categoryId != null) categories[categoryId] else null
-                StatisticsViewModel.CategorySpending(
-                    categoryId = categoryId,
-                    categoryName = category?.name ?: context.getString(R.string.without_category),
-                    colorCode = category?.colorCode ?: "#808080",
-                    amount = amount
-                )
-            }.filter { it.amount > 0 }
+            val spendingByCategory = categorySpendingMap
+                .filterValues { it > 0.0 }
+                .map { (categoryId, amount) ->
+                    val category = categoryId?.let { categoryLookup[it] }
+                    StatisticsViewModel.CategorySpending(
+                        categoryId = categoryId,
+                        categoryName = category?.name,
+                        colorCode = category?.colorCode ?: DEFAULT_CATEGORY_COLOR,
+                        amount = amount
+                    )
+                }
                 .sortedByDescending { it.amount }
 
-            spendingByCategory.postValue(result)
-        } catch (e: Exception) {
-            Log.e(tag, "Error calculating spending by category", e)
-            spendingByCategory.postValue(emptyList())
-        }
-    }
-
-    private fun calculateMonthlySpendingHistoryInternal(monthsCount: Int = 6) {
-        try {
-            val calendar = Calendar.getInstance()
-            val currentYear = calendar.get(Calendar.YEAR)
-            val currentMonth = calendar.get(Calendar.MONTH)
-
-            val monthlyData = mutableListOf<StatisticsViewModel.MonthlySpending>()
-
-            for (i in 0 until monthsCount) {
-                var month = currentMonth - i
-                var year = currentYear
-
-                while (month < 0) {
-                    month += 12
-                    year -= 1
-                }
-
-                val monthName = getMonthName(month)
-                var totalAmount = 0.0
-
-                subscriptions.values.forEach { subscription ->
-                    val subscriptionStart = Calendar.getInstance().apply { time = subscription.startDate }
-                    val startYear = subscriptionStart.get(Calendar.YEAR)
-                    val startMonth = subscriptionStart.get(Calendar.MONTH)
-
-                    if ((year > startYear) || (year == startYear && month >= startMonth)) {
-                        if (subscription.endDate != null) {
-                            val subscriptionEnd = Calendar.getInstance().apply { time =
-                                subscription.endDate
-                            }
-                            val endYear = subscriptionEnd.get(Calendar.YEAR)
-                            val endMonth = subscriptionEnd.get(Calendar.MONTH)
-
-                            if (year > endYear || (year == endYear && month > endMonth)) {
-                                return@forEach
-                            }
-                        }
-
-                        totalAmount += when (subscription.billingFrequency) {
-                            BillingFrequency.MONTHLY -> subscription.price
-                            BillingFrequency.YEARLY -> subscription.price / 12
-                        }
-                    }
-                }
-
-                monthlyData.add(StatisticsViewModel.MonthlySpending(monthName, totalAmount))
-            }
-
-            monthlyData.reverse()
-            monthlySpendingHistory.postValue(monthlyData)
-        } catch (e: Exception) {
-            Log.e(tag, "Error calculating monthly spending history", e)
-            monthlySpendingHistory.postValue(emptyList())
-        }
-    }
-
-    private fun calculateSpendingBySubscriptionTypeInternal() {
-        try {
-            var monthlyTotal = 0.0
-            var yearlyTotal = 0.0
-
-            for (subscription in activeSubscriptions()) {
-                when (subscription.billingFrequency) {
-                    BillingFrequency.MONTHLY -> monthlyTotal += subscription.price
-                    BillingFrequency.YEARLY -> yearlyTotal += subscription.price / 12
-                }
-            }
-
-            val result = listOf(
-                StatisticsViewModel.SubscriptionTypeSpending(
-                    "monthly_spending",
-                    monthlyTotal,
-                    "#4285F4"
-                ),
-                StatisticsViewModel.SubscriptionTypeSpending(
-                    "yearly_type",
-                    yearlyTotal,
-                    "#34A853"
-                )
+            return StatisticsViewModel.UiState(
+                isLoading = false,
+                totalMonthlySpending = totalMonthly,
+                totalYearlySpending = totalYearly,
+                spendingByCategory = spendingByCategory
             )
-
-            subscriptionTypeSpending.postValue(result)
-        } catch (e: Exception) {
-            Log.e(tag, "Error calculating subscription type spending", e)
-            subscriptionTypeSpending.postValue(emptyList())
-        }
-    }
-
-private fun getMonthName(month: Int): String {
-        return try {
-            val calendar = Calendar.getInstance()
-            calendar.set(Calendar.MONTH, month)
-            val dateFormat = SimpleDateFormat("MMM", Locale.getDefault())
-            dateFormat.format(calendar.time)
-        } catch (e: Exception) {
-            Log.e(tag, "Error getting month name", e)
-            context.getString(R.string.month_fallback, month)
         }
     }
 }

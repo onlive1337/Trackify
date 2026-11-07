@@ -5,11 +5,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Payment
@@ -22,7 +22,7 @@ import com.onlive.trackify.utils.DateUtils
 import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.PaymentViewModel
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
-import java.util.*
+import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -30,29 +30,33 @@ fun AddPaymentScreen(
     subscriptionId: Long,
     paymentId: Long,
     onNavigateBack: () -> Unit,
-    paymentViewModel: PaymentViewModel = viewModel(),
-    subscriptionViewModel: SubscriptionViewModel = viewModel()
+    paymentViewModel: PaymentViewModel = viewModel(factory = PaymentViewModel.Factory),
+    subscriptionViewModel: SubscriptionViewModel = viewModel(factory = SubscriptionViewModel.Factory)
 ) {
-    val allSubscriptions by subscriptionViewModel.allSubscriptions.observeAsState(emptyList())
+    val allSubscriptionsState by subscriptionViewModel.allSubscriptions.collectAsStateWithLifecycle()
+    val allSubscriptions = remember(allSubscriptionsState) {
+        allSubscriptionsState.orEmpty().map { it.subscription }
+    }
 
     var selectedSubscriptionId by rememberSaveable { mutableLongStateOf(subscriptionId) }
     var amount by rememberSaveable { mutableStateOf("") }
-    var date by rememberSaveable { mutableStateOf(Date()) }
+    var date by rememberSaveable { mutableStateOf(LocalDate.now()) }
     var notes by rememberSaveable { mutableStateOf("") }
 
-    val existingPayment by paymentViewModel.allPayments.observeAsState(emptyList())
+    val paymentFlow = remember(paymentId, paymentViewModel) {
+        paymentViewModel.getPaymentById(paymentId)
+    }
+    val existingPayment by paymentFlow.collectAsStateWithLifecycle(initialValue = null)
     var hasLoadedExisting by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(existingPayment) {
-        if (paymentId != -1L && existingPayment.isNotEmpty() && !hasLoadedExisting) {
-            val payment = existingPayment.find { it.paymentId == paymentId }
-            payment?.let {
-                selectedSubscriptionId = it.subscriptionId
-                amount = it.amount.toString()
-                date = it.date
-                notes = it.notes ?: ""
-                hasLoadedExisting = true
-            }
+        val payment = existingPayment
+        if (paymentId != -1L && payment != null && !hasLoadedExisting) {
+            selectedSubscriptionId = payment.subscriptionId
+            amount = payment.amount.toString()
+            date = payment.date
+            notes = payment.notes ?: ""
+            hasLoadedExisting = true
         }
     }
 
@@ -60,6 +64,7 @@ fun AddPaymentScreen(
 
     var subError by remember { mutableStateOf(false) }
     var amountError by remember { mutableStateOf(false) }
+    var isSaving by remember { mutableStateOf(false) }
 
     val requiredFieldStr = stringResource(R.string.required_field)
     val invalidAmountStr = stringResource(R.string.invalid_amount)
@@ -157,7 +162,8 @@ fun AddPaymentScreen(
                     subError = !isSubValid
                     amountError = !isAmountValid
 
-                    if (isSubValid && isAmountValid) {
+                    if (isSubValid && isAmountValid && !isSaving) {
+                        isSaving = true
                         val payment = Payment(
                             paymentId = if (paymentId == -1L) 0 else paymentId,
                             subscriptionId = selectedSubscriptionId,
@@ -166,17 +172,27 @@ fun AddPaymentScreen(
                             notes = notes.ifBlank { null }
                         )
                         if (paymentId == -1L) {
-                            paymentViewModel.insert(payment)
+                            paymentViewModel.insert(
+                                payment = payment,
+                                onSuccess = onNavigateBack,
+                                onError = { isSaving = false }
+                            )
                         } else {
-                            paymentViewModel.update(payment)
+                            paymentViewModel.update(
+                                payment = payment,
+                                onSuccess = onNavigateBack,
+                                onError = { isSaving = false }
+                            )
                         }
-                        onNavigateBack()
                     }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(64.dp),
-                shape = MaterialTheme.shapes.extraLarge
+                shapes = ButtonDefaults.shapes(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    pressedShape = ButtonDefaults.largePressedShape
+                )
             ) {
                 Text(
                     text = stringResource(R.string.save),

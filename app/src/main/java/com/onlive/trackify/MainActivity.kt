@@ -5,12 +5,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.core.view.WindowCompat
 import com.onlive.trackify.ui.theme.TrackifyTheme
 import com.onlive.trackify.utils.LocaleHelper
 import com.onlive.trackify.utils.LocaleManager
 import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
+import com.onlive.trackify.utils.ProvideCurrency
 import com.onlive.trackify.utils.ProvideLocaleManager
 import com.onlive.trackify.utils.ThemeManager
 
@@ -30,7 +30,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
-        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         themeManager = ThemeManager(this)
         localeManager = LocaleManager(this)
@@ -48,12 +47,14 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ProvideLocaleManager(localeManager = localeManager) {
-                TrackifyTheme(themeManager = themeManager) {
-                    TrackifyApp(
-                        themeManager = themeManager,
-                        localeManager = localeManager,
-                        initialSubscriptionId = initialSubscriptionId
-                    )
+                ProvideCurrency(context = this) {
+                    TrackifyTheme(themeManager = themeManager) {
+                        TrackifyApp(
+                            themeManager = themeManager,
+                            localeManager = localeManager,
+                            initialSubscriptionId = initialSubscriptionId
+                        )
+                    }
                 }
             }
         }

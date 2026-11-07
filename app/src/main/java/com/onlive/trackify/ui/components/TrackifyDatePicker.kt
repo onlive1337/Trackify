@@ -17,14 +17,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.NavigateNext
-import androidx.compose.material.icons.filled.AllInclusive
-import androidx.compose.material.icons.filled.Apps
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Event
-import androidx.compose.material.icons.filled.Today
+import androidx.compose.material.icons.automirrored.rounded.NavigateNext
+import androidx.compose.material.icons.rounded.AllInclusive
+import androidx.compose.material.icons.rounded.Apps
+import androidx.compose.material.icons.rounded.CalendarMonth
+import androidx.compose.material.icons.rounded.CalendarToday
+import androidx.compose.material.icons.rounded.DateRange
+import androidx.compose.material.icons.rounded.Event
+import androidx.compose.material.icons.rounded.Today
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -59,12 +59,12 @@ import androidx.compose.ui.window.DialogProperties
 import com.onlive.trackify.R
 import com.onlive.trackify.utils.DateUtils
 import com.onlive.trackify.utils.stringResource
-import java.util.Date
+import java.time.LocalDate
 
 data class QuickPickOption(
     val label: String,
     val icon: ImageVector,
-    val dateProvider: () -> Date,
+    val dateProvider: () -> LocalDate?,
     val isSpecial: Boolean = false
 )
 
@@ -72,10 +72,10 @@ data class QuickPickOption(
 @Composable
 fun TrackifyDatePicker(
     modifier: Modifier = Modifier,
-    selectedDate: Date,
-    onDateSelected: (Date) -> Unit,
+    selectedDate: LocalDate,
+    onDateSelected: (LocalDate) -> Unit,
     onDismiss: () -> Unit,
-    allowNull: Boolean = false,
+    onIndefiniteSelected: (() -> Unit)? = null,
 ) {
     val windowHeight = with(LocalDensity.current) {
         LocalWindowInfo.current.containerSize.height.toDp()
@@ -83,7 +83,7 @@ fun TrackifyDatePicker(
     val isLargeScreen = windowHeight >= 650.dp
 
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = selectedDate.time
+        initialSelectedDateMillis = DateUtils.toUtcEpochMillis(selectedDate)
     )
 
     var showCalendar by rememberSaveable { mutableStateOf(true) }
@@ -95,39 +95,40 @@ fun TrackifyDatePicker(
     val yearLabel = stringResource(R.string.one_year_later)
     val indefinitelyLabel = stringResource(R.string.indefinitely)
 
-    val quickPickOptions = remember(allowNull, todayLabel, tomorrowLabel, weekLabel, monthLabel, yearLabel, indefinitelyLabel) {
+    val allowIndefinite = onIndefiniteSelected != null
+    val quickPickOptions = remember(allowIndefinite, todayLabel, tomorrowLabel, weekLabel, monthLabel, yearLabel, indefinitelyLabel) {
         listOf(
             QuickPickOption(
                 label = todayLabel,
-                icon = Icons.Default.Today,
-                dateProvider = { Date() }
+                icon = Icons.Rounded.Today,
+                dateProvider = { LocalDate.now() }
             ),
             QuickPickOption(
                 label = tomorrowLabel,
-                icon = Icons.AutoMirrored.Filled.NavigateNext,
-                dateProvider = { DateUtils.getDateAfterDays(1) }
+                icon = Icons.AutoMirrored.Rounded.NavigateNext,
+                dateProvider = { LocalDate.now().plusDays(1) }
             ),
             QuickPickOption(
                 label = weekLabel,
-                icon = Icons.Default.DateRange,
-                dateProvider = { DateUtils.getDateAfterDays(7) }
+                icon = Icons.Rounded.DateRange,
+                dateProvider = { LocalDate.now().plusDays(7) }
             ),
             QuickPickOption(
                 label = monthLabel,
-                icon = Icons.Default.CalendarMonth,
-                dateProvider = { DateUtils.getDateAfterMonths(1) }
+                icon = Icons.Rounded.CalendarMonth,
+                dateProvider = { LocalDate.now().plusMonths(1) }
             ),
             QuickPickOption(
                 label = yearLabel,
-                icon = Icons.Default.Event,
-                dateProvider = { DateUtils.getDateAfterYears(1) }
+                icon = Icons.Rounded.Event,
+                dateProvider = { LocalDate.now().plusYears(1) }
             )
         ).let { baseOptions ->
-            if (allowNull) {
+            if (allowIndefinite) {
                 baseOptions + QuickPickOption(
                     label = indefinitelyLabel,
-                    icon = Icons.Default.AllInclusive,
-                    dateProvider = { Date(Long.MAX_VALUE) },
+                    icon = Icons.Rounded.AllInclusive,
+                    dateProvider = { null },
                     isSpecial = true
                 )
             } else {
@@ -180,7 +181,7 @@ fun TrackifyDatePicker(
                             onClick = { showCalendar = true },
                             label = {
                                 Icon(
-                                    imageVector = Icons.Default.CalendarToday,
+                                    imageVector = Icons.Rounded.CalendarToday,
                                     contentDescription = stringResource(R.string.calendar_view),
                                     modifier = Modifier.size(18.dp)
                                 )
@@ -197,7 +198,7 @@ fun TrackifyDatePicker(
                             onClick = { showCalendar = false },
                             label = {
                                 Icon(
-                                    imageVector = Icons.Default.Apps,
+                                    imageVector = Icons.Rounded.Apps,
                                     contentDescription = stringResource(R.string.quick_pick_view),
                                     modifier = Modifier.size(18.dp)
                                 )
@@ -250,7 +251,12 @@ fun TrackifyDatePicker(
                     QuickPickSection(
                         options = quickPickOptions,
                         onOptionSelected = { option ->
-                            onDateSelected(option.dateProvider())
+                            val pickedDate = option.dateProvider()
+                            if (pickedDate != null) {
+                                onDateSelected(pickedDate)
+                            } else {
+                                onIndefiniteSelected?.invoke()
+                            }
                             onDismiss()
                         },
                         isLargeScreen = isLargeScreen,
@@ -271,6 +277,7 @@ fun TrackifyDatePicker(
                 ) {
                     TextButton(
                         onClick = onDismiss,
+                        shapes = ButtonDefaults.shapes(),
                         colors = ButtonDefaults.textButtonColors(
                             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -287,12 +294,15 @@ fun TrackifyDatePicker(
                         onClick = {
                             if (showCalendar) {
                                 datePickerState.selectedDateMillis?.let {
-                                    onDateSelected(Date(it))
+                                    onDateSelected(DateUtils.fromUtcEpochMillis(it))
                                 }
                             }
                             onDismiss()
                         },
-                        shape = MaterialTheme.shapes.medium,
+                        shapes = ButtonDefaults.shapes(
+                            shape = MaterialTheme.shapes.medium,
+                            pressedShape = ButtonDefaults.pressedShape
+                        ),
                         enabled = if (showCalendar) datePickerState.selectedDateMillis != null else true
                     ) {
                         Text(

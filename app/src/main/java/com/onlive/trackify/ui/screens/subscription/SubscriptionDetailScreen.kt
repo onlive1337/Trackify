@@ -1,9 +1,6 @@
 package com.onlive.trackify.ui.screens.subscription
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,31 +9,24 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonGroupDefaults
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.ExposedDropdownMenu
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.ToggleButton
@@ -44,73 +34,72 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.toColorInt
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.BillingFrequency
-import com.onlive.trackify.data.model.Category
-import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.data.model.Subscription
 import com.onlive.trackify.ui.components.FormFieldLabel
 import com.onlive.trackify.ui.components.FormPickerField
 import com.onlive.trackify.ui.components.TrackifyDatePicker
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
+import com.onlive.trackify.ui.components.connectedLeadingToggleShapes
+import com.onlive.trackify.ui.components.connectedTrailingToggleShapes
 import com.onlive.trackify.ui.components.formFieldColors
-import com.onlive.trackify.utils.CurrencyFormatter
 import com.onlive.trackify.utils.DateUtils
-import com.onlive.trackify.utils.PaymentScheduleCalculator
 import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.CategoryViewModel
 import com.onlive.trackify.viewmodel.PaymentViewModel
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
-import java.util.Date
+import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SubscriptionDetailScreen(
     subscriptionId: Long,
     onNavigateBack: () -> Unit,
-    subscriptionViewModel: SubscriptionViewModel = viewModel(),
-    categoryViewModel: CategoryViewModel = viewModel(),
-    paymentViewModel: PaymentViewModel = viewModel()
+    subscriptionViewModel: SubscriptionViewModel = viewModel(factory = SubscriptionViewModel.Factory),
+    categoryViewModel: CategoryViewModel = viewModel(factory = CategoryViewModel.Factory),
+    paymentViewModel: PaymentViewModel = viewModel(factory = PaymentViewModel.Factory)
 ) {
-    val allCategories by categoryViewModel.allCategories.observeAsState(emptyList())
-    val subscriptionState = subscriptionViewModel.getSubscriptionById(subscriptionId).observeAsState()
-    val allPayments by paymentViewModel.getPaymentsBySubscription(subscriptionId).observeAsState(emptyList())
+    val allCategories by categoryViewModel.allCategories.collectAsStateWithLifecycle()
+    val subscriptionFlow = remember(subscriptionId, subscriptionViewModel) {
+        subscriptionViewModel.getSubscriptionById(subscriptionId)
+    }
+    val subscriptionState = subscriptionFlow.collectAsStateWithLifecycle(initialValue = null)
+    val paymentsFlow = remember(subscriptionId, paymentViewModel) {
+        paymentViewModel.getPaymentsBySubscription(subscriptionId)
+    }
+    val allPayments by paymentsFlow.collectAsStateWithLifecycle(initialValue = emptyList())
 
     var name by rememberSaveable { mutableStateOf("") }
     var price by rememberSaveable { mutableStateOf("") }
     var description by rememberSaveable { mutableStateOf("") }
     var billingFrequency by rememberSaveable { mutableStateOf(BillingFrequency.MONTHLY) }
-    var startDate by rememberSaveable { mutableStateOf(Date()) }
-    var endDate by rememberSaveable { mutableStateOf<Date?>(null) }
+    var startDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
+    var endDate by rememberSaveable { mutableStateOf<LocalDate?>(null) }
     var categoryId by rememberSaveable { mutableStateOf<Long?>(null) }
 
     var hasLoadedExisting by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(subscriptionState.value) {
-        if (subscriptionId != -1L && subscriptionState.value != null && !hasLoadedExisting) {
-            val sub = subscriptionState.value!!
-            name = sub.name
-            price = sub.price.toString()
-            description = sub.description ?: ""
-            billingFrequency = sub.billingFrequency
-            startDate = sub.startDate
-            endDate = sub.endDate
-            categoryId = sub.categoryId
+        val loaded = subscriptionState.value?.subscription
+        if (subscriptionId != -1L && loaded != null && !hasLoadedExisting) {
+            name = loaded.name
+            price = loaded.price.toString()
+            description = loaded.description ?: ""
+            billingFrequency = loaded.billingFrequency
+            startDate = loaded.startDate
+            endDate = loaded.endDate
+            categoryId = loaded.categoryId
             hasLoadedExisting = true
         }
     }
@@ -122,6 +111,7 @@ fun SubscriptionDetailScreen(
     var nameError by remember { mutableStateOf(false) }
     var priceError by remember { mutableStateOf(false) }
     var dateError by remember { mutableStateOf(false) }
+    var isSaving by remember { mutableStateOf(false) }
 
     val requiredFieldStr = stringResource(R.string.required_field)
     val invalidPriceStr = stringResource(R.string.invalid_price)
@@ -139,9 +129,12 @@ fun SubscriptionDetailScreen(
                 scrollBehavior = scrollBehavior,
                 actions = {
                     if (subscriptionId != -1L) {
-                        IconButton(onClick = { showDeleteDialog.value = true }) {
+                        IconButton(
+                            onClick = { showDeleteDialog.value = true },
+                            shapes = IconButtonDefaults.shapes()
+                        ) {
                             Icon(
-                                imageVector = Icons.Default.Delete,
+                                imageVector = Icons.Rounded.Delete,
                                 contentDescription = stringResource(R.string.delete),
                                 tint = MaterialTheme.colorScheme.error
                             )
@@ -200,8 +193,8 @@ fun SubscriptionDetailScreen(
                 supportingText = if (priceError) {
                     { Text(invalidPriceStr) }
                 } else null,
-                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                    keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Decimal
                 ),
                 shape = MaterialTheme.shapes.medium,
                 colors = formFieldColors()
@@ -217,7 +210,7 @@ fun SubscriptionDetailScreen(
                 ToggleButton(
                     checked = billingFrequency == BillingFrequency.MONTHLY,
                     onCheckedChange = { billingFrequency = BillingFrequency.MONTHLY },
-                    shapes = ButtonGroupDefaults.connectedLeadingButtonShapes(),
+                    shapes = connectedLeadingToggleShapes(),
                     modifier = Modifier.weight(1f).height(56.dp)
                 ) {
                     Text(
@@ -228,7 +221,7 @@ fun SubscriptionDetailScreen(
                 ToggleButton(
                     checked = billingFrequency == BillingFrequency.YEARLY,
                     onCheckedChange = { billingFrequency = BillingFrequency.YEARLY },
-                    shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
+                    shapes = connectedTrailingToggleShapes(),
                     modifier = Modifier.weight(1f).height(56.dp)
                 ) {
                     Text(
@@ -296,13 +289,14 @@ fun SubscriptionDetailScreen(
                     val priceValue = price.toDoubleOrNull() ?: 0.0
                     val isNameValid = name.isNotBlank()
                     val isPriceValid = priceValue > 0
-                    val isEndDateValid = endDate == null || !PaymentScheduleCalculator.normalizeToStartOfDay(endDate!!).before(PaymentScheduleCalculator.normalizeToStartOfDay(startDate))
+                    val isEndDateValid = endDate?.let { !it.isBefore(startDate) } ?: true
 
                     nameError = !isNameValid
                     priceError = !isPriceValid
                     dateError = !isEndDateValid
 
-                    if (isNameValid && isPriceValid && isEndDateValid) {
+                    if (isNameValid && isPriceValid && isEndDateValid && !isSaving) {
+                        isSaving = true
                         val sub = Subscription(
                             subscriptionId = if (subscriptionId == -1L) 0 else subscriptionId,
                             name = name.trim(),
@@ -311,20 +305,31 @@ fun SubscriptionDetailScreen(
                             billingFrequency = billingFrequency,
                             startDate = startDate,
                             endDate = endDate,
-                            categoryId = categoryId
+                            categoryId = categoryId,
+                            image = subscriptionState.value?.subscription?.image
                         )
                         if (subscriptionId == -1L) {
-                            subscriptionViewModel.insert(sub)
+                            subscriptionViewModel.insert(
+                                subscription = sub,
+                                onSuccess = onNavigateBack,
+                                onError = { isSaving = false }
+                            )
                         } else {
-                            subscriptionViewModel.update(sub)
+                            subscriptionViewModel.update(
+                                subscription = sub,
+                                onSuccess = onNavigateBack,
+                                onError = { isSaving = false }
+                            )
                         }
-                        onNavigateBack()
                     }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(64.dp),
-                shape = MaterialTheme.shapes.extraLarge
+                shapes = ButtonDefaults.shapes(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    pressedShape = ButtonDefaults.largePressedShape
+                )
             ) {
                 Text(
                     text = stringResource(R.string.save),
@@ -347,10 +352,10 @@ fun SubscriptionDetailScreen(
     if (showStartDatePicker.value) {
         TrackifyDatePicker(
             selectedDate = startDate,
-            onDateSelected = {
-                startDate = it
-                if (endDate != null) {
-                    dateError = PaymentScheduleCalculator.normalizeToStartOfDay(endDate!!).before(PaymentScheduleCalculator.normalizeToStartOfDay(it))
+            onDateSelected = { pickedDate ->
+                startDate = pickedDate
+                endDate?.let { currentEnd ->
+                    dateError = currentEnd.isBefore(pickedDate)
                 }
             },
             onDismiss = { showStartDatePicker.value = false }
@@ -359,18 +364,16 @@ fun SubscriptionDetailScreen(
 
     if (showEndDatePicker.value) {
         TrackifyDatePicker(
-            selectedDate = endDate ?: Date(),
-            onDateSelected = {
-                val selected = if (it.time == Long.MAX_VALUE) null else it
-                endDate = selected
-                if (selected != null) {
-                    dateError = PaymentScheduleCalculator.normalizeToStartOfDay(selected).before(PaymentScheduleCalculator.normalizeToStartOfDay(startDate))
-                } else {
-                    dateError = false
-                }
+            selectedDate = endDate ?: LocalDate.now(),
+            onDateSelected = { pickedDate ->
+                endDate = pickedDate
+                dateError = pickedDate.isBefore(startDate)
             },
-            onDismiss = { showEndDatePicker.value = false },
-            allowNull = true
+            onIndefiniteSelected = {
+                endDate = null
+                dateError = false
+            },
+            onDismiss = { showEndDatePicker.value = false }
         )
     }
 
@@ -382,10 +385,18 @@ fun SubscriptionDetailScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        subscriptionState.value?.let { subscriptionViewModel.delete(it) }
+                        val current = subscriptionState.value?.subscription
                         showDeleteDialog.value = false
-                        onNavigateBack()
+                        if (!isSaving && current != null) {
+                            isSaving = true
+                            subscriptionViewModel.delete(
+                                subscription = current,
+                                onSuccess = onNavigateBack,
+                                onError = { isSaving = false }
+                            )
+                        }
                     },
+                    shapes = ButtonDefaults.shapes(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error
                     )
@@ -394,152 +405,13 @@ fun SubscriptionDetailScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog.value = false }) {
+                TextButton(
+                    onClick = { showDeleteDialog.value = false },
+                    shapes = ButtonDefaults.shapes()
+                ) {
                     Text(stringResource(R.string.cancel))
                 }
             }
         )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CategorySelector(
-    categories: List<Category>,
-    selectedCategoryId: Long?,
-    onCategorySelected: (Long?) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-    val selectedCategory = categories.find { it.categoryId == selectedCategoryId }
-
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = it }
-    ) {
-        OutlinedTextField(
-            value = selectedCategory?.name ?: stringResource(R.string.without_category),
-            onValueChange = {},
-            readOnly = true,
-            singleLine = true,
-            label = { Text(stringResource(R.string.subscription_category)) },
-            leadingIcon = {
-                Box(
-                    modifier = Modifier
-                        .size(20.dp)
-                        .clip(CircleShape)
-                        .background(
-                            selectedCategory?.colorCode?.let {
-                                try { Color(it.toColorInt()) } catch (_: Exception) { Color.Gray }
-                            } ?: MaterialTheme.colorScheme.outline
-                        )
-                )
-            },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
-            shape = MaterialTheme.shapes.medium,
-            colors = formFieldColors()
-        )
-
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer)
-        ) {
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.without_category)) },
-                onClick = {
-                    onCategorySelected(null)
-                    expanded = false
-                }
-            )
-            categories.forEach { category ->
-                DropdownMenuItem(
-                    text = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(16.dp)
-                                    .clip(CircleShape)
-                                    .background(
-                                        try { Color(category.colorCode.toColorInt()) } catch (_: Exception) { Color.Gray }
-                                    )
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(category.name)
-                        }
-                    },
-                    onClick = {
-                        onCategorySelected(category.categoryId)
-                        expanded = false
-                    }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun PaymentHistorySection(payments: List<Payment>) {
-    Text(
-        text = stringResource(R.string.payment_history),
-        style = MaterialTheme.typography.titleMediumEmphasized,
-        modifier = Modifier.padding(bottom = 12.dp, start = 4.dp)
-    )
-
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        payments.sortedByDescending { it.date }.take(5).forEach { payment ->
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.medium,
-                color = MaterialTheme.colorScheme.surfaceContainerLow
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = DateUtils.formatDate(payment.date),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Text(
-                        text = CurrencyFormatter.formatAmount(LocalContext.current, payment.amount),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun NoPaymentsSection() {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
-    ) {
-        Column(
-            modifier = Modifier.padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                Icons.Default.History,
-                contentDescription = null,
-                modifier = Modifier.size(40.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = stringResource(R.string.no_payments_for_subscription),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
     }
 }

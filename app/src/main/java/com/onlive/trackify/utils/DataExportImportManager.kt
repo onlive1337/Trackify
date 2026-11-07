@@ -1,91 +1,122 @@
 package com.onlive.trackify.utils
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.util.Log
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
+import androidx.core.content.ContextCompat
 import com.onlive.trackify.data.database.AppDatabase
+import com.onlive.trackify.data.model.BillingFrequency
 import com.onlive.trackify.data.model.Category
 import com.onlive.trackify.data.model.Payment
 import com.onlive.trackify.data.model.Subscription
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import com.onlive.trackify.data.model.SubscriptionSortOption
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.time.Instant
+import java.time.LocalDate
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
 class DataExportImportManager(private val context: Context) {
     private val tag = "DataExportImportManager"
     private val database = AppDatabase.getDatabase(context)
-    private val gson: Gson = GsonBuilder()
-        .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-        .serializeNulls()
-        .create()
-
     private val preferenceManager = PreferenceManager(context)
-    private val themeManager = ThemeManager(context)
 
-    data class UserPreferences(
-        val notificationsEnabled: Boolean = true,
+    @Serializable
+    data class UserPreferencesBackupDto(
+        val notificationsEnabled: Boolean = false,
         val reminderDays: Set<Int> = setOf(0, 1, 3),
         val notificationHour: Int = 9,
         val notificationMinute: Int = 0,
-        val currencyCode: String = "RUB",
+        val currencyCode: String = "USD",
         val languageCode: String = "",
-        val themeMode: Int = 0,
+        val themeMode: Int = ThemeManager.MODE_DARK,
         val dynamicColorEnabled: Boolean = true,
+        val subscriptionSort: String? = null,
     )
 
-    data class ExportData(
-        val subscriptions: List<Subscription>? = null,
-        val payments: List<Payment>? = null,
-        val categories: List<Category>? = null,
-        val userPreferences: UserPreferences? = null,
+    @Serializable
+    data class CategoryBackupDto(
+        val categoryId: Long,
+        val name: String,
+        val description: String? = null,
+        val colorCode: String,
+    )
+
+    @Serializable
+    data class SubscriptionBackupDto(
+        val subscriptionId: Long,
+        val name: String,
+        val description: String? = null,
+        val price: Double,
+        val billingFrequency: String,
+        val startDate: String,
+        val endDate: String? = null,
+        val categoryId: Long? = null,
+        val image: String? = null,
+    )
+
+    @Serializable
+    data class PaymentBackupDto(
+        val paymentId: Long,
+        val subscriptionId: Long,
+        val amount: Double,
+        val date: String,
+        val notes: String? = null,
+    )
+
+    @Serializable
+    data class BackupPayload(
+        val backupVersion: Int = CURRENT_BACKUP_VERSION,
         val exportDate: String = "",
+        val categories: List<CategoryBackupDto>? = null,
+        val subscriptions: List<SubscriptionBackupDto>? = null,
+        val payments: List<PaymentBackupDto>? = null,
+        val userPreferences: UserPreferencesBackupDto? = null,
+    )
+
+    data class ValidatedBackup(
+        val categories: List<Category>,
+        val subscriptions: List<Subscription>,
+        val payments: List<Payment>,
+        val userPreferences: UserPreferencesBackupDto,
     )
 
     suspend fun exportData(uri: Uri): Boolean = withContext(Dispatchers.IO) {
         try {
-            Log.d(tag, "Starting data export using Scoped Storage")
+            val subscriptions = database.subscriptionDao().getAllSnapshot()
+            val payments = database.paymentDao().getAllSnapshot()
+            val categories = database.categoryDao().getAllSnapshot()
 
-            val subscriptions = database.subscriptionDao().getAllSubscriptionsSync()
-            val payments = database.paymentDao().getAllPaymentsSync()
-            val categories = database.categoryDao().getAllCategoriesSync()
-
-            Log.d(tag, "Fetched data: ${subscriptions.size} subscriptions, ${payments.size} payments, ${categories.size} categories")
-
-            val userPreferences = UserPreferences(
+            val userPreferences = UserPreferencesBackupDto(
                 notificationsEnabled = preferenceManager.areNotificationsEnabled(),
                 reminderDays = preferenceManager.getReminderDays(),
                 notificationHour = preferenceManager.getNotificationTime().first,
                 notificationMinute = preferenceManager.getNotificationTime().second,
                 currencyCode = preferenceManager.getCurrencyCode(),
                 languageCode = preferenceManager.getLanguageCode(),
-                themeMode = themeManager.getThemeMode(),
-                dynamicColorEnabled = themeManager.isDynamicColorEnabled(),
+                themeMode = preferenceManager.getThemeMode(),
+                dynamicColorEnabled = preferenceManager.isDynamicColorEnabled(),
+                subscriptionSort = preferenceManager.getSubscriptionSortOption().name,
             )
 
-            val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
-            val currentDateStr = dateFormat.format(Date())
-
-            val exportData = ExportData(
+            val jsonData = encodeBackup(
+                categories = categories,
                 subscriptions = subscriptions,
                 payments = payments,
-                categories = categories,
                 userPreferences = userPreferences,
-                exportDate = currentDateStr
+                exportedAt = Instant.now()
             )
 
-            val jsonData = gson.toJson(exportData)
-            Log.d(tag, "JSON data generated, length: ${jsonData.length}")
-
             context.contentResolver.openOutputStream(uri)?.use { outputStream ->
-                BufferedWriter(OutputStreamWriter(outputStream, "UTF-8")).use { writer ->
+                BufferedWriter(OutputStreamWriter(outputStream, Charsets.UTF_8)).use { writer ->
                     writer.write(jsonData)
                     writer.flush()
                 }
@@ -101,87 +132,67 @@ class DataExportImportManager(private val context: Context) {
 
     suspend fun importData(uri: Uri): Boolean = withContext(Dispatchers.IO) {
         try {
-            Log.d(tag, "Starting data import from ${uri.path} using Scoped Storage")
-
             val jsonData = context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                BufferedReader(InputStreamReader(inputStream, "UTF-8")).use { reader ->
+                BufferedReader(InputStreamReader(inputStream, Charsets.UTF_8)).use { reader ->
                     reader.readText()
                 }
             } ?: return@withContext false
 
-            Log.d(tag, "Read JSON data, length: ${jsonData.length}")
-
-            val importedData = try {
-                gson.fromJson(jsonData, ExportData::class.java)
-            } catch (e: Exception) {
-                Log.e(tag, "Error parsing JSON data", e)
+            val validated = decodeAndValidateBackup(jsonData) ?: run {
+                Log.e(tag, "Invalid backup payload")
                 return@withContext false
             }
-
-            val subscriptions = importedData?.subscriptions
-            val payments = importedData?.payments
-            val categories = importedData?.categories
-            if (importedData == null || subscriptions == null || payments == null || categories == null) {
-                Log.e(tag, "Invalid backup: missing subscriptions/payments/categories section")
-                return@withContext false
-            }
-            val userPreferences = importedData.userPreferences ?: UserPreferences()
-
-            val subscriptionIds = subscriptions.map { it.subscriptionId }.toSet()
-            val categoryIds = categories.map { it.categoryId }.toSet()
-            val orphanPayment = payments.firstOrNull { it.subscriptionId !in subscriptionIds }
-            if (orphanPayment != null) {
-                Log.e(tag, "Invalid backup: payment references missing subscription ${orphanPayment.subscriptionId}")
-                return@withContext false
-            }
-            val orphanSubscription = subscriptions.firstOrNull {
-                it.categoryId != null && it.categoryId !in categoryIds
-            }
-            if (orphanSubscription != null) {
-                Log.e(tag, "Invalid backup: subscription references missing category ${orphanSubscription.categoryId}")
-                return@withContext false
-            }
-
-            Log.d(tag, "Parsed data: ${subscriptions.size} subscriptions, ${payments.size} payments, ${categories.size} categories")
 
             try {
                 database.runInTransaction {
-                    Log.d(tag, "Clearing database before import")
-                    database.paymentDao().deleteAllSync()
-                    database.subscriptionDao().deleteAllSync()
-                    database.categoryDao().deleteAllSync()
+                    database.paymentDao().deleteAll()
+                    database.subscriptionDao().deleteAll()
+                    database.categoryDao().deleteAll()
 
-                    Log.d(tag, "Importing categories")
-                    for (category in categories) {
-                        database.categoryDao().insertSync(category)
-                    }
-
-                    Log.d(tag, "Importing subscriptions")
-                    for (subscription in subscriptions) {
-                        database.subscriptionDao().insertSync(subscription)
-                    }
-
-                    Log.d(tag, "Importing payments")
-                    for (payment in payments) {
-                        database.paymentDao().insertSync(payment)
-                    }
+                    database.categoryDao().insertAll(validated.categories)
+                    database.subscriptionDao().insertAll(validated.subscriptions)
+                    database.paymentDao().insertAll(validated.payments)
                 }
-                Log.d(tag, "Database transaction completed successfully")
             } catch (e: Exception) {
                 Log.e(tag, "Error during database transaction, rolling back", e)
                 return@withContext false
             }
 
             try {
-                Log.d(tag, "Restoring user preferences")
-                preferenceManager.setNotificationsEnabled(userPreferences.notificationsEnabled)
-                preferenceManager.setReminderDays(userPreferences.reminderDays)
-                preferenceManager.setNotificationTime(userPreferences.notificationHour, userPreferences.notificationMinute)
-                preferenceManager.setCurrencyCode(userPreferences.currencyCode)
-                preferenceManager.setLanguageCode(userPreferences.languageCode)
+                val prefs = validated.userPreferences
+                val hasNotificationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ) == PackageManager.PERMISSION_GRANTED
+                } else {
+                    true
+                }
+                val effectiveNotificationsEnabled = prefs.notificationsEnabled && hasNotificationPermission
 
-                themeManager.setThemeMode(userPreferences.themeMode)
-                themeManager.setDynamicColorEnabled(userPreferences.dynamicColorEnabled)
+                preferenceManager.setNotificationsEnabled(effectiveNotificationsEnabled)
+                preferenceManager.setReminderDays(prefs.reminderDays)
+                preferenceManager.setNotificationTime(
+                    prefs.notificationHour.coerceIn(0, 23),
+                    prefs.notificationMinute.coerceIn(0, 59)
+                )
+                preferenceManager.setCurrencyCode(prefs.currencyCode)
+                if (prefs.languageCode.isNotBlank()) {
+                    preferenceManager.setLanguageCode(prefs.languageCode)
+                }
+                prefs.subscriptionSort?.let {
+                    preferenceManager.setSubscriptionSortOption(SubscriptionSortOption.fromName(it))
+                }
+
+                preferenceManager.setThemeMode(prefs.themeMode)
+                preferenceManager.setDynamicColorEnabled(prefs.dynamicColorEnabled)
+
+                val scheduler = NotificationScheduler(context)
+                if (effectiveNotificationsEnabled) {
+                    scheduler.scheduleNotifications()
+                } else {
+                    scheduler.cancelNotifications()
+                }
             } catch (e: Exception) {
                 Log.e(tag, "Error restoring user preferences", e)
             }
@@ -191,6 +202,141 @@ class DataExportImportManager(private val context: Context) {
         } catch (e: Exception) {
             Log.e(tag, "Error importing data", e)
             return@withContext false
+        }
+    }
+
+    companion object {
+        const val CURRENT_BACKUP_VERSION = 1
+
+        private val json = Json {
+            prettyPrint = true
+            ignoreUnknownKeys = true
+            encodeDefaults = true
+            explicitNulls = false
+        }
+
+        fun encodeBackup(
+            categories: List<Category>,
+            subscriptions: List<Subscription>,
+            payments: List<Payment>,
+            userPreferences: UserPreferencesBackupDto,
+            exportedAt: Instant = Instant.now(),
+        ): String {
+            val payload = BackupPayload(
+                backupVersion = CURRENT_BACKUP_VERSION,
+                exportDate = exportedAt.toString(),
+                categories = categories.map { category ->
+                    CategoryBackupDto(
+                        categoryId = category.categoryId,
+                        name = category.name,
+                        description = category.description,
+                        colorCode = category.colorCode,
+                    )
+                },
+                subscriptions = subscriptions.map { subscription ->
+                    SubscriptionBackupDto(
+                        subscriptionId = subscription.subscriptionId,
+                        name = subscription.name,
+                        description = subscription.description,
+                        price = subscription.price,
+                        billingFrequency = subscription.billingFrequency.name,
+                        startDate = subscription.startDate.toString(),
+                        endDate = subscription.endDate?.toString(),
+                        categoryId = subscription.categoryId,
+                        image = subscription.image,
+                    )
+                },
+                payments = payments.map { payment ->
+                    PaymentBackupDto(
+                        paymentId = payment.paymentId,
+                        subscriptionId = payment.subscriptionId,
+                        amount = payment.amount,
+                        date = payment.date.toString(),
+                        notes = payment.notes,
+                    )
+                },
+                userPreferences = userPreferences,
+            )
+            return json.encodeToString(BackupPayload.serializer(), payload)
+        }
+
+        fun decodeAndValidateBackup(jsonData: String): ValidatedBackup? {
+            val payload = runCatching {
+                json.decodeFromString(BackupPayload.serializer(), jsonData)
+            }.getOrNull() ?: return null
+
+            if (payload.backupVersion !in 1..CURRENT_BACKUP_VERSION) return null
+
+            val categoryDtos = payload.categories ?: return null
+            val subscriptionDtos = payload.subscriptions ?: return null
+            val paymentDtos = payload.payments ?: return null
+
+            val categories = categoryDtos.map { dto ->
+                if (dto.name.isBlank() || dto.colorCode.isBlank()) return null
+                Category(
+                    categoryId = dto.categoryId,
+                    name = dto.name,
+                    description = dto.description,
+                    colorCode = dto.colorCode,
+                )
+            }
+            val categoryIds = categories.map { it.categoryId }.toSet()
+            if (categoryIds.size != categories.size) return null
+
+            val subscriptions = subscriptionDtos.map { dto ->
+                if (dto.name.isBlank() || !dto.price.isFinite() || dto.price <= 0.0) return null
+                val frequency = runCatching {
+                    BillingFrequency.valueOf(dto.billingFrequency)
+                }.getOrNull() ?: return null
+                val startDate = parseBackupDate(dto.startDate) ?: return null
+                val endDate = dto.endDate?.let { parseBackupDate(it) ?: return null }
+                if (endDate != null && endDate.isBefore(startDate)) return null
+                if (dto.categoryId != null && dto.categoryId !in categoryIds) return null
+
+                Subscription(
+                    subscriptionId = dto.subscriptionId,
+                    name = dto.name,
+                    description = dto.description,
+                    price = dto.price,
+                    billingFrequency = frequency,
+                    startDate = startDate,
+                    endDate = endDate,
+                    categoryId = dto.categoryId,
+                    image = dto.image,
+                )
+            }
+            val subscriptionIds = subscriptions.map { it.subscriptionId }.toSet()
+            if (subscriptionIds.size != subscriptions.size) return null
+
+            val payments = paymentDtos.map { dto ->
+                if (!dto.amount.isFinite() || dto.amount <= 0.0) return null
+                if (dto.subscriptionId !in subscriptionIds) return null
+                val paymentDate = parseBackupDate(dto.date) ?: return null
+
+                Payment(
+                    paymentId = dto.paymentId,
+                    subscriptionId = dto.subscriptionId,
+                    amount = dto.amount,
+                    date = paymentDate,
+                    notes = dto.notes,
+                )
+            }
+            val paymentIds = payments.map { it.paymentId }.toSet()
+            if (paymentIds.size != payments.size) return null
+
+            return ValidatedBackup(
+                categories = categories,
+                subscriptions = subscriptions,
+                payments = payments,
+                userPreferences = payload.userPreferences ?: UserPreferencesBackupDto(),
+            )
+        }
+
+        internal fun parseBackupDate(raw: String): LocalDate? {
+            val trimmed = raw.trim()
+            if (trimmed.isEmpty()) return null
+            return runCatching { LocalDate.parse(trimmed) }.getOrNull()
+                ?: runCatching { LocalDate.parse(trimmed.take(10)) }.getOrNull()
         }
     }
 }

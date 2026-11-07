@@ -15,6 +15,9 @@
     <string name="error_creating_subscription">Ошибка при создании подписки</string>
     <string name="error_updating_subscription">Ошибка при обновлении подписки</string>
     <string name="error_deleting_subscription">Ошибка при удалении подписки</string>
+    <string name="error_creating_category">Ошибка при создании категории</string>
+    <string name="error_updating_category">Ошибка при обновлении категории</string>
+    <string name="error_deleting_category">Ошибка при удалении категории</string>
 
     <string name="save">Сохранить</string>
     <string name="cancel">Отмена</string>
@@ -129,7 +132,6 @@
     <string name="in_a_month">Через месяц</string>
     <string name="one_year_later">Через год</string>
     <string name="unknown_error">Произошла неизвестная ошибка</string>
-    <string name="import_restart_message">Для применения всех изменений рекомендуется перезапустить приложение.</string>
 
     <string name="per_year">в год</string>
 
@@ -168,8 +170,6 @@
     <string name="import_error">Ошибка при импорте данных</string>
     <string name="select_subscription">Выберите подписку</string>
 
-    <string name="month_fallback">Месяц %d</string>
-
     <string name="no_internet_connection">Нет подключения к интернету</string>
     <string name="connection_timeout">Превышено время ожидания</string>
     <string name="database_constraint_error">Ошибка базы данных</string>
@@ -202,6 +202,7 @@
     <string name="required_field">Обязательное поле</string>
     <string name="invalid_price">Неверная цена</string>
     <string name="export_success_title">Резервная копия создана</string>
+    <string name="import_success_title">Резервная копия восстановлена</string>
 
     <!-- Battery optimization / reliable delivery -->
     <string name="battery_optimization_title">Надёжная доставка</string>
@@ -242,5 +243,25 @@
     <string name="currency_aud">Австралийский доллар</string>
     <string name="currency_chf">Швейцарский франк</string>
     <string name="currency_uzs">Узбекский сум</string>
+
+    <!-- Home sorting, filtering, and payment due badges -->
+    <string name="sort_subscriptions">Сортировка подписок</string>
+    <string name="sort_nearest_payment">По ближайшей оплате</string>
+    <string name="sort_name">По названию</string>
+    <string name="sort_price_high_to_low">Сначала дорогие</string>
+    <string name="sort_price_low_to_high">Сначала дешёвые</string>
+    <string name="clear_search">Очистить поиск</string>
+    <string name="all_categories">Все</string>
+    <string name="payment_due_today">Оплата сегодня</string>
+    <string name="payment_due_tomorrow">Оплата завтра</string>
+    <plurals name="payment_due_in_days">
+        <item quantity="one">Через %1$d день</item>
+        <item quantity="few">Через %1$d дня</item>
+        <item quantity="many">Через %1$d дней</item>
+        <item quantity="other">Через %1$d дней</item>
+    </plurals>
+    <string name="next_payment_on">След.: %1$s</string>
+    <string name="subscription_ends_on">До %1$s</string>
+    <string name="subscription_expired">Истекла</string>
 
 </resources>

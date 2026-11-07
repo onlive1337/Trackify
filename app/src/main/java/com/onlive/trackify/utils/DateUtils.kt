@@ -1,30 +1,38 @@
 package com.onlive.trackify.utils
 
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 object DateUtils {
-    fun formatDate(date: Date): String {
-        val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-        return dateFormat.format(date)
+    private val FULL_DATE_FORMATTER: DateTimeFormatter =
+        DateTimeFormatter.ofPattern("dd.MM.yyyy", Locale.ROOT)
+
+    fun formatDate(date: LocalDate): String {
+        return date.format(FULL_DATE_FORMATTER)
     }
 
-    fun getDateAfterDays(days: Int): Date {
-        val calendar = java.util.Calendar.getInstance()
-        calendar.add(java.util.Calendar.DAY_OF_YEAR, days)
-        return calendar.time
+    fun formatShortDate(
+        date: LocalDate,
+        referenceDate: LocalDate = LocalDate.now(),
+        locale: Locale = Locale.getDefault()
+    ): String {
+        val sameYear = date.year == referenceDate.year
+        val pattern = when {
+            !sameYear -> "dd.MM.yyyy"
+            locale.language == "ru" -> "d MMM"
+            else -> "MMM d"
+        }
+        return date.format(DateTimeFormatter.ofPattern(pattern, locale))
     }
 
-    fun getDateAfterMonths(months: Int): Date {
-        val calendar = java.util.Calendar.getInstance()
-        calendar.add(java.util.Calendar.MONTH, months)
-        return calendar.time
+    fun toUtcEpochMillis(date: LocalDate): Long {
+        return date.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
     }
 
-    fun getDateAfterYears(years: Int): Date {
-        val calendar = java.util.Calendar.getInstance()
-        calendar.add(java.util.Calendar.YEAR, years)
-        return calendar.time
+    fun fromUtcEpochMillis(millis: Long): LocalDate {
+        return Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
     }
 }

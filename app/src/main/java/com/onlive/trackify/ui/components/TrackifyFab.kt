@@ -1,7 +1,7 @@
 package com.onlive.trackify.ui.components
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -16,7 +16,7 @@ fun TrackifyFab(
     onClick: () -> Unit,
     contentDescription: String?,
     modifier: Modifier = Modifier,
-    icon: ImageVector = Icons.Filled.Add
+    icon: ImageVector = Icons.Rounded.Add
 ) {
     MediumFloatingActionButton(
         onClick = onClick,

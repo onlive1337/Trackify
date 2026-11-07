@@ -1,14 +1,19 @@
 package com.onlive.trackify.ui.components
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Autorenew
+import androidx.compose.material.icons.rounded.Event
+import androidx.compose.material.icons.rounded.EventBusy
+import androidx.compose.material.icons.rounded.NotificationsActive
+import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.runtime.Composable
@@ -16,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.center
@@ -27,20 +33,26 @@ import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.toColorInt
 import androidx.graphics.shapes.Morph
 import androidx.graphics.shapes.toPath
-import com.onlive.trackify.data.model.BillingFrequency
-import com.onlive.trackify.data.model.Subscription
-import com.onlive.trackify.utils.CurrencyFormatter
-import com.onlive.trackify.utils.LocalLocalizedContext
-import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.R
-import androidx.core.graphics.toColorInt
+import com.onlive.trackify.data.model.BillingFrequency
+import com.onlive.trackify.data.model.SubscriptionWithCategory
+import com.onlive.trackify.utils.CurrencyFormatter
+import com.onlive.trackify.utils.DateUtils
+import com.onlive.trackify.utils.LocalLocalizedContext
+import com.onlive.trackify.utils.PaymentScheduleCalculator
+import com.onlive.trackify.utils.SubscriptionDueStatus
+import com.onlive.trackify.utils.pluralStringResource
+import com.onlive.trackify.utils.stringResource
+import java.time.LocalDate
 
 internal fun resolveCategoryColor(colorCode: String?, fallback: Color): Color {
     return try {
@@ -101,13 +113,17 @@ fun CategoryAvatar(
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SubscriptionListItem(
-    subscription: Subscription,
+    item: SubscriptionWithCategory,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    today: LocalDate = remember { LocalDate.now() },
+    dueStatus: SubscriptionDueStatus = remember(item.subscription, today) {
+        PaymentScheduleCalculator.resolveDueStatus(item.subscription, today)
+    }
 ) {
-    val context = LocalLocalizedContext.current
+    val subscription = item.subscription
     val categoryColor = resolveCategoryColor(
-        subscription.categoryColor,
+        item.categoryColor,
         MaterialTheme.colorScheme.surfaceVariant
     )
 
@@ -124,16 +140,27 @@ fun SubscriptionListItem(
         label = "SubscriptionAvatarMorph"
     )
 
+    val cardBorder = when (dueStatus) {
+        is SubscriptionDueStatus.DueToday -> BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.error.copy(alpha = 0.45f)
+        )
+        is SubscriptionDueStatus.DueTomorrow -> BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.45f)
+        )
+        else -> null
+    }
+    val contentAlpha = if (dueStatus is SubscriptionDueStatus.Expired) 0.65f else 1f
+
     Card(
+        onClick = onClick,
+        interactionSource = interactionSource,
         modifier = modifier
             .fillMaxWidth()
-            .graphicsLayer(scaleX = scale, scaleY = scale)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick
-            ),
+            .graphicsLayer(scaleX = scale, scaleY = scale),
         shape = RoundedCornerShape(28.dp),
+        border = cardBorder,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         ),
@@ -142,6 +169,7 @@ fun SubscriptionListItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .alpha(contentAlpha)
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -158,11 +186,16 @@ fun SubscriptionListItem(
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = subscription.categoryName ?: stringResource(R.string.without_category),
+                    text = item.categoryName ?: stringResource(R.string.without_category),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                SubscriptionDueIndicator(
+                    dueStatus = dueStatus,
+                    today = today
                 )
             }
 
@@ -170,7 +203,7 @@ fun SubscriptionListItem(
 
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = CurrencyFormatter.formatAmount(context, subscription.price),
+                    text = CurrencyFormatter.formatAmount(subscription.price),
                     style = MaterialTheme.typography.titleMediumEmphasized,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -184,5 +217,140 @@ fun SubscriptionListItem(
                 )
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun SubscriptionDueIndicator(
+    dueStatus: SubscriptionDueStatus,
+    today: LocalDate
+) {
+    val context = LocalLocalizedContext.current
+    val currentLocale = context.resources.configuration.locales[0] ?: LocalLocale.current.platformLocale
+
+    when (dueStatus) {
+        is SubscriptionDueStatus.DueToday -> {
+            DuePillBadge(
+                icon = Icons.Rounded.NotificationsActive,
+                text = stringResource(R.string.payment_due_today),
+                containerColor = MaterialTheme.colorScheme.errorContainer,
+                contentColor = MaterialTheme.colorScheme.onErrorContainer
+            )
+        }
+
+        is SubscriptionDueStatus.DueTomorrow -> {
+            DuePillBadge(
+                icon = Icons.Rounded.NotificationsActive,
+                text = stringResource(R.string.payment_due_tomorrow),
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+            )
+        }
+
+        is SubscriptionDueStatus.DueSoon -> {
+            DuePillBadge(
+                icon = Icons.Rounded.Schedule,
+                text = pluralStringResource(
+                    R.plurals.payment_due_in_days,
+                    dueStatus.daysUntil,
+                    dueStatus.daysUntil
+                ),
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+        }
+
+        is SubscriptionDueStatus.Upcoming -> {
+            val formattedDate = DateUtils.formatShortDate(dueStatus.date, today, currentLocale)
+            val label = if (dueStatus.daysUntil <= 7) {
+                pluralStringResource(
+                    R.plurals.payment_due_in_days,
+                    dueStatus.daysUntil,
+                    dueStatus.daysUntil
+                )
+            } else {
+                stringResource(R.string.next_payment_on, formattedDate)
+            }
+            InlineScheduleRow(
+                icon = Icons.Rounded.Event,
+                text = label
+            )
+        }
+
+        is SubscriptionDueStatus.EndingWithoutRenewal -> {
+            val formattedEnd = DateUtils.formatShortDate(dueStatus.endDate, today, currentLocale)
+            InlineScheduleRow(
+                icon = Icons.Rounded.EventBusy,
+                text = stringResource(R.string.subscription_ends_on, formattedEnd)
+            )
+        }
+
+        is SubscriptionDueStatus.Expired -> {
+            DuePillBadge(
+                icon = Icons.Rounded.EventBusy,
+                text = stringResource(R.string.subscription_expired),
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun DuePillBadge(
+    icon: ImageVector,
+    text: String,
+    containerColor: Color,
+    contentColor: Color
+) {
+    Surface(
+        shape = CircleShape,
+        color = containerColor,
+        contentColor = contentColor
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(14.dp)
+            )
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelMediumEmphasized,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+@Composable
+private fun InlineScheduleRow(
+    icon: ImageVector,
+    text: String
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(14.dp)
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }

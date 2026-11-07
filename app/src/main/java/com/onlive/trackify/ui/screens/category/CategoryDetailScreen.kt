@@ -21,8 +21,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -43,7 +43,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -57,12 +56,13 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.toColorInt
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Category
 import com.onlive.trackify.ui.components.CategoryAvatar
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
+import com.onlive.trackify.ui.components.resolveCategoryColor
 import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.CategoryViewModel
 
@@ -71,9 +71,13 @@ import com.onlive.trackify.viewmodel.CategoryViewModel
 fun CategoryDetailScreen(
     categoryId: Long,
     onNavigateBack: () -> Unit,
-    categoryViewModel: CategoryViewModel = viewModel()
+    categoryViewModel: CategoryViewModel = viewModel(factory = CategoryViewModel.Factory)
 ) {
-    val existingCategory by categoryViewModel.getCategoryById(categoryId).observeAsState()
+    val categoryFlow = remember(categoryId, categoryViewModel) {
+        categoryViewModel.getCategoryById(categoryId)
+    }
+    val existingCategory by categoryFlow.collectAsStateWithLifecycle(initialValue = null)
+    var isSaving by remember { mutableStateOf(false) }
 
     CategoryDetailContent(
         title = if (categoryId == -1L) stringResource(R.string.add_category) else stringResource(R.string.edit_category),
@@ -82,18 +86,38 @@ fun CategoryDetailScreen(
         isEditMode = categoryId != -1L,
         onNavigateBack = onNavigateBack,
         onSave = { name, color ->
-            if (categoryId == -1L) {
-                categoryViewModel.insert(Category(name = name, colorCode = color))
-            } else {
-                existingCategory?.let {
-                    categoryViewModel.update(it.copy(name = name, colorCode = color))
+            if (!isSaving) {
+                isSaving = true
+                if (categoryId == -1L) {
+                    categoryViewModel.insert(
+                        category = Category(name = name, colorCode = color),
+                        onSuccess = onNavigateBack,
+                        onError = { isSaving = false }
+                    )
+                } else {
+                    val current = existingCategory
+                    if (current != null) {
+                        categoryViewModel.update(
+                            category = current.copy(name = name, colorCode = color),
+                            onSuccess = onNavigateBack,
+                            onError = { isSaving = false }
+                        )
+                    } else {
+                        isSaving = false
+                    }
                 }
             }
-            onNavigateBack()
         },
         onDelete = {
-            existingCategory?.let { categoryViewModel.delete(it) }
-            onNavigateBack()
+            val current = existingCategory
+            if (!isSaving && current != null) {
+                isSaving = true
+                categoryViewModel.delete(
+                    category = current,
+                    onSuccess = onNavigateBack,
+                    onError = { isSaving = false }
+                )
+            }
         }
     )
 }
@@ -154,7 +178,7 @@ fun CategoryDetailContent(
                         color = MaterialTheme.colorScheme.primary
                     )
 
-                    val previewColor = try { Color(categoryColor.toColorInt()) } catch (_: Exception) { MaterialTheme.colorScheme.primary }
+                    val previewColor = resolveCategoryColor(categoryColor, MaterialTheme.colorScheme.primary)
                     
                     SubscriptionItemPreview(
                         name = stringResource(R.string.mock_subscription_name),
@@ -236,11 +260,14 @@ fun CategoryDetailContent(
                                 contentColor = MaterialTheme.colorScheme.error
                             ),
                             border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f)),
-                            shape = MaterialTheme.shapes.extraLarge,
+                            shapes = ButtonDefaults.shapes(
+                                shape = MaterialTheme.shapes.extraLarge,
+                                pressedShape = ButtonDefaults.largePressedShape
+                            ),
                             modifier = Modifier.weight(1f).height(64.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Delete,
+                                imageVector = Icons.Rounded.Delete,
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -257,7 +284,10 @@ fun CategoryDetailContent(
                                 hasAttemptedSave = true
                             }
                         },
-                        shape = MaterialTheme.shapes.extraLarge,
+                        shapes = ButtonDefaults.shapes(
+                            shape = MaterialTheme.shapes.extraLarge,
+                            pressedShape = ButtonDefaults.largePressedShape
+                        ),
                         modifier = Modifier.weight(1.5f).height(64.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary
@@ -285,6 +315,7 @@ fun CategoryDetailContent(
                             onDelete()
                             showDeleteDialogState.value = false
                         },
+                        shapes = ButtonDefaults.shapes(),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.error
                         )
@@ -293,7 +324,10 @@ fun CategoryDetailContent(
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showDeleteDialogState.value = false }) {
+                    TextButton(
+                        onClick = { showDeleteDialogState.value = false },
+                        shapes = ButtonDefaults.shapes()
+                    ) {
                         Text(stringResource(R.string.cancel))
                     }
                 }
@@ -367,11 +401,7 @@ fun ColorChip(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val color = try {
-        Color(colorCode.toColorInt())
-    } catch (_: Exception) {
-        Color.Gray
-    }
+    val color = resolveCategoryColor(colorCode, Color.Gray)
     val colorDescription = stringResource(R.string.color_option, colorCode)
 
     FilterChip(
@@ -380,7 +410,7 @@ fun ColorChip(
         label = {
             if (isSelected) {
                 Icon(
-                    imageVector = Icons.Default.Check,
+                    imageVector = Icons.Rounded.Check,
                     contentDescription = null,
                     modifier = Modifier.size(24.dp),
                     tint = if (color.luminance() > 0.5f) Color.Black else Color.White

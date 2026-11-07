@@ -2,12 +2,15 @@ package com.onlive.trackify.utils
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.onlive.trackify.data.model.Currency
 import androidx.core.content.edit
+import com.onlive.trackify.data.model.Currency
+import com.onlive.trackify.data.model.SubscriptionSortOption
+import java.time.LocalDate
 
 class PreferenceManager(context: Context) {
     companion object {
         private const val PREFS_NAME = "trackify_preferences"
+        private const val LEGACY_THEME_PREFS_NAME = "theme_prefs"
         const val KEY_NOTIFICATIONS_ENABLED = "notifications_enabled"
         const val KEY_REMINDER_DAYS = "reminder_days"
         const val KEY_NOTIFICATION_TIME_HOUR = "notification_time_hour"
@@ -15,9 +18,32 @@ class PreferenceManager(context: Context) {
         const val KEY_CURRENCY_CODE = "currency_code"
         const val KEY_LANGUAGE_CODE = "language_code"
         const val KEY_ONBOARDING_COMPLETED = "onboarding_completed"
+        const val KEY_SUBSCRIPTION_SORT = "subscription_sort"
+        const val KEY_THEME_MODE = "theme_mode"
+        const val KEY_DYNAMIC_COLOR = "dynamic_color"
     }
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+    init {
+        migrateLegacyThemePrefs(context)
+    }
+
+    private fun migrateLegacyThemePrefs(context: Context) {
+        if (prefs.contains(KEY_THEME_MODE) || prefs.contains(KEY_DYNAMIC_COLOR)) return
+        val legacyPrefs = context.getSharedPreferences(LEGACY_THEME_PREFS_NAME, Context.MODE_PRIVATE)
+        if (legacyPrefs.all.isNotEmpty()) {
+            prefs.edit {
+                if (legacyPrefs.contains(KEY_THEME_MODE)) {
+                    putInt(KEY_THEME_MODE, legacyPrefs.getInt(KEY_THEME_MODE, ThemeManager.MODE_DARK))
+                }
+                if (legacyPrefs.contains(KEY_DYNAMIC_COLOR)) {
+                    putBoolean(KEY_DYNAMIC_COLOR, legacyPrefs.getBoolean(KEY_DYNAMIC_COLOR, true))
+                }
+            }
+            context.deleteSharedPreferences(LEGACY_THEME_PREFS_NAME)
+        }
+    }
 
     fun isOnboardingCompleted(): Boolean {
         return prefs.getBoolean(KEY_ONBOARDING_COMPLETED, false)
@@ -83,6 +109,42 @@ class PreferenceManager(context: Context) {
         prefs.edit { putString(KEY_LANGUAGE_CODE, languageCode) }
     }
 
+    fun getSubscriptionSortOption(): SubscriptionSortOption {
+        return SubscriptionSortOption.fromName(prefs.getString(KEY_SUBSCRIPTION_SORT, null))
+    }
+
+    fun setSubscriptionSortOption(option: SubscriptionSortOption) {
+        prefs.edit { putString(KEY_SUBSCRIPTION_SORT, option.name) }
+    }
+
+    fun getThemeMode(): Int {
+        return prefs.getInt(KEY_THEME_MODE, ThemeManager.MODE_DARK)
+    }
+
+    fun setThemeMode(mode: Int) {
+        prefs.edit { putInt(KEY_THEME_MODE, mode) }
+    }
+
+    fun isDynamicColorEnabled(): Boolean {
+        return prefs.getBoolean(KEY_DYNAMIC_COLOR, true)
+    }
+
+    fun setDynamicColorEnabled(enabled: Boolean) {
+        prefs.edit { putBoolean(KEY_DYNAMIC_COLOR, enabled) }
+    }
+
+    fun registerOnSharedPreferenceChangeListener(
+        listener: SharedPreferences.OnSharedPreferenceChangeListener
+    ) {
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+    }
+
+    fun unregisterOnSharedPreferenceChangeListener(
+        listener: SharedPreferences.OnSharedPreferenceChangeListener
+    ) {
+        prefs.unregisterOnSharedPreferenceChangeListener(listener)
+    }
+
     fun wasNotificationSentForDate(
         subscriptionId: Long,
         type: String,
@@ -112,12 +174,12 @@ class PreferenceManager(context: Context) {
         return "notified_${type}_${subscriptionId}_${dateKey}_$thresholdDay"
     }
 
-    fun formatDateKey(date: java.util.Date): String {
-        return java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(date)
+    fun formatDateKey(date: LocalDate): String {
+        return date.toString()
     }
 
     fun cleanupOldNotificationRecords() {
-        val today = formatDateKey(java.util.Date())
+        val today = formatDateKey(LocalDate.now())
         prefs.all.keys.toList().forEach { key ->
             when {
                 key.startsWith("notified_") -> {

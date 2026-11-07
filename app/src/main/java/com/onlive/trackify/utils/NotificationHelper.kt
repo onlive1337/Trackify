@@ -42,10 +42,10 @@ class NotificationHelper(rawContext: Context) {
         Log.d(tag, "Notification channel created")
     }
 
-    fun showPaymentReminderNotification(subscription: Subscription, daysUntil: Int) {
+    fun showPaymentReminderNotification(subscription: Subscription, daysUntil: Int): Boolean {
         if (!checkNotificationPermission()) {
             Log.w(tag, "No notification permission")
-            return
+            return false
         }
 
         val intent = Intent(context, MainActivity::class.java).apply {
@@ -79,20 +79,22 @@ class NotificationHelper(rawContext: Context) {
             .setAutoCancel(true)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
 
-        try {
+        return try {
             with(NotificationManagerCompat.from(context)) {
                 notify(subscription.subscriptionId.toInt(), builder.build())
             }
             Log.d(tag, "Payment reminder notification sent for ${subscription.name}")
+            true
         } catch (e: SecurityException) {
             Log.e(tag, "Failed to send notification: ${e.message}")
+            false
         }
     }
 
-    fun showExpirationReminderNotification(subscription: Subscription, daysUntil: Int) {
+    fun showExpirationReminderNotification(subscription: Subscription, daysUntil: Int): Boolean {
         if (!checkNotificationPermission()) {
             Log.w(tag, "No notification permission")
-            return
+            return false
         }
 
         val intent = Intent(context, MainActivity::class.java).apply {
@@ -122,13 +124,15 @@ class NotificationHelper(rawContext: Context) {
             .setAutoCancel(true)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
 
-        try {
+        return try {
             with(NotificationManagerCompat.from(context)) {
                 notify((subscription.subscriptionId + 10000).toInt(), builder.build())
             }
             Log.d(tag, "Expiration reminder notification sent for ${subscription.name}")
+            true
         } catch (e: SecurityException) {
             Log.e(tag, "Failed to send notification: ${e.message}")
+            false
         }
     }
 

@@ -1,5 +1,7 @@
 package com.onlive.trackify.ui.screens.settings
 
+import android.content.Context
+import android.text.format.DateFormat
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -7,30 +9,33 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.onlive.trackify.utils.stringResource
-import androidx.compose.ui.unit.dp
 import com.onlive.trackify.R
 import com.onlive.trackify.ui.components.SettingsSection
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
+import com.onlive.trackify.ui.components.segmentedListItemShapes
 import com.onlive.trackify.utils.BatteryOptimizationHelper
 import com.onlive.trackify.utils.NotificationScheduler
 import com.onlive.trackify.utils.PreferenceManager
-import java.util.Locale
+import com.onlive.trackify.utils.stringResource
+import java.util.Calendar
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun NotificationSettingsScreen(
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
-    val locale = configuration.locales[0]
+    val is24Hour = DateFormat.is24HourFormat(context)
     val preferenceManager = remember { PreferenceManager(context) }
     val notificationScheduler = remember { NotificationScheduler(context) }
 
@@ -41,8 +46,8 @@ fun NotificationSettingsScreen(
     val (hour, minute) = preferenceManager.getNotificationTime()
     val notificationHourState = remember { mutableIntStateOf(hour) }
     val notificationMinuteState = remember { mutableIntStateOf(minute) }
-    var notificationTime by remember(locale) {
-        mutableStateOf(formatTime(notificationHourState.intValue, notificationMinuteState.intValue, locale))
+    var notificationTime by remember(configuration, is24Hour) {
+        mutableStateOf(formatTime(context, notificationHourState.intValue, notificationMinuteState.intValue))
     }
 
     val showTimePickerDialogState = remember { mutableStateOf(false) }
@@ -71,13 +76,12 @@ fun NotificationSettingsScreen(
                 .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-
             Spacer(modifier = Modifier.height(16.dp))
 
             SettingsSection(
                 title = stringResource(R.string.notification_time)
             ) {
-                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
                     Text(
                         text = stringResource(R.string.notification_time_description),
                         style = MaterialTheme.typography.bodyMedium,
@@ -87,6 +91,7 @@ fun NotificationSettingsScreen(
 
                     Button(
                         onClick = { showTimePickerDialogState.value = true },
+                        shapes = ButtonDefaults.shapes(),
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -98,78 +103,54 @@ fun NotificationSettingsScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            SettingsSection(
-                title = stringResource(R.string.reminder_days)
-            ) {
-                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                    Text(
-                        text = stringResource(R.string.reminder_days_description),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = stringResource(R.string.reminder_days),
+                    style = MaterialTheme.typography.labelLargeEmphasized,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+                Text(
+                    text = stringResource(R.string.reminder_days_description),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                )
 
-                    ReminderDayOption(
-                        title = stringResource(R.string.on_payment_day),
-                        description = stringResource(R.string.notify_on_payment_day),
-                        selected = reminderDays.contains(0),
-                        onClick = {
-                            reminderDays = if (reminderDays.contains(0)) {
-                                reminderDays - 0
-                            } else {
-                                reminderDays + 0
+                val reminderOptions = listOf(
+                    Triple(0, stringResource(R.string.on_payment_day), stringResource(R.string.notify_on_payment_day)),
+                    Triple(1, stringResource(R.string.one_day_before), stringResource(R.string.notify_one_day_before)),
+                    Triple(3, stringResource(R.string.three_days_before), stringResource(R.string.notify_three_days_before)),
+                    Triple(7, stringResource(R.string.week_before), stringResource(R.string.notify_week_before))
+                )
+
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap)
+                ) {
+                    reminderOptions.forEachIndexed { index, (dayOffset, title, description) ->
+                        ReminderDayOption(
+                            title = title,
+                            description = description,
+                            checked = reminderDays.contains(dayOffset),
+                            index = index,
+                            count = reminderOptions.size,
+                            onCheckedChange = { shouldSelect ->
+                                reminderDays = if (shouldSelect) {
+                                    reminderDays + dayOffset
+                                } else {
+                                    reminderDays - dayOffset
+                                }
+                                preferenceManager.setReminderDays(reminderDays)
                             }
-                            preferenceManager.setReminderDays(reminderDays)
-                        }
-                    )
-
-                    ReminderDayOption(
-                        title = stringResource(R.string.one_day_before),
-                        description = stringResource(R.string.notify_one_day_before),
-                        selected = reminderDays.contains(1),
-                        onClick = {
-                            reminderDays = if (reminderDays.contains(1)) {
-                                reminderDays - 1
-                            } else {
-                                reminderDays + 1
-                            }
-                            preferenceManager.setReminderDays(reminderDays)
-                        }
-                    )
-
-                    ReminderDayOption(
-                        title = stringResource(R.string.three_days_before),
-                        description = stringResource(R.string.notify_three_days_before),
-                        selected = reminderDays.contains(3),
-                        onClick = {
-                            reminderDays = if (reminderDays.contains(3)) {
-                                reminderDays - 3
-                            } else {
-                                reminderDays + 3
-                            }
-                            preferenceManager.setReminderDays(reminderDays)
-                        }
-                    )
-
-                    ReminderDayOption(
-                        title = stringResource(R.string.week_before),
-                        description = stringResource(R.string.notify_week_before),
-                        selected = reminderDays.contains(7),
-                        onClick = {
-                            reminderDays = if (reminderDays.contains(7)) {
-                                reminderDays - 7
-                            } else {
-                                reminderDays + 7
-                            }
-                            preferenceManager.setReminderDays(reminderDays)
-                        }
-                    )
+                        )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             BatteryOptimizationSection()
 
@@ -181,11 +162,12 @@ fun NotificationSettingsScreen(
         TimePickerDialog(
             initialHour = notificationHourState.intValue,
             initialMinute = notificationMinuteState.intValue,
+            is24Hour = is24Hour,
             onDismiss = { showTimePickerDialogState.value = false },
             onConfirm = { selectedHour, selectedMinute ->
                 notificationHourState.intValue = selectedHour
                 notificationMinuteState.intValue = selectedMinute
-                notificationTime = formatTime(selectedHour, selectedMinute, locale)
+                notificationTime = formatTime(context, selectedHour, selectedMinute)
                 preferenceManager.setNotificationTime(selectedHour, selectedMinute)
                 notificationScheduler.scheduleNotifications()
                 showTimePickerDialogState.value = false
@@ -194,6 +176,7 @@ fun NotificationSettingsScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun BatteryOptimizationSection() {
     val context = LocalContext.current
@@ -215,7 +198,7 @@ private fun BatteryOptimizationSection() {
     SettingsSection(
         title = stringResource(R.string.battery_optimization_title)
     ) {
-        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
             Text(
                 text = stringResource(R.string.battery_optimization_description),
                 style = MaterialTheme.typography.bodyMedium,
@@ -232,6 +215,7 @@ private fun BatteryOptimizationSection() {
             } else {
                 Button(
                     onClick = { BatteryOptimizationHelper.requestIgnoreBatteryOptimizations(context) },
+                    shapes = ButtonDefaults.shapes(),
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -258,6 +242,7 @@ private fun BatteryOptimizationSection() {
                 )
                 Button(
                     onClick = { BatteryOptimizationHelper.openXiaomiAutostartSettings(context) },
+                    shapes = ButtonDefaults.shapes(),
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -271,18 +256,19 @@ private fun BatteryOptimizationSection() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun TimePickerDialog(
     initialHour: Int,
     initialMinute: Int,
+    is24Hour: Boolean = true,
     onDismiss: () -> Unit,
     onConfirm: (Int, Int) -> Unit
 ) {
     val state = rememberTimePickerState(
         initialHour = initialHour,
         initialMinute = initialMinute,
-        is24Hour = true
+        is24Hour = is24Hour
     )
 
     AlertDialog(
@@ -297,59 +283,69 @@ fun TimePickerDialog(
             }
         },
         confirmButton = {
-            Button(onClick = { onConfirm(state.hour, state.minute) }) {
+            Button(
+                onClick = { onConfirm(state.hour, state.minute) },
+                shapes = ButtonDefaults.shapes()
+            ) {
                 Text(stringResource(R.string.save))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = onDismiss,
+                shapes = ButtonDefaults.shapes()
+            ) {
                 Text(stringResource(R.string.cancel))
             }
         }
     )
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ReminderDayOption(
     title: String,
     description: String,
-    selected: Boolean,
-    onClick: () -> Unit
+    checked: Boolean,
+    index: Int,
+    count: Int,
+    onCheckedChange: (Boolean) -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Checkbox(
-            checked = selected,
-            onCheckedChange = { onClick() },
-            colors = CheckboxDefaults.colors(
-                checkedColor = MaterialTheme.colorScheme.primary,
-                uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val haptic = LocalHapticFeedback.current
+    SegmentedListItem(
+        checked = checked,
+        onCheckedChange = {
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            onCheckedChange(it)
+        },
+        shapes = segmentedListItemShapes(index = index, count = count),
+        colors = ListItemDefaults.segmentedColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer
+        ),
+        leadingContent = {
+            Checkbox(
+                checked = checked,
+                onCheckedChange = null
             )
-        )
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+        },
+        supportingContent = {
+            Text(text = description)
         }
+    ) {
+        Text(
+            text = title,
+            style = if (checked) MaterialTheme.typography.bodyLargeEmphasized else MaterialTheme.typography.bodyLarge
+        )
     }
 }
 
-private fun formatTime(hour: Int, minute: Int, locale: Locale): String {
-    return String.format(locale, "%02d:%02d", hour, minute)
+private fun formatTime(context: Context, hour: Int, minute: Int): String {
+    val calendar = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, hour)
+        set(Calendar.MINUTE, minute)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+    return DateFormat.getTimeFormat(context).format(calendar.time)
 }

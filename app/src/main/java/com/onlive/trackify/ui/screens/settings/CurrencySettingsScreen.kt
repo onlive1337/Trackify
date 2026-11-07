@@ -1,34 +1,35 @@
 package com.onlive.trackify.ui.screens.settings
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Currency
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
+import com.onlive.trackify.ui.components.segmentedListItemShapes
+import com.onlive.trackify.utils.LocalCurrency
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun CurrencySettingsScreen(
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
     val preferenceManager = remember { PreferenceManager(context) }
+    val selectedCurrencyCode = LocalCurrency.current.code
 
-    var selectedCurrencyCode by remember {
-        mutableStateOf(preferenceManager.getCurrencyCode())
-    }
-
+    val currencies = Currency.POPULAR_CURRENCIES
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
@@ -61,21 +62,30 @@ fun CurrencySettingsScreen(
 
             Text(
                 text = stringResource(R.string.choose_currency),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleMediumEmphasized,
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                items(Currency.POPULAR_CURRENCIES) { currency ->
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap),
+                contentPadding = PaddingValues(bottom = 24.dp)
+            ) {
+                itemsIndexed(
+                    items = currencies,
+                    key = { _, currency -> currency.code }
+                ) { index, currency ->
                     CurrencyItem(
                         currency = currency,
                         selected = currency.code == selectedCurrencyCode,
+                        index = index,
+                        count = currencies.size,
                         onClick = {
-                            selectedCurrencyCode = currency.code
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             preferenceManager.setCurrencyCode(currency.code)
-                        }
+                        },
+                        modifier = Modifier.animateItem()
                     )
                 }
             }
@@ -83,43 +93,44 @@ fun CurrencySettingsScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun CurrencyItem(
     currency: Currency,
     selected: Boolean,
-    onClick: () -> Unit
+    index: Int,
+    count: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    ListItem(
-        headlineContent = {
+    SegmentedListItem(
+        selected = selected,
+        onClick = onClick,
+        shapes = segmentedListItemShapes(index = index, count = count),
+        modifier = modifier,
+        colors = ListItemDefaults.segmentedColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer
+        ),
+        leadingContent = {
             Text(
-                text = stringResource(currency.nameRes),
-                style = MaterialTheme.typography.titleMedium
+                text = currency.symbol,
+                style = MaterialTheme.typography.titleLargeEmphasized
             )
         },
         supportingContent = {
             Text(
                 text = currency.code,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        },
-        leadingContent = {
-            Text(
-                text = currency.symbol,
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.bodyMedium
             )
         },
         trailingContent = {
             RadioButton(selected = selected, onClick = null)
-        },
-        colors = ListItemDefaults.colors(
-            containerColor = if (selected)
-                MaterialTheme.colorScheme.primaryContainer
-            else
-                MaterialTheme.colorScheme.surfaceContainerLow
-        ),
-        modifier = Modifier
-            .clip(MaterialTheme.shapes.large)
-            .clickable(onClick = onClick)
-    )
+        }
+    ) {
+        Text(
+            text = stringResource(currency.nameRes),
+            style = if (selected) MaterialTheme.typography.titleMediumEmphasized else MaterialTheme.typography.titleMedium
+        )
+    }
 }

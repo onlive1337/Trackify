@@ -1,8 +1,12 @@
 package com.onlive.trackify.data.database
 
-import androidx.lifecycle.LiveData
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.Update
 import com.onlive.trackify.data.model.Category
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CategoryDao {
@@ -10,7 +14,7 @@ interface CategoryDao {
     suspend fun insert(category: Category): Long
 
     @Insert
-    fun insertSync(category: Category): Long
+    suspend fun insertAll(categories: List<Category>)
 
     @Update
     suspend fun update(category: Category)
@@ -19,14 +23,14 @@ interface CategoryDao {
     suspend fun delete(category: Category)
 
     @Query("SELECT * FROM categories ORDER BY name ASC")
-    fun getAllCategories(): LiveData<List<Category>>
+    fun getAllCategories(): Flow<List<Category>>
 
     @Query("SELECT * FROM categories ORDER BY name ASC")
-    fun getAllCategoriesSync(): List<Category>
+    suspend fun getAllSnapshot(): List<Category>
 
     @Query("SELECT * FROM categories WHERE categoryId = :id")
-    fun getCategoryById(id: Long): LiveData<Category>
+    fun getCategoryById(id: Long): Flow<Category?>
 
     @Query("DELETE FROM categories")
-    suspend fun deleteAllSync()
+    suspend fun deleteAll()
 }

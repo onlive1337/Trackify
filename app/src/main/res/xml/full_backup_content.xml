@@ -7,5 +7,4 @@
 <full-backup-content>
     <exclude domain="database" path="trackify_database" />
     <exclude domain="sharedpref" path="trackify_preferences.xml" />
-    <exclude domain="sharedpref" path="theme_prefs.xml" />
 </full-backup-content>

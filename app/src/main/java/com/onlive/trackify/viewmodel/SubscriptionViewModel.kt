@@ -1,67 +1,131 @@
 package com.onlive.trackify.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.onlive.trackify.TrackifyApplication
-import com.onlive.trackify.data.database.AppDatabase
 import com.onlive.trackify.data.model.Subscription
+import com.onlive.trackify.data.model.SubscriptionWithCategory
 import com.onlive.trackify.data.repository.SubscriptionRepository
-import com.onlive.trackify.utils.ErrorHandler
+import com.onlive.trackify.utils.ErrorReporter
+import com.onlive.trackify.utils.NotificationScheduler
+import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.Result
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class SubscriptionViewModel(application: Application) : AndroidViewModel(application) {
+class SubscriptionViewModel(
+    private val repository: SubscriptionRepository,
+    private val errorReporter: ErrorReporter,
+    private val onSubscriptionMutated: () -> Unit = {}
+) : ViewModel() {
 
-    private val app = application as? TrackifyApplication
-    private val repository: SubscriptionRepository = app?.subscriptionRepository
-        ?: run {
-            val database = AppDatabase.getDatabase(application)
-            SubscriptionRepository(database.subscriptionDao(), database.categoryDao(), application.applicationContext)
-        }
-    private val errorHandler: ErrorHandler? = app?.errorHandler
+    val allSubscriptions: StateFlow<List<SubscriptionWithCategory>?> = repository.allSubscriptions
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = null
+        )
 
-    val allSubscriptions: LiveData<List<Subscription>> = repository.allSubscriptions
-
-    fun insert(subscription: Subscription) = viewModelScope.launch {
+    fun insert(
+        subscription: Subscription,
+        onSuccess: () -> Unit = {},
+        onError: () -> Unit = {}
+    ) = viewModelScope.launch {
         try {
-            val result = repository.insert(subscription)
-
-            if (result is Result.Error) {
-                errorHandler?.handleError(result.message, true)
+            when (val result = repository.insert(subscription)) {
+                is Result.Success -> {
+                    onSubscriptionMutated()
+                    onSuccess()
+                }
+                is Result.Error -> {
+                    errorReporter.reportError(result)
+                    onError()
+                }
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            errorHandler?.handleError(e, true)
+            errorReporter.reportException(e)
+            onError()
         }
     }
 
-    fun update(subscription: Subscription) = viewModelScope.launch {
+    fun update(
+        subscription: Subscription,
+        onSuccess: () -> Unit = {},
+        onError: () -> Unit = {}
+    ) = viewModelScope.launch {
         try {
-            val result = repository.update(subscription)
-
-            if (result is Result.Error) {
-                errorHandler?.handleError(result.message, true)
+            when (val result = repository.update(subscription)) {
+                is Result.Success -> {
+                    onSubscriptionMutated()
+                    onSuccess()
+                }
+                is Result.Error -> {
+                    errorReporter.reportError(result)
+                    onError()
+                }
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            errorHandler?.handleError(e, true)
+            errorReporter.reportException(e)
+            onError()
         }
     }
 
-    fun delete(subscription: Subscription) = viewModelScope.launch {
+    fun delete(
+        subscription: Subscription,
+        onSuccess: () -> Unit = {},
+        onError: () -> Unit = {}
+    ) = viewModelScope.launch {
         try {
-            val result = repository.delete(subscription)
-
-            if (result is Result.Error) {
-                errorHandler?.handleError(result.message, true)
+            when (val result = repository.delete(subscription)) {
+                is Result.Success -> {
+                    onSubscriptionMutated()
+                    onSuccess()
+                }
+                is Result.Error -> {
+                    errorReporter.reportError(result)
+                    onError()
+                }
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            errorHandler?.handleError(e, true)
+            errorReporter.reportException(e)
+            onError()
         }
     }
 
-    fun getSubscriptionById(id: Long): MediatorLiveData<Subscription?> {
+    fun getSubscriptionById(id: Long): Flow<SubscriptionWithCategory?> {
         return repository.getSubscriptionById(id)
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val app = this[APPLICATION_KEY] as TrackifyApplication
+                SubscriptionViewModel(
+                    repository = app.subscriptionRepository,
+                    errorReporter = app.errorHandler,
+                    onSubscriptionMutated = {
+                        if (PreferenceManager(app).areNotificationsEnabled()) {
+                            val scheduler = NotificationScheduler(app)
+                            scheduler.scheduleNotifications()
+                            scheduler.triggerImmediateCheck()
+                        }
+                    }
+                )
+            }
+        }
     }
 }

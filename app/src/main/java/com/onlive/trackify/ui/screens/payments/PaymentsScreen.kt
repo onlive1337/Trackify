@@ -15,9 +15,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -36,15 +36,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onlive.trackify.R
 import com.onlive.trackify.data.model.Payment
@@ -52,8 +51,8 @@ import com.onlive.trackify.ui.components.CategoryAvatar
 import com.onlive.trackify.ui.components.EmptyState
 import com.onlive.trackify.ui.components.TrackifyFab
 import com.onlive.trackify.ui.components.resolveCategoryColor
-import com.onlive.trackify.utils.CurrencyFormatter
 import com.onlive.trackify.utils.DateUtils
+import com.onlive.trackify.utils.LocalCurrency
 import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.PaymentViewModel
 import com.onlive.trackify.viewmodel.SubscriptionViewModel
@@ -62,12 +61,18 @@ import com.onlive.trackify.viewmodel.SubscriptionViewModel
 @Composable
 fun PaymentsScreen(
     onAddPayment: (Long, Long) -> Unit,
-    paymentViewModel: PaymentViewModel = viewModel(),
-    subscriptionViewModel: SubscriptionViewModel = viewModel()
+    paymentViewModel: PaymentViewModel = viewModel(factory = PaymentViewModel.Factory),
+    subscriptionViewModel: SubscriptionViewModel = viewModel(factory = SubscriptionViewModel.Factory)
 ) {
-    val context = LocalContext.current
-    val allPayments by paymentViewModel.allPayments.observeAsState(emptyList())
-    val allSubscriptions by subscriptionViewModel.allSubscriptions.observeAsState(emptyList())
+    val currency = LocalCurrency.current
+    val formatAmount: (Double) -> String = remember(currency) {
+        { amount -> currency.format(amount) }
+    }
+    val allPayments by paymentViewModel.allPayments.collectAsStateWithLifecycle()
+    val allSubscriptions by subscriptionViewModel.allSubscriptions.collectAsStateWithLifecycle()
+    val subscriptionMap = remember(allSubscriptions) {
+        allSubscriptions.orEmpty().associateBy { it.subscription.subscriptionId }
+    }
 
     val showDeleteDialogState = remember { mutableStateOf<Payment?>(null) }
 
@@ -84,19 +89,20 @@ fun PaymentsScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(
-                    items = allPayments.sortedByDescending { it.date },
+                    items = allPayments,
                     key = { it.paymentId }
                 ) { payment ->
-                    val subscription = allSubscriptions.find { it.subscriptionId == payment.subscriptionId }
-                    val subscriptionName = subscription?.name ?: stringResource(R.string.unknown)
+                    val subscriptionItem = subscriptionMap[payment.subscriptionId]
+                    val subscriptionName = subscriptionItem?.subscription?.name ?: stringResource(R.string.unknown)
 
                     PaymentItem(
                         payment = payment,
                         subscriptionName = subscriptionName,
-                        categoryColor = subscription?.categoryColor,
-                        formatAmount = { amount -> CurrencyFormatter.formatAmount(context, amount) },
+                        categoryColor = subscriptionItem?.categoryColor,
+                        formatAmount = formatAmount,
                         onEdit = { onAddPayment(payment.subscriptionId, payment.paymentId) },
-                        onDelete = { showDeleteDialogState.value = payment }
+                        onDelete = { showDeleteDialogState.value = payment },
+                        modifier = Modifier.animateItem()
                     )
                 }
             }
@@ -122,6 +128,7 @@ fun PaymentsScreen(
                         showDeleteDialogState.value?.let { paymentViewModel.delete(it) }
                         showDeleteDialogState.value = null
                     },
+                    shapes = ButtonDefaults.shapes(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error
                     )
@@ -130,7 +137,10 @@ fun PaymentsScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialogState.value = null }) {
+                TextButton(
+                    onClick = { showDeleteDialogState.value = null },
+                    shapes = ButtonDefaults.shapes()
+                ) {
                     Text(stringResource(R.string.cancel))
                 }
             }
@@ -192,12 +202,13 @@ fun PaymentItem(
                 Box {
                     IconButton(
                         onClick = { menuExpanded = true },
+                        shapes = IconButtonDefaults.shapes(),
                         colors = IconButtonDefaults.iconButtonColors(
                             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     ) {
                         Icon(
-                            imageVector = Icons.Default.MoreVert,
+                            imageVector = Icons.Rounded.MoreVert,
                             contentDescription = stringResource(R.string.more_options),
                             modifier = Modifier.size(20.dp)
                         )
@@ -214,7 +225,7 @@ fun PaymentItem(
                                 onEdit()
                             },
                             leadingIcon = {
-                                Icon(Icons.Default.Edit, contentDescription = null)
+                                Icon(Icons.Rounded.Edit, contentDescription = null)
                             }
                         )
                         DropdownMenuItem(
@@ -230,7 +241,7 @@ fun PaymentItem(
                             },
                             leadingIcon = {
                                 Icon(
-                                    Icons.Default.Delete,
+                                    Icons.Rounded.Delete,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.error
                                 )

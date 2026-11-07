@@ -1,13 +1,11 @@
 package com.onlive.trackify.ui.screens.settings
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -15,13 +13,14 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.onlive.trackify.R
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
-import com.onlive.trackify.utils.LocaleHelper
+import com.onlive.trackify.ui.components.segmentedListItemShapes
 import com.onlive.trackify.utils.LocalLocaleManager
+import com.onlive.trackify.utils.LocaleHelper
 import com.onlive.trackify.utils.NotificationHelper
 import com.onlive.trackify.utils.PreferenceManager
 import com.onlive.trackify.utils.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun LanguageSettingsScreen(
     onNavigateBack: () -> Unit
@@ -58,7 +57,6 @@ fun LanguageSettingsScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp)
         ) {
-
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
@@ -72,17 +70,25 @@ fun LanguageSettingsScreen(
 
             Text(
                 text = stringResource(R.string.choose_language),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleMediumEmphasized,
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                items(availableLanguages) { language ->
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap),
+                contentPadding = PaddingValues(bottom = 24.dp)
+            ) {
+                itemsIndexed(
+                    items = availableLanguages,
+                    key = { _, language -> language.code }
+                ) { index, language ->
                     LanguageItem(
                         languageName = language.name,
                         selected = language.code == selectedLanguageCode,
+                        index = index,
+                        count = availableLanguages.size,
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             selectedLanguageCode = language.code
@@ -98,31 +104,32 @@ fun LanguageSettingsScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun LanguageItem(
     languageName: String,
     selected: Boolean,
+    index: Int,
+    count: Int,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    ListItem(
-        headlineContent = {
-            Text(
-                text = languageName,
-                style = MaterialTheme.typography.titleMedium
-            )
-        },
+    SegmentedListItem(
+        selected = selected,
+        onClick = onClick,
+        shapes = segmentedListItemShapes(index = index, count = count),
+        modifier = modifier,
+        colors = ListItemDefaults.segmentedColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer
+        ),
         trailingContent = {
             RadioButton(selected = selected, onClick = null)
-        },
-        colors = ListItemDefaults.colors(
-            containerColor = if (selected)
-                MaterialTheme.colorScheme.primaryContainer
-            else
-                MaterialTheme.colorScheme.surfaceContainerLow
-        ),
-        modifier = modifier
-            .clip(MaterialTheme.shapes.large)
-            .clickable(onClick = onClick)
-    )
+        }
+    ) {
+        Text(
+            text = languageName,
+            style = if (selected) MaterialTheme.typography.titleMediumEmphasized else MaterialTheme.typography.titleMedium
+        )
+    }
 }

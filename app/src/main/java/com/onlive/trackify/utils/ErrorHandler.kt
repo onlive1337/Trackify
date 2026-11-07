@@ -1,14 +1,30 @@
 package com.onlive.trackify.utils
 
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
+import android.database.sqlite.SQLiteConstraintException
 import android.util.Log
-import android.widget.Toast
+import androidx.annotation.StringRes
 import com.onlive.trackify.R
+import java.io.FileNotFoundException
 import java.lang.ref.WeakReference
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
-class ErrorHandler private constructor(context: Context) {
+sealed interface UiErrorMessage {
+    data class Resource(@StringRes val resId: Int) : UiErrorMessage
+    data class Dynamic(val text: String) : UiErrorMessage
+}
+
+interface ErrorReporter {
+    fun reportError(error: Result.Error, showMessage: Boolean = true)
+    fun reportException(throwable: Throwable, showMessage: Boolean = true)
+}
+
+class ErrorHandler private constructor(context: Context) : ErrorReporter {
 
     companion object {
         @Volatile
@@ -17,37 +33,64 @@ class ErrorHandler private constructor(context: Context) {
 
         fun getInstance(context: Context): ErrorHandler {
             return INSTANCE ?: synchronized(this) {
-                val instance = ErrorHandler(context.applicationContext)
-                INSTANCE = instance
-                instance
+                INSTANCE ?: ErrorHandler(context.applicationContext).also { INSTANCE = it }
             }
         }
     }
 
     private val contextRef = WeakReference(context.applicationContext)
 
-    fun handleError(error: Any?, showToast: Boolean = true) {
+    private val _errors = MutableSharedFlow<UiErrorMessage>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+    val errors: SharedFlow<UiErrorMessage> = _errors.asSharedFlow()
+
+    override fun reportError(error: Result.Error, showMessage: Boolean) {
+        if (showMessage) {
+            _errors.tryEmit(UiErrorMessage.Resource(error.messageRes))
+        }
         val appContext = contextRef.get() ?: return
-
-        val errorMessage = when (error) {
-            is String -> error
-            is Exception -> getReadableErrorMessage(error, appContext)
-            is Result.Error -> error.message
-            else -> appContext.getString(R.string.unknown_error)
-        }
-        Log.e(TAG, "Error handled: $errorMessage", error as? Throwable)
-
-        if (showToast) {
-            Handler(Looper.getMainLooper()).post {
-                Toast.makeText(appContext, errorMessage, Toast.LENGTH_LONG).show()
-            }
-        }
-
-        val throwable = (error as? Throwable) ?: (error as? Result.Error)?.exception
-        if (throwable != null) {
-            CrashLogger.writeLogAsync(appContext, throwable, errorMessage)
+        val logText = appContext.getString(error.messageRes)
+        Log.e(TAG, "Error handled: $logText", error.exception)
+        if (error.exception != null) {
+            CrashLogger.writeLogAsync(appContext, error.exception, logText)
         } else {
-            logToFile(errorMessage)
+            CrashLogger.writeLogAsync(appContext, logText, null)
+        }
+    }
+
+    override fun reportException(throwable: Throwable, showMessage: Boolean) {
+        val messageRes = getReadableErrorMessageRes(throwable)
+        if (showMessage) {
+            _errors.tryEmit(UiErrorMessage.Resource(messageRes))
+        }
+        val appContext = contextRef.get() ?: return
+        val logText = throwable.message ?: appContext.getString(messageRes)
+        Log.e(TAG, "Exception handled: $logText", throwable)
+        CrashLogger.writeLogAsync(appContext, throwable, logText)
+    }
+
+    fun handleError(error: Any?, showToast: Boolean = true) {
+        when (error) {
+            is Result.Error -> reportError(error, showMessage = showToast)
+            is Throwable -> reportException(error, showMessage = showToast)
+            is String -> {
+                if (showToast) {
+                    _errors.tryEmit(UiErrorMessage.Dynamic(error))
+                }
+                Log.e(TAG, "Error handled: $error")
+                logToFile(error)
+            }
+            else -> {
+                if (showToast) {
+                    _errors.tryEmit(UiErrorMessage.Resource(R.string.unknown_error))
+                }
+                val appContext = contextRef.get() ?: return
+                val fallback = appContext.getString(R.string.unknown_error)
+                Log.e(TAG, "Error handled: $fallback")
+                logToFile(fallback)
+            }
         }
     }
 
@@ -56,13 +99,14 @@ class ErrorHandler private constructor(context: Context) {
         CrashLogger.writeLogAsync(appContext, message, details)
     }
 
-    private fun getReadableErrorMessage(e: Exception, context: Context): String {
-        return when (e) {
-            is java.net.UnknownHostException -> context.getString(R.string.no_internet_connection)
-            is java.net.SocketTimeoutException -> context.getString(R.string.connection_timeout)
-            is android.database.sqlite.SQLiteConstraintException -> context.getString(R.string.database_constraint_error)
-            is java.io.FileNotFoundException -> context.getString(R.string.file_not_found_error)
-            else -> e.message ?: context.getString(R.string.unknown_error)
+    @StringRes
+    private fun getReadableErrorMessageRes(throwable: Throwable): Int {
+        return when (throwable) {
+            is UnknownHostException -> R.string.no_internet_connection
+            is SocketTimeoutException -> R.string.connection_timeout
+            is SQLiteConstraintException -> R.string.database_constraint_error
+            is FileNotFoundException -> R.string.file_not_found_error
+            else -> R.string.unknown_error
         }
     }
 }

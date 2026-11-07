@@ -15,6 +15,9 @@
     <string name="error_creating_subscription">Error creating subscription</string>
     <string name="error_updating_subscription">Error updating subscription</string>
     <string name="error_deleting_subscription">Error deleting subscription</string>
+    <string name="error_creating_category">Error creating category</string>
+    <string name="error_updating_category">Error updating category</string>
+    <string name="error_deleting_category">Error deleting category</string>
 
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
@@ -125,7 +128,6 @@
     <string name="in_a_month">A month from now</string>
     <string name="one_year_later">One year later</string>
     <string name="unknown_error">An unknown error occurred</string>
-    <string name="import_restart_message">It is recommended to restart the application to apply all changes.</string>
 
     <string name="per_year">per year</string>
 
@@ -164,8 +166,6 @@
     <string name="import_error">Error importing data</string>
     <string name="select_subscription">Select a subscription</string>
 
-    <string name="month_fallback">Month %d</string>
-
     <string name="no_internet_connection">No internet connection</string>
     <string name="connection_timeout">Connection timeout</string>
     <string name="database_constraint_error">Database constraint error</string>
@@ -198,6 +198,7 @@
     <string name="required_field">Required field</string>
     <string name="invalid_price">Invalid price</string>
     <string name="export_success_title">Backup created</string>
+    <string name="import_success_title">Backup restored</string>
 
     <!-- Battery optimization / reliable delivery -->
     <string name="battery_optimization_title">Reliable delivery</string>
@@ -238,5 +239,23 @@
     <string name="currency_aud">Australian Dollar</string>
     <string name="currency_chf">Swiss Franc</string>
     <string name="currency_uzs">Uzbekistani Som</string>
+
+    <!-- Home sorting, filtering, and payment due badges -->
+    <string name="sort_subscriptions">Sort subscriptions</string>
+    <string name="sort_nearest_payment">Upcoming payment</string>
+    <string name="sort_name">By name</string>
+    <string name="sort_price_high_to_low">Price: high to low</string>
+    <string name="sort_price_low_to_high">Price: low to high</string>
+    <string name="clear_search">Clear search</string>
+    <string name="all_categories">All</string>
+    <string name="payment_due_today">Due today</string>
+    <string name="payment_due_tomorrow">Due tomorrow</string>
+    <plurals name="payment_due_in_days">
+        <item quantity="one">In %1$d day</item>
+        <item quantity="other">In %1$d days</item>
+    </plurals>
+    <string name="next_payment_on">Next: %1$s</string>
+    <string name="subscription_ends_on">Ends %1$s</string>
+    <string name="subscription_expired">Expired</string>
 
 </resources>

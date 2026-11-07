@@ -1,7 +1,6 @@
 package com.onlive.trackify.ui.screens.statistics
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -10,29 +9,30 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.onlive.trackify.utils.CurrencyFormatter
-import com.onlive.trackify.utils.LocalLocalizedContext
+import com.onlive.trackify.utils.LocalCurrency
 import com.onlive.trackify.viewmodel.StatisticsViewModel
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun StatisticsScreen(viewModel: StatisticsViewModel = viewModel()) {
-    val context = LocalLocalizedContext.current
-    val isLoading by viewModel.isLoading.observeAsState(true)
-    val totalMonthlySpending by viewModel.totalMonthlySpending.observeAsState(0.0)
-    val totalYearlySpending by viewModel.totalYearlySpending.observeAsState(0.0)
-    val spendingByCategory by viewModel.spendingByCategory.observeAsState(emptyList())
+fun StatisticsScreen(
+    viewModel: StatisticsViewModel = viewModel(factory = StatisticsViewModel.Factory)
+) {
+    val currency = LocalCurrency.current
+    val formatAmount: (Double) -> String = remember(currency) {
+        { amount -> currency.format(amount) }
+    }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Box(modifier = Modifier.fillMaxSize()) {
         AnimatedVisibility(
-            visible = isLoading,
-            enter = fadeIn(),
-            exit = fadeOut(animationSpec = tween(300))
+            visible = uiState.isLoading,
+            enter = fadeIn(animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec()),
+            exit = fadeOut(animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec())
         ) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -43,13 +43,13 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = viewModel()) {
         }
 
         AnimatedVisibility(
-            visible = !isLoading,
-            enter = fadeIn(animationSpec = tween(400)) +
+            visible = !uiState.isLoading,
+            enter = fadeIn(animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec()) +
                     slideInVertically(
-                        animationSpec = tween(400),
+                        animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
                         initialOffsetY = { it / 12 }
                     ),
-            exit = fadeOut()
+            exit = fadeOut(animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec())
         ) {
             Column(
                 modifier = Modifier
@@ -61,16 +61,16 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = viewModel()) {
                 Spacer(modifier = Modifier.height(0.dp))
 
                 SpendingHeroCard(
-                    monthlyAmount = totalMonthlySpending,
-                    yearlyAmount = totalYearlySpending,
-                    formatAmount = { CurrencyFormatter.formatAmount(context, it) }
+                    monthlyAmount = uiState.totalMonthlySpending,
+                    yearlyAmount = uiState.totalYearlySpending,
+                    formatAmount = formatAmount
                 )
 
-                if (spendingByCategory.isNotEmpty()) {
+                if (uiState.spendingByCategory.isNotEmpty()) {
                     CategoryBreakdownCard(
-                        categories = spendingByCategory,
-                        totalAmount = totalMonthlySpending,
-                        formatAmount = { CurrencyFormatter.formatAmount(context, it) }
+                        categories = uiState.spendingByCategory,
+                        totalAmount = uiState.totalMonthlySpending,
+                        formatAmount = formatAmount
                     )
                 }
 

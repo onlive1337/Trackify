@@ -7,8 +7,8 @@ import com.onlive.trackify.BuildConfig
 import java.io.File
 import java.io.PrintWriter
 import java.io.StringWriter
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.concurrent.Executors
 
@@ -17,6 +17,10 @@ object CrashLogger {
     private const val TAG = "CrashLogger"
     private const val DIR_NAME = "crash_logs"
     private const val MAX_LOG_FILES = 20
+    private val FILE_TIMESTAMP_FORMAT: DateTimeFormatter =
+        DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss_SSS", Locale.US)
+    private val ENTRY_TIMESTAMP_FORMAT: DateTimeFormatter =
+        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS", Locale.US)
 
     private val ioExecutor = Executors.newSingleThreadExecutor { r ->
         Thread(r, "CrashLogger").apply { isDaemon = true }
@@ -56,12 +60,10 @@ object CrashLogger {
     fun writeLog(context: Context, message: String, details: String? = null): File? {
         return try {
             val dir = logDir(context)
-            val now = Date()
-            val fileTimestampFormat = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US)
-            val entryTimestampFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US)
-            val file = File(dir, "crash_${fileTimestampFormat.format(now)}.txt")
+            val now = LocalDateTime.now()
+            val file = File(dir, "crash_${now.format(FILE_TIMESTAMP_FORMAT)}.txt")
             file.writeText(buildString {
-                appendLine("Time: ${entryTimestampFormat.format(now)}")
+                appendLine("Time: ${now.format(ENTRY_TIMESTAMP_FORMAT)}")
                 appendLine("App version: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
                 appendLine("Android: ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
                 appendLine("Device: ${Build.MANUFACTURER} ${Build.MODEL}")

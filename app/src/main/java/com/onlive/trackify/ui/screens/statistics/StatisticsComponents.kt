@@ -13,9 +13,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.toColorInt
 import com.onlive.trackify.R
 import com.onlive.trackify.ui.components.AutoSizeText
+import com.onlive.trackify.ui.components.resolveCategoryColor
 import com.onlive.trackify.utils.stringResource
 import com.onlive.trackify.viewmodel.StatisticsViewModel
 
@@ -139,20 +139,16 @@ private fun CategoryItem(
     totalAmount: Double,
     formatAmount: (Double) -> String
 ) {
-    val categoryColor = remember(category.colorCode) {
-        runCatching { Color(category.colorCode.toColorInt()) }.getOrNull()
+    val accentColor = remember(category.colorCode) {
+        resolveCategoryColor(category.colorCode, Color(0xFF808080))
     }
-    val accentColor = categoryColor ?: Color(0xFF808080)
 
     val percentage = if (totalAmount > 0.0) (category.amount / totalAmount).toFloat() else 0f
 
     val startAnimation = remember { mutableStateOf(false) }
     val animatedProgress by animateFloatAsState(
         targetValue = if (startAnimation.value) percentage else 0f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
+        animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
         label = "bar_${category.categoryId}"
     )
 
@@ -171,11 +167,7 @@ private fun CategoryItem(
                     .background(accentColor)
             )
 
-            val displayName = if (category.categoryId == null) {
-                stringResource(R.string.without_category)
-            } else {
-                category.categoryName
-            }
+            val displayName = category.categoryName ?: stringResource(R.string.without_category)
 
             Text(
                 text = displayName,
@@ -196,7 +188,7 @@ private fun CategoryItem(
         }
 
         LinearWavyProgressIndicator(
-            progress = { animatedProgress },
+            progress = { animatedProgress.coerceIn(0f, 1f) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(10.dp),

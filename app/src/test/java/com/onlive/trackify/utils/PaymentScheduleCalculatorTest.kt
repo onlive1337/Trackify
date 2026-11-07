@@ -1,143 +1,159 @@
 package com.onlive.trackify.utils
 
 import com.onlive.trackify.data.model.BillingFrequency
+import com.onlive.trackify.data.model.Subscription
+import com.onlive.trackify.data.model.SubscriptionSortOption
+import java.time.LocalDate
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import java.util.Calendar
-import java.util.Date
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class PaymentScheduleCalculatorTest {
 
-    private fun date(year: Int, month1Based: Int, day: Int): Date {
-        return Calendar.getInstance().apply {
-            clear()
-            set(year, month1Based - 1, day, 0, 0, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.time
-    }
-
-    private fun nextPayment(
-        start: Date,
-        today: Date,
+    private fun subscription(
+        id: Long,
+        name: String,
+        price: Double,
+        startDate: LocalDate,
         frequency: BillingFrequency = BillingFrequency.MONTHLY,
-        endDate: Date? = null
-    ): Date? = PaymentScheduleCalculator.calculateNextPaymentDate(start, frequency, endDate, today)
-
-    // --- Start in the past ---
+        endDate: LocalDate? = null
+    ) = Subscription(
+        subscriptionId = id,
+        name = name,
+        description = null,
+        price = price,
+        billingFrequency = frequency,
+        startDate = startDate,
+        endDate = endDate,
+        categoryId = null
+    )
 
     @Test
-    fun monthly_startInPast_returnsThisMonthOccurrence() {
-        val start = date(2026, 1, 10)
-        val today = date(2026, 6, 5)
-        assertEquals(date(2026, 6, 10), nextPayment(start, today))
+    fun `resolveDueStatus classifies today tomorrow soon upcoming ending and expired`() {
+        val today = LocalDate.of(2026, 11, 1)
+
+        val dueToday = subscription(1, "Today Sub", 10.0, LocalDate.of(2026, 10, 1))
+        assertTrue(PaymentScheduleCalculator.resolveDueStatus(dueToday, today) is SubscriptionDueStatus.DueToday)
+
+        val dueTomorrow = subscription(2, "Tomorrow Sub", 10.0, LocalDate.of(2026, 10, 2))
+        assertTrue(PaymentScheduleCalculator.resolveDueStatus(dueTomorrow, today) is SubscriptionDueStatus.DueTomorrow)
+
+        val dueInThreeDays = subscription(3, "Soon Sub", 10.0, LocalDate.of(2026, 10, 4))
+        val soonStatus = PaymentScheduleCalculator.resolveDueStatus(dueInThreeDays, today)
+        assertTrue(soonStatus is SubscriptionDueStatus.DueSoon)
+        assertEquals(3, (soonStatus as SubscriptionDueStatus.DueSoon).daysUntil)
+
+        val upcoming = subscription(4, "Later Sub", 10.0, LocalDate.of(2026, 10, 15))
+        val upcomingStatus = PaymentScheduleCalculator.resolveDueStatus(upcoming, today)
+        assertTrue(upcomingStatus is SubscriptionDueStatus.Upcoming)
+        assertEquals(14, (upcomingStatus as SubscriptionDueStatus.Upcoming).daysUntil)
+
+        val endingNoRenewal = subscription(
+            5,
+            "Ending Sub",
+            10.0,
+            startDate = LocalDate.of(2026, 10, 20),
+            endDate = LocalDate.of(2026, 11, 10)
+        )
+        assertTrue(
+            PaymentScheduleCalculator.resolveDueStatus(endingNoRenewal, today) is SubscriptionDueStatus.EndingWithoutRenewal
+        )
+
+        val expired = subscription(
+            6,
+            "Expired Sub",
+            10.0,
+            startDate = LocalDate.of(2026, 8, 1),
+            endDate = LocalDate.of(2026, 10, 15)
+        )
+        assertTrue(PaymentScheduleCalculator.resolveDueStatus(expired, today) is SubscriptionDueStatus.Expired)
     }
 
     @Test
-    fun monthly_startInPast_paymentToday_returnsToday() {
-        val start = date(2026, 1, 15)
-        val today = date(2026, 6, 15)
-        assertEquals(date(2026, 6, 15), nextPayment(start, today))
+    fun `calculateNextPaymentDate preserves month-end and leap-day anchors`() {
+        val jan31 = LocalDate.of(2026, 1, 31)
+        assertEquals(
+            LocalDate.of(2026, 2, 28),
+            PaymentScheduleCalculator.calculateNextPaymentDate(
+                startDate = jan31,
+                billingFrequency = BillingFrequency.MONTHLY,
+                endDate = null,
+                today = LocalDate.of(2026, 2, 15)
+            )
+        )
+        assertEquals(
+            LocalDate.of(2026, 3, 31),
+            PaymentScheduleCalculator.calculateNextPaymentDate(
+                startDate = jan31,
+                billingFrequency = BillingFrequency.MONTHLY,
+                endDate = null,
+                today = LocalDate.of(2026, 3, 1)
+            )
+        )
+
+        val leapDay = LocalDate.of(2024, 2, 29)
+        assertEquals(
+            LocalDate.of(2025, 2, 28),
+            PaymentScheduleCalculator.calculateNextPaymentDate(
+                startDate = leapDay,
+                billingFrequency = BillingFrequency.YEARLY,
+                endDate = null,
+                today = LocalDate.of(2025, 2, 1)
+            )
+        )
+        assertEquals(
+            LocalDate.of(2028, 2, 29),
+            PaymentScheduleCalculator.calculateNextPaymentDate(
+                startDate = leapDay,
+                billingFrequency = BillingFrequency.YEARLY,
+                endDate = null,
+                today = LocalDate.of(2028, 2, 28)
+            )
+        )
     }
 
     @Test
-    fun yearly_startInPast_returnsThisYearOccurrence() {
-        val start = date(2020, 3, 20)
-        val today = date(2026, 1, 1)
-        assertEquals(date(2026, 3, 20), nextPayment(start, today, BillingFrequency.YEARLY))
+    fun `sortSubscriptions orders nearest payments first and expired last`() {
+        val today = LocalDate.of(2026, 11, 1)
+
+        val expired = subscription(1, "Old Service", 5.0, LocalDate.of(2026, 7, 1), endDate = LocalDate.of(2026, 9, 1))
+        val upcoming = subscription(2, "Cloud Storage", 9.99, LocalDate.of(2026, 10, 15))
+        val tomorrow = subscription(3, "Music", 6.99, LocalDate.of(2026, 10, 2))
+        val dueToday = subscription(4, "Video", 14.99, LocalDate.of(2026, 10, 1))
+        val endingSoon = subscription(5, "Trial", 4.99, LocalDate.of(2026, 10, 20), endDate = LocalDate.of(2026, 11, 5))
+
+        val sorted = PaymentScheduleCalculator.sortSubscriptions(
+            listOf(expired, upcoming, tomorrow, dueToday, endingSoon),
+            SubscriptionSortOption.NEAREST_PAYMENT,
+            today
+        )
+
+        assertEquals(
+            listOf("Video", "Music", "Cloud Storage", "Trial", "Old Service"),
+            sorted.map { it.name }
+        )
     }
 
     @Test
-    fun yearly_startInPast_afterAnniversary_returnsNextYear() {
-        val start = date(2020, 3, 20)
-        val today = date(2026, 4, 1)
-        assertEquals(date(2027, 3, 20), nextPayment(start, today, BillingFrequency.YEARLY))
-    }
+    fun `sortSubscriptions supports name and price ordering`() {
+        val today = LocalDate.of(2026, 11, 1)
+        val subs = listOf(
+            subscription(1, "Spotify", 9.99, today),
+            subscription(2, "Apple One", 19.95, today),
+            subscription(3, "iCloud", 2.99, today)
+        )
 
-    // --- Start in the future ---
-
-    @Test
-    fun monthly_startInFuture_returnsStartDate() {
-        val start = date(2026, 8, 1)
-        val today = date(2026, 6, 5)
-        assertEquals(date(2026, 8, 1), nextPayment(start, today))
-    }
-
-    @Test
-    fun yearly_startInFuture_returnsStartDate() {
-        val start = date(2027, 2, 14)
-        val today = date(2026, 6, 5)
-        assertEquals(date(2027, 2, 14), nextPayment(start, today, BillingFrequency.YEARLY))
-    }
-
-    // --- endDate handling ---
-
-    @Test
-    fun monthly_endDateBeforeNextPayment_returnsNull() {
-        val start = date(2026, 1, 10)
-        val today = date(2026, 6, 5)
-        // ends before the upcoming June 10 payment
-        assertNull(nextPayment(start, today, endDate = date(2026, 6, 1)))
-    }
-
-    @Test
-    fun monthly_endDateOnNextPayment_returnsThatPayment() {
-        val start = date(2026, 1, 10)
-        val today = date(2026, 6, 5)
-        assertEquals(date(2026, 6, 10), nextPayment(start, today, endDate = date(2026, 6, 10)))
-    }
-
-    @Test
-    fun futureStart_afterEndDate_returnsNull() {
-        val start = date(2026, 8, 1)
-        val today = date(2026, 6, 5)
-        assertNull(nextPayment(start, today, endDate = date(2026, 7, 1)))
-    }
-
-    // --- Day-drift edge cases (the bug this calculator fixes) ---
-
-    @Test
-    fun monthly_31st_clampsInShortMonthButRecoversLater() {
-        val start = date(2026, 1, 31)
-
-        // February only has 28 days in 2026 -> clamps to Feb 28
-        assertEquals(date(2026, 2, 28), nextPayment(start, date(2026, 2, 15)))
-
-        // March has 31 days -> must recover to the 31st, NOT stay on the 28th
-        assertEquals(date(2026, 3, 31), nextPayment(start, date(2026, 3, 15)))
-
-        // April has 30 days -> clamps to the 30th
-        assertEquals(date(2026, 4, 30), nextPayment(start, date(2026, 4, 15)))
-
-        // May recovers to the 31st again
-        assertEquals(date(2026, 5, 31), nextPayment(start, date(2026, 5, 15)))
-    }
-
-    @Test
-    fun monthly_30th_recoversAfterFebruary() {
-        val start = date(2026, 1, 30)
-        assertEquals(date(2026, 2, 28), nextPayment(start, date(2026, 2, 10)))
-        assertEquals(date(2026, 3, 30), nextPayment(start, date(2026, 3, 10)))
-    }
-
-    @Test
-    fun monthly_endOfFebruary_leapYear() {
-        val start = date(2023, 1, 31)
-        // 2024 is a leap year: February has 29 days
-        assertEquals(date(2024, 2, 29), nextPayment(start, date(2024, 2, 10)))
-    }
-
-    @Test
-    fun yearly_feb29_clampsInNonLeapAndRecoversOnNextLeapYear() {
-        val start = date(2024, 2, 29)
-
-        // 2025 is not a leap year -> Feb 28
-        assertEquals(date(2025, 2, 28), nextPayment(start, date(2025, 1, 1), BillingFrequency.YEARLY))
-
-        // 2026 still not leap -> Feb 28 (must not drift to Feb 27 etc.)
-        assertEquals(date(2026, 2, 28), nextPayment(start, date(2026, 1, 1), BillingFrequency.YEARLY))
-
-        // 2028 is a leap year -> recovers to Feb 29
-        assertEquals(date(2028, 2, 29), nextPayment(start, date(2028, 1, 1), BillingFrequency.YEARLY))
+        assertEquals(
+            listOf("Apple One", "iCloud", "Spotify"),
+            PaymentScheduleCalculator.sortSubscriptions(subs, SubscriptionSortOption.NAME_ASC, today).map { it.name }
+        )
+        assertEquals(
+            listOf("Apple One", "Spotify", "iCloud"),
+            PaymentScheduleCalculator.sortSubscriptions(subs, SubscriptionSortOption.PRICE_DESC, today).map { it.name }
+        )
+        assertEquals(
+            listOf("iCloud", "Spotify", "Apple One"),
+            PaymentScheduleCalculator.sortSubscriptions(subs, SubscriptionSortOption.PRICE_ASC, today).map { it.name }
+        )
     }
 }

@@ -24,11 +24,10 @@ class TrackifyApplication : Application(), Configuration.Provider {
     val errorHandler: ErrorHandler by lazy { ErrorHandler.getInstance(this) }
 
     val subscriptionRepository: SubscriptionRepository by lazy {
-        val database = AppDatabase.getDatabase(this)
-        SubscriptionRepository(database.subscriptionDao(), database.categoryDao(), applicationContext)
+        SubscriptionRepository(AppDatabase.getDatabase(this).subscriptionDao())
     }
     val paymentRepository: PaymentRepository by lazy {
-        PaymentRepository(AppDatabase.getDatabase(this).paymentDao(), applicationContext)
+        PaymentRepository(AppDatabase.getDatabase(this).paymentDao())
     }
     val categoryRepository: CategoryRepository by lazy {
         CategoryRepository(AppDatabase.getDatabase(this).categoryDao())

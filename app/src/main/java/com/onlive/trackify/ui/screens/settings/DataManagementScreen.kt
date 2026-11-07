@@ -18,21 +18,30 @@ import com.onlive.trackify.R
 import com.onlive.trackify.ui.components.SettingsSection
 import com.onlive.trackify.ui.components.TrackifyTopAppBar
 import com.onlive.trackify.utils.DataExportImportManager
+import com.onlive.trackify.utils.LocalLocaleManager
 import com.onlive.trackify.utils.LocalLocalizedContext
+import com.onlive.trackify.utils.NotificationHelper
+import com.onlive.trackify.utils.PreferenceManager
+import com.onlive.trackify.utils.ThemeManager
 import com.onlive.trackify.utils.stringResource
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+
+private val BACKUP_FILE_DATE_FORMATTER: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss", Locale.US)
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun DataManagementScreen(
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    themeManager: ThemeManager
 ) {
     val context = LocalLocalizedContext.current
+    val localeManager = LocalLocaleManager.current
     val haptic = LocalHapticFeedback.current
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -86,6 +95,10 @@ fun DataManagementScreen(
                         dataManager.importData(it)
                     }
                     if (success) {
+                        themeManager.reloadFromPreferences()
+                        val restoredLanguage = PreferenceManager(context).getLanguageCode()
+                        localeManager.setLocale(restoredLanguage)
+                        NotificationHelper(context).createNotificationChannel()
                         showImportSuccessDialogState.value = true
                     } else {
                         errorMessage = context.getString(R.string.data_import_error)
@@ -134,7 +147,7 @@ fun DataManagementScreen(
                 SettingsSection(
                     title = stringResource(R.string.export_title)
                 ) {
-                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
                         Text(
                             text = stringResource(R.string.export_description),
                             style = MaterialTheme.typography.bodyMedium,
@@ -146,11 +159,11 @@ fun DataManagementScreen(
                         Button(
                             onClick = {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
-                                val dateString = dateFormat.format(Date())
+                                val dateString = LocalDateTime.now().format(BACKUP_FILE_DATE_FORMATTER)
                                 val fileName = "trackify_backup_$dateString.json"
                                 exportLauncher.launch(fileName)
                             },
+                            shapes = ButtonDefaults.shapes(),
                             modifier = Modifier.fillMaxWidth(),
                             enabled = !isLoading
                         ) {
@@ -164,7 +177,7 @@ fun DataManagementScreen(
                 SettingsSection(
                     title = stringResource(R.string.import_title)
                 ) {
-                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
                         Text(
                             text = stringResource(R.string.import_description),
                             style = MaterialTheme.typography.bodyMedium,
@@ -178,6 +191,7 @@ fun DataManagementScreen(
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 showImportDialogState.value = true
                             },
+                            shapes = ButtonDefaults.shapes(),
                             modifier = Modifier.fillMaxWidth(),
                             enabled = !isLoading
                         ) {
@@ -213,14 +227,16 @@ fun DataManagementScreen(
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         showImportDialogState.value = false
                         importLauncher.launch(arrayOf("application/json"))
-                    }
+                    },
+                    shapes = ButtonDefaults.shapes()
                 ) {
                     Text(stringResource(R.string.yes))
                 }
             },
             dismissButton = {
                 TextButton(
-                    onClick = { showImportDialogState.value = false }
+                    onClick = { showImportDialogState.value = false },
+                    shapes = ButtonDefaults.shapes()
                 ) {
                     Text(stringResource(R.string.cancel))
                 }
@@ -235,7 +251,8 @@ fun DataManagementScreen(
             text = { Text(stringResource(R.string.export_success, exportFilePath)) },
             confirmButton = {
                 TextButton(
-                    onClick = { showExportSuccessDialogState.value = false }
+                    onClick = { showExportSuccessDialogState.value = false },
+                    shapes = ButtonDefaults.shapes()
                 ) {
                     Text(stringResource(R.string.done))
                 }
@@ -246,24 +263,15 @@ fun DataManagementScreen(
     if (showImportSuccessDialogState.value) {
         AlertDialog(
             onDismissRequest = { showImportSuccessDialogState.value = false },
-            title = { Text(stringResource(R.string.import_success)) },
-            text = {
-                Column {
-                    Text(stringResource(R.string.import_success))
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        stringResource(R.string.import_restart_message),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            },
+            title = { Text(stringResource(R.string.import_success_title)) },
+            text = { Text(stringResource(R.string.import_success)) },
             confirmButton = {
                 TextButton(
                     onClick = {
                         showImportSuccessDialogState.value = false
                         onNavigateBack()
-                    }
+                    },
+                    shapes = ButtonDefaults.shapes()
                 ) {
                     Text(stringResource(R.string.done))
                 }
@@ -278,7 +286,8 @@ fun DataManagementScreen(
             text = { Text(errorMessage) },
             confirmButton = {
                 TextButton(
-                    onClick = { showErrorDialogState.value = false }
+                    onClick = { showErrorDialogState.value = false },
+                    shapes = ButtonDefaults.shapes()
                 ) {
                     Text(stringResource(R.string.done))
                 }

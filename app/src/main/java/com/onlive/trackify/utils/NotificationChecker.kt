@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.onlive.trackify.data.database.AppDatabase
 import com.onlive.trackify.data.model.Subscription
-import java.util.Date
+import java.time.LocalDate
 
 class NotificationChecker(private val context: Context) {
 
@@ -29,7 +29,7 @@ class NotificationChecker(private val context: Context) {
         }
 
         val subscriptions = database.subscriptionDao().getAllSubscriptionsForWorker()
-        val today = Date()
+        val today = LocalDate.now()
 
         Log.d(tag, "Checking ${subscriptions.size} subscriptions (days=$reminderDays)")
 
@@ -41,7 +41,7 @@ class NotificationChecker(private val context: Context) {
 
     private fun checkPaymentReminder(
         subscription: Subscription,
-        today: Date,
+        today: LocalDate,
         reminderDays: Set<Int>,
         notificationHelper: NotificationHelper,
         preferenceManager: PreferenceManager,
@@ -59,22 +59,21 @@ class NotificationChecker(private val context: Context) {
         val dateKey = preferenceManager.formatDateKey(nextPaymentDate)
         if (preferenceManager.wasNotificationSentForDate(subscription.subscriptionId, TYPE_PAYMENT, dateKey, matchedThreshold)) return
 
-        notificationHelper.showPaymentReminderNotification(subscription, daysUntil)
-        preferenceManager.markNotificationSentForDate(subscription.subscriptionId, TYPE_PAYMENT, dateKey, matchedThreshold)
-        Log.d(tag, "Payment reminder sent for ${subscription.name} (in $daysUntil days, threshold=$matchedThreshold, cycle $dateKey)")
+        if (notificationHelper.showPaymentReminderNotification(subscription, daysUntil)) {
+            preferenceManager.markNotificationSentForDate(subscription.subscriptionId, TYPE_PAYMENT, dateKey, matchedThreshold)
+            Log.d(tag, "Payment reminder sent for ${subscription.name} (in $daysUntil days, threshold=$matchedThreshold, cycle $dateKey)")
+        }
     }
 
     private fun checkExpirationReminder(
         subscription: Subscription,
-        today: Date,
+        today: LocalDate,
         reminderDays: Set<Int>,
         notificationHelper: NotificationHelper,
         preferenceManager: PreferenceManager,
     ) {
         val endDate = subscription.endDate ?: return
-        val todayStart = PaymentScheduleCalculator.normalizeToStartOfDay(today)
-        val endDateStart = PaymentScheduleCalculator.normalizeToStartOfDay(endDate)
-        if (endDateStart.before(todayStart)) return
+        if (endDate.isBefore(today)) return
 
         val daysUntil = PaymentScheduleCalculator.getDaysDifference(today, endDate)
         val matchedThreshold = resolveReminderThreshold(daysUntil, reminderDays) ?: return
@@ -82,9 +81,10 @@ class NotificationChecker(private val context: Context) {
         val dateKey = preferenceManager.formatDateKey(endDate)
         if (preferenceManager.wasNotificationSentForDate(subscription.subscriptionId, TYPE_EXPIRATION, dateKey, matchedThreshold)) return
 
-        notificationHelper.showExpirationReminderNotification(subscription, daysUntil)
-        preferenceManager.markNotificationSentForDate(subscription.subscriptionId, TYPE_EXPIRATION, dateKey, matchedThreshold)
-        Log.d(tag, "Expiration reminder sent for ${subscription.name} (in $daysUntil days, threshold=$matchedThreshold, cycle $dateKey)")
+        if (notificationHelper.showExpirationReminderNotification(subscription, daysUntil)) {
+            preferenceManager.markNotificationSentForDate(subscription.subscriptionId, TYPE_EXPIRATION, dateKey, matchedThreshold)
+            Log.d(tag, "Expiration reminder sent for ${subscription.name} (in $daysUntil days, threshold=$matchedThreshold, cycle $dateKey)")
+        }
     }
 
     companion object {

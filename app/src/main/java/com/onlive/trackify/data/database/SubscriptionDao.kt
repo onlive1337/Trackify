@@ -1,8 +1,14 @@
 package com.onlive.trackify.data.database
 
-import androidx.lifecycle.LiveData
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.Transaction
+import androidx.room.Update
 import com.onlive.trackify.data.model.Subscription
+import com.onlive.trackify.data.model.SubscriptionWithCategory
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SubscriptionDao {
@@ -10,7 +16,7 @@ interface SubscriptionDao {
     suspend fun insert(subscription: Subscription): Long
 
     @Insert
-    fun insertSync(subscription: Subscription): Long
+    suspend fun insertAll(subscriptions: List<Subscription>)
 
     @Update
     suspend fun update(subscription: Subscription)
@@ -18,18 +24,20 @@ interface SubscriptionDao {
     @Delete
     suspend fun delete(subscription: Subscription)
 
+    @Transaction
     @Query("SELECT * FROM subscriptions ORDER BY name ASC")
-    fun getAllSubscriptions(): LiveData<List<Subscription>>
+    fun getAllSubscriptionsWithCategory(): Flow<List<SubscriptionWithCategory>>
 
-    @Query("SELECT * FROM subscriptions ORDER BY name ASC")
-    fun getAllSubscriptionsSync(): List<Subscription>
-
+    @Transaction
     @Query("SELECT * FROM subscriptions WHERE subscriptionId = :id")
-    fun getSubscriptionById(id: Long): LiveData<Subscription>
+    fun getSubscriptionWithCategoryById(id: Long): Flow<SubscriptionWithCategory?>
+
+    @Query("SELECT * FROM subscriptions ORDER BY name ASC")
+    suspend fun getAllSnapshot(): List<Subscription>
 
     @Query("SELECT * FROM subscriptions")
     suspend fun getAllSubscriptionsForWorker(): List<Subscription>
 
     @Query("DELETE FROM subscriptions")
-    suspend fun deleteAllSync()
+    suspend fun deleteAll()
 }
